@@ -55,7 +55,6 @@ class _MyChessGamePage extends State<ChessGame> {
   }
 
   void checkIfWin(Tile newTile){
-    print(newTile.char);
     if (newTile.char == character.king){
       gameOver(selectedTile.owner);
     }
@@ -243,7 +242,7 @@ class _MyChessGamePage extends State<ChessGame> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Divider(height: 24),
+              const Divider(height: 24, color: Colors.transparent,),
               RotatedBox(quarterTurns: 2,
                   child: Clock(key: blackClockState,
                       player: player.black,
