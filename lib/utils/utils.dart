@@ -35,27 +35,21 @@ Widget getImage(character char, player owner) {
   switch (char) {
     case character.pawn:
       return Image.asset(owner == player.white ? 'assets/images/pawnW.png' : 'assets/images/pawnB.png',
-        // color: geChartColor(owner),
       );
     case character.knight:
       return Image.asset(owner == player.white ? 'assets/images/knightW.png' : 'assets/images/knightB.png',
-        // color: geChartColor(owner),
       );
     case character.king:
       return Image.asset(owner == player.white ? 'assets/images/kingW.png' : 'assets/images/kingB.png',
-        // color: geChartColor(owner),
       );
     case character.bishop:
       return Image.asset(owner == player.white ? 'assets/images/bishopW.png' : 'assets/images/bishopB.png',
-        // color: geChartColor(owner),
       );
     case character.rock:
       return Image.asset(owner == player.white ? 'assets/images/rockW.png' : 'assets/images/rockB.png',
-        // color: geChartColor(owner),
       );
     case character.queen:
       return Image.asset(owner == player.white ? 'assets/images/queenW.png' : 'assets/images/queenB.png',
-        // color: geChartColor(owner),
       );
     case character.empty:
       return const SizedBox.expand();
@@ -69,6 +63,11 @@ Color geChartColor(player owner) {
 getRandomIO() {
   var rnd = Random();
   return rnd.nextInt(2);
+}
+
+getRandomInt(int max) {
+  var rnd = Random();
+  return rnd.nextInt(max);
 }
 
 void printMatrix(var matrix) {
@@ -125,3 +124,91 @@ setIslandInTrue(i, j, matrix, orgMatrix) {
   }
   return matrix;
 }
+
+bool isFromGraveyard(Tile tile) {
+  return tile.i == null;
+}
+
+bool checkIfValidPosition(Tile tile, Tile? selectedTile) {
+  if (selectedTile == null) {
+    return false;
+  } else if (isFromGraveyard(selectedTile)) {
+    return tile.char == character.empty;
+  } else {
+    if (selectedTile.owner == tile.owner) {
+      return false;
+    } else {
+      switch (selectedTile.char) {
+        case character.pawn:
+          if (selectedTile.owner == player.white) {
+            return selectedTile.i! - 1 == tile.i && selectedTile.j == tile.j;
+          } else {
+            return selectedTile.i! + 1 == tile.i && selectedTile.j == tile.j;
+          }
+        case character.king:
+          return (selectedTile.i! + 1 == tile.i &&
+              selectedTile.j! + 1 == tile.j) ||
+              (selectedTile.i! + 1 == tile.i && selectedTile.j == tile.j) ||
+              (selectedTile.i! + 1 == tile.i &&
+                  selectedTile.j! - 1 == tile.j) ||
+              (selectedTile.i == tile.i && selectedTile.j! + 1 == tile.j) ||
+              (selectedTile.i == tile.i && selectedTile.j! - 1 == tile.j) ||
+              (selectedTile.i! - 1 == tile.i &&
+                  selectedTile.j! + 1 == tile.j) ||
+              (selectedTile.i! - 1 == tile.i && selectedTile.j == tile.j) ||
+              (selectedTile.i! - 1 == tile.i && selectedTile.j! - 1 == tile.j);
+        case character.bishop:
+          return (selectedTile.i! + 1 == tile.i &&
+              selectedTile.j! + 1 == tile.j) ||
+              (selectedTile.i! + 1 == tile.i &&
+                  selectedTile.j! - 1 == tile.j) ||
+              (selectedTile.i! - 1 == tile.i &&
+                  selectedTile.j! + 1 == tile.j) ||
+              (selectedTile.i! - 1 == tile.i && selectedTile.j! - 1 == tile.j);
+        case character.rock:
+          return (selectedTile.i! + 1 == tile.i && selectedTile.j == tile.j) ||
+              (selectedTile.i == tile.i && selectedTile.j! + 1 == tile.j) ||
+              (selectedTile.i == tile.i && selectedTile.j! - 1 == tile.j) ||
+              (selectedTile.i! - 1 == tile.i && selectedTile.j == tile.j);
+        case character.knight:
+          if (selectedTile.owner == player.white) {
+            return (selectedTile.i! + 1 == tile.i &&
+                selectedTile.j == tile.j) ||
+                (selectedTile.i == tile.i && selectedTile.j! + 1 == tile.j) ||
+                (selectedTile.i == tile.i && selectedTile.j! - 1 == tile.j) ||
+                (selectedTile.i! - 1 == tile.i && selectedTile.j == tile.j) ||
+                (selectedTile.i! - 1 == tile.i &&
+                    selectedTile.j! + 1 == tile.j) ||
+                (selectedTile.i! - 1 == tile.i &&
+                    selectedTile.j! - 1 == tile.j);
+          } else {
+            return (selectedTile.i! + 1 == tile.i &&
+                selectedTile.j == tile.j) ||
+                (selectedTile.i == tile.i && selectedTile.j! + 1 == tile.j) ||
+                (selectedTile.i == tile.i && selectedTile.j! - 1 == tile.j) ||
+                (selectedTile.i! - 1 == tile.i && selectedTile.j == tile.j) ||
+                (selectedTile.i! + 1 == tile.i &&
+                    selectedTile.j! + 1 == tile.j) ||
+                (selectedTile.i! + 1 == tile.i &&
+                    selectedTile.j! - 1 == tile.j);
+          }
+        case character.empty:
+          return false;
+        case character.queen:
+          return false;
+      }
+    }
+  }
+}
+
+// void sleep(Duration duration) {
+//   int milliseconds = duration.inMilliseconds;
+//   if (milliseconds < 0) {
+//     throw ArgumentError("sleep: duration cannot be negative");
+//   }
+//   if (!_EmbedderConfig._maySleep) {
+//     throw new UnsupportedError(
+//         "This embedder disallows calling dart:io's sleep()");
+//   }
+//   _ProcessUtils._sleep(milliseconds);
+// }
