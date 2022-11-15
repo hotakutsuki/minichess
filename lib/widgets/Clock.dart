@@ -18,7 +18,7 @@ class Clock extends StatefulWidget {
 
 class ClockState extends State<Clock> {
   Timer? countdownTimer;
-  Duration myDuration = const Duration(minutes: 4);
+  Duration myDuration = const Duration(minutes: 2);
 
   void initState() {
     super.initState();

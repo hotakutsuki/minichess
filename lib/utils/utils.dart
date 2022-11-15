@@ -6,24 +6,24 @@ import '../doms/Tile.dart';
 createNewBoard() {
   var matrix = [
     [
-      Tile(character.rock, player.black, 0, 0),
-      Tile(character.king, player.black, 0, 1),
-      Tile(character.bishop, player.black, 0, 2)
+      Tile(chrt.rock, player.black, 0, 0),
+      Tile(chrt.king, player.black, 0, 1),
+      Tile(chrt.bishop, player.black, 0, 2)
     ],
     [
-      Tile(character.empty, player.none, 1, 0),
-      Tile(character.pawn, player.black, 1, 1),
-      Tile(character.empty, player.none, 1, 2)
+      Tile(chrt.empty, player.none, 1, 0),
+      Tile(chrt.pawn, player.black, 1, 1),
+      Tile(chrt.empty, player.none, 1, 2)
     ],
     [
-      Tile(character.empty, player.none, 2, 0),
-      Tile(character.pawn, player.white, 2, 1),
-      Tile(character.empty, player.none, 2, 2)
+      Tile(chrt.empty, player.none, 2, 0),
+      Tile(chrt.pawn, player.white, 2, 1),
+      Tile(chrt.empty, player.none, 2, 2)
     ],
     [
-      Tile(character.bishop, player.white, 3, 0),
-      Tile(character.king, player.white, 3, 1),
-      Tile(character.rock, player.white, 3, 2)
+      Tile(chrt.bishop, player.white, 3, 0),
+      Tile(chrt.king, player.white, 3, 1),
+      Tile(chrt.rock, player.white, 3, 2)
     ]
   ];
 
@@ -31,27 +31,27 @@ createNewBoard() {
   return matrix;
 }
 
-Widget getImage(character char, player owner) {
+Widget getImage(chrt char, player owner) {
   switch (char) {
-    case character.pawn:
+    case chrt.pawn:
       return Image.asset(owner == player.white ? 'assets/images/pawnW.png' : 'assets/images/pawnB.png',
       );
-    case character.knight:
+    case chrt.knight:
       return Image.asset(owner == player.white ? 'assets/images/knightW.png' : 'assets/images/knightB.png',
       );
-    case character.king:
+    case chrt.king:
       return Image.asset(owner == player.white ? 'assets/images/kingW.png' : 'assets/images/kingB.png',
       );
-    case character.bishop:
+    case chrt.bishop:
       return Image.asset(owner == player.white ? 'assets/images/bishopW.png' : 'assets/images/bishopB.png',
       );
-    case character.rock:
+    case chrt.rock:
       return Image.asset(owner == player.white ? 'assets/images/rockW.png' : 'assets/images/rockB.png',
       );
-    case character.queen:
+    case chrt.queen:
       return Image.asset(owner == player.white ? 'assets/images/queenW.png' : 'assets/images/queenB.png',
       );
-    case character.empty:
+    case chrt.empty:
       return const SizedBox.expand();
   }
 }
@@ -133,19 +133,19 @@ bool checkIfValidPosition(Tile tile, Tile? selectedTile) {
   if (selectedTile == null) {
     return false;
   } else if (isFromGraveyard(selectedTile)) {
-    return tile.char == character.empty;
+    return tile.char == chrt.empty;
   } else {
     if (selectedTile.owner == tile.owner) {
       return false;
     } else {
       switch (selectedTile.char) {
-        case character.pawn:
+        case chrt.pawn:
           if (selectedTile.owner == player.white) {
             return selectedTile.i! - 1 == tile.i && selectedTile.j == tile.j;
           } else {
             return selectedTile.i! + 1 == tile.i && selectedTile.j == tile.j;
           }
-        case character.king:
+        case chrt.king:
           return (selectedTile.i! + 1 == tile.i &&
               selectedTile.j! + 1 == tile.j) ||
               (selectedTile.i! + 1 == tile.i && selectedTile.j == tile.j) ||
@@ -157,7 +157,7 @@ bool checkIfValidPosition(Tile tile, Tile? selectedTile) {
                   selectedTile.j! + 1 == tile.j) ||
               (selectedTile.i! - 1 == tile.i && selectedTile.j == tile.j) ||
               (selectedTile.i! - 1 == tile.i && selectedTile.j! - 1 == tile.j);
-        case character.bishop:
+        case chrt.bishop:
           return (selectedTile.i! + 1 == tile.i &&
               selectedTile.j! + 1 == tile.j) ||
               (selectedTile.i! + 1 == tile.i &&
@@ -165,12 +165,12 @@ bool checkIfValidPosition(Tile tile, Tile? selectedTile) {
               (selectedTile.i! - 1 == tile.i &&
                   selectedTile.j! + 1 == tile.j) ||
               (selectedTile.i! - 1 == tile.i && selectedTile.j! - 1 == tile.j);
-        case character.rock:
+        case chrt.rock:
           return (selectedTile.i! + 1 == tile.i && selectedTile.j == tile.j) ||
               (selectedTile.i == tile.i && selectedTile.j! + 1 == tile.j) ||
               (selectedTile.i == tile.i && selectedTile.j! - 1 == tile.j) ||
               (selectedTile.i! - 1 == tile.i && selectedTile.j == tile.j);
-        case character.knight:
+        case chrt.knight:
           if (selectedTile.owner == player.white) {
             return (selectedTile.i! + 1 == tile.i &&
                 selectedTile.j == tile.j) ||
@@ -192,9 +192,9 @@ bool checkIfValidPosition(Tile tile, Tile? selectedTile) {
                 (selectedTile.i! + 1 == tile.i &&
                     selectedTile.j! - 1 == tile.j);
           }
-        case character.empty:
+        case chrt.empty:
           return false;
-        case character.queen:
+        case chrt.queen:
           return false;
       }
     }

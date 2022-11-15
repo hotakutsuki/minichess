@@ -7,14 +7,19 @@ class Tile {
         char = otherTile.char,
         owner = otherTile.owner;
 
-  Tile.fromParameters(character nC, player nP) :
+  Tile.fromParameters(chrt nC, player nP) :
         char = nC,
         owner = nP;
 
-  character char;
+  chrt char;
   player owner;
   int? i;
   int? j;
   bool isSelected = false;
   bool isOption = false;
+
+  @override
+  String toString() {
+    return char.toString();
+  }
 }

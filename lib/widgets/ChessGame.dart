@@ -19,14 +19,16 @@ class ChessGame extends StatefulWidget {
 class _MyChessGamePage extends State<ChessGame> {
   bool isVsPc = true;
 
-  List<List<Tile>> board = [[]];
+  List<List<Tile>> board = [];
   List<Tile> graveyardW = [];
   List<Tile> graveyardB = [];
   Tile? selectedTile;
-  player lastPlayedPlayer = player.none;
+  player lastPlayedPlayer = player.black;
   player winner = player.none;
   bool isGameOver = false;
-
+  List<Move> whiteHistory = [];
+  List<Move> blackHistory = [];
+  List<GameState> boardHistory = [];
 
   final GlobalKey<ClockState> whiteClockState = GlobalKey<ClockState>();
   final GlobalKey<ClockState> blackClockState = GlobalKey<ClockState>();
@@ -38,12 +40,21 @@ class _MyChessGamePage extends State<ChessGame> {
     }
   }
 
+  GameState getCurrentGameState(){
+    return GameState(
+      board,
+      lastPlayedPlayer == player.white ? graveyardB : graveyardW,
+      lastPlayedPlayer == player.white ? graveyardW : graveyardB,
+      lastPlayedPlayer == player.white ? player.black : player.white,
+    )
+  }
+
   isDIfferentTile(Tile newTile) {
     return selectedTile!.i != newTile.i || selectedTile!.j != newTile.j;
   }
 
   void sendPieceToGrave(Tile newTile) {
-    if (board[newTile.i!][newTile.j!].char != character.empty) {
+    if (board[newTile.i!][newTile.j!].char != chrt.empty) {
       if (newTile.owner == player.white) {
         graveyardB.add(Tile.fromParameters(newTile.char, player.black));
       } else {
@@ -53,18 +64,18 @@ class _MyChessGamePage extends State<ChessGame> {
   }
 
   void transformPawn(Tile newTile) {
-    if (selectedTile!.char == character.pawn) {
+    if (selectedTile!.char == chrt.pawn) {
       if (selectedTile!.owner == player.white && newTile.i == 0) {
-        newTile.char = character.knight;
+        newTile.char = chrt.knight;
       }
       if (selectedTile!.owner == player.black && newTile.i == 3) {
-        newTile.char = character.knight;
+        newTile.char = chrt.knight;
       }
     }
   }
 
   void checkIfWin(Tile newTile) {
-    if (newTile.char == character.king) {
+    if (newTile.char == chrt.king) {
       gameOver(selectedTile!.owner);
     }
   }
@@ -78,7 +89,7 @@ class _MyChessGamePage extends State<ChessGame> {
       graveyardB.removeWhere((element) => element.isSelected);
       graveyardW.removeWhere((element) => element.isSelected);
     } else {
-      selectedTile!.char = character.empty;
+      selectedTile!.char = chrt.empty;
       selectedTile!.owner = player.none;
     }
   }
@@ -115,9 +126,27 @@ class _MyChessGamePage extends State<ChessGame> {
     selectedTile = null;
   }
 
-  onTapTile(Tile tile) {
+  void recordHistory(Tile tile){
+    if (selectedTile!.owner == player.white) {
+      whiteHistory.add(Move(selectedTile, tile));
+    } else {
+      blackHistory.add(Move(selectedTile, tile));
+    }
+    boardHistory.add(getCurrentGameState());
+    print('whiteHistory');
+    print(whiteHistory);
+    print('blackHistory');
+    print(blackHistory);
+    print('table history');
+    print(boardHistory);
+  }
+
+  onTapTile(Tile? tile) {
+    if (tile == null){
+      return;
+    }
     if (selectedTile == null) {
-      if (tile.char != character.empty && lastPlayedPlayer != tile.owner) {
+      if (tile.char != chrt.empty && lastPlayedPlayer != tile.owner) {
         setState(() {
           selectedTile = tile;
           tile.isSelected = true;
@@ -129,6 +158,7 @@ class _MyChessGamePage extends State<ChessGame> {
         if (checkIfValidPosition(tile, selectedTile)) {
           setTimersAndPlayers();
           sendPieceToGrave(tile);
+          recordHistory(tile);
           rewritePosition(tile);
         }
         restarSelected(tile);
@@ -141,12 +171,7 @@ class _MyChessGamePage extends State<ChessGame> {
   }
 
   void playAsPc() async {
-    Move move = getPlay(GameState(
-      board,
-      lastPlayedPlayer == player.white ? graveyardB : graveyardW,
-      lastPlayedPlayer == player.white ? graveyardW : graveyardB,
-      lastPlayedPlayer == player.white ? player.black : player.white,
-    ));
+    Move move = getPlay(getCurrentGameState());
     await Future.delayed(const Duration(milliseconds: 500));
     onTapTile(move.initialTile);
     await Future.delayed(const Duration(milliseconds: 500));
@@ -160,6 +185,7 @@ class _MyChessGamePage extends State<ChessGame> {
       blackClockState.currentState?.stopTimer();
       whiteClockState.currentState?.stopTimer();
     });
+    storeMovemntHistory(boardHistory, whiteHistory, blackHistory);
   }
 
   Widget restartButton() {
@@ -176,6 +202,9 @@ class _MyChessGamePage extends State<ChessGame> {
             lastPlayedPlayer = player.none;
             winner = player.none;
             isGameOver = false;
+            blackHistory=[];
+            whiteHistory=[];
+            boardHistory=[];
           });
           resetTimers();
         },
@@ -239,7 +268,7 @@ class _MyChessGamePage extends State<ChessGame> {
                     SizedBox(
                         width: 250,
                         height: 250,
-                        child: getImage(character.queen, winner)),
+                        child: getImage(chrt.queen, winner)),
                     restartButton(),
                   ],
                 ),
