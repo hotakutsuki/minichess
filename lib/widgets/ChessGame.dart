@@ -17,7 +17,7 @@ class ChessGame extends StatefulWidget {
 }
 
 class _MyChessGamePage extends State<ChessGame> {
-  bool isVsPc = true;
+  bool isVsPc = false;
 
   List<List<Tile>> board = [];
   List<Tile> graveyardW = [];
@@ -26,9 +26,9 @@ class _MyChessGamePage extends State<ChessGame> {
   player lastPlayedPlayer = player.black;
   player winner = player.none;
   bool isGameOver = false;
+  List<String> boardHistory = [];
   List<Move> whiteHistory = [];
   List<Move> blackHistory = [];
-  List<GameState> boardHistory = [];
 
   final GlobalKey<ClockState> whiteClockState = GlobalKey<ClockState>();
   final GlobalKey<ClockState> blackClockState = GlobalKey<ClockState>();
@@ -40,13 +40,25 @@ class _MyChessGamePage extends State<ChessGame> {
     }
   }
 
-  GameState getCurrentGameState(){
+  bool isWhitesTurn() {
+    return lastPlayedPlayer == player.black || lastPlayedPlayer == player.none;
+  }
+
+  bool isBlacksTurn() {
+    return lastPlayedPlayer == player.white;
+  }
+
+  player getPlayersTurn() {
+    return isBlacksTurn() ? player.black : player.white;
+  }
+
+  GameState getCurrentGameState() {
     return GameState(
       board,
-      lastPlayedPlayer == player.white ? graveyardB : graveyardW,
-      lastPlayedPlayer == player.white ? graveyardW : graveyardB,
-      lastPlayedPlayer == player.white ? player.black : player.white,
-    )
+      isBlacksTurn() ? graveyardB : graveyardW,
+      isWhitesTurn() ? graveyardB : graveyardW,
+      getPlayersTurn(),
+    );
   }
 
   isDIfferentTile(Tile newTile) {
@@ -126,23 +138,17 @@ class _MyChessGamePage extends State<ChessGame> {
     selectedTile = null;
   }
 
-  void recordHistory(Tile tile){
+  void recordHistory(Tile tile) {
+    boardHistory.add(getCurrentGameState().toString());
     if (selectedTile!.owner == player.white) {
-      whiteHistory.add(Move(selectedTile, tile));
+      whiteHistory.add(Move(selectedTile!, tile, getPlayersTurn()));
     } else {
-      blackHistory.add(Move(selectedTile, tile));
+      blackHistory.add(Move(selectedTile!, tile, getPlayersTurn()));
     }
-    boardHistory.add(getCurrentGameState());
-    print('whiteHistory');
-    print(whiteHistory);
-    print('blackHistory');
-    print(blackHistory);
-    print('table history');
-    print(boardHistory);
   }
 
   onTapTile(Tile? tile) {
-    if (tile == null){
+    if (tile == null) {
       return;
     }
     if (selectedTile == null) {
@@ -156,9 +162,9 @@ class _MyChessGamePage extends State<ChessGame> {
     } else {
       setState(() {
         if (checkIfValidPosition(tile, selectedTile)) {
+          recordHistory(tile);
           setTimersAndPlayers();
           sendPieceToGrave(tile);
-          recordHistory(tile);
           rewritePosition(tile);
         }
         restarSelected(tile);
@@ -172,9 +178,9 @@ class _MyChessGamePage extends State<ChessGame> {
 
   void playAsPc() async {
     Move move = getPlay(getCurrentGameState());
-    await Future.delayed(const Duration(milliseconds: 500));
+    // await Future.delayed(const Duration(milliseconds: 500));
     onTapTile(move.initialTile);
-    await Future.delayed(const Duration(milliseconds: 500));
+    // await Future.delayed(const Duration(milliseconds: 500));
     onTapTile(move.finalTile);
   }
 
@@ -185,7 +191,7 @@ class _MyChessGamePage extends State<ChessGame> {
       blackClockState.currentState?.stopTimer();
       whiteClockState.currentState?.stopTimer();
     });
-    storeMovemntHistory(boardHistory, whiteHistory, blackHistory);
+    storeMovemntHistory(boardHistory, whiteHistory, blackHistory, winner);
   }
 
   Widget restartButton() {
@@ -202,9 +208,9 @@ class _MyChessGamePage extends State<ChessGame> {
             lastPlayedPlayer = player.none;
             winner = player.none;
             isGameOver = false;
-            blackHistory=[];
-            whiteHistory=[];
-            boardHistory=[];
+            blackHistory.clear();
+            whiteHistory.clear();
+            boardHistory.clear();
           });
           resetTimers();
         },

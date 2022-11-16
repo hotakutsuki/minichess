@@ -8,62 +8,46 @@ import '../doms/Tile.dart';
 rotateMatrix(List<String> matrix) {}
 
 storeMovemntHistory(
-  List<GameState> boardHistory,
+  List<String> boardHistory,
   List<Move> whiteHistory,
   List<Move> blackHistory,
+  player winner,
 ) {
   List<RemoteRecord> records = createRemoteHistoryArray(
-      boardHistory, whiteHistory, blackHistory);
+      boardHistory, whiteHistory, blackHistory, winner);
 }
 
 List<RemoteRecord> createRemoteHistoryArray(
-    List<GameState> boardHistory,
-    List<Move> whiteHistory,
-    List<Move> blackHistory,
-    ) {
+  List<String> boardHistory,
+  List<Move> whiteHistory,
+  List<Move> blackHistory,
+  player winner,
+) {
+  String matchId = DateTime.now().millisecondsSinceEpoch.toString();
   List<RemoteRecord> records = [];
-  boardHistory.forEach((gs) =>
-      createRecord(gs);
-  );
+  int i = 0, j = 0;
+  while (i + j < boardHistory.length) {
+    records.add(createRecord(
+        boardHistory[i + j], whiteHistory[i], matchId, winner == player.white));
+    i++;
+    if (boardHistory.length > i + j) {
+      records.add(createRecord(boardHistory[i + j], blackHistory[j], matchId,
+          winner == player.black));
+      j++;
+    }
+  }
+  print(records);
   return records;
 }
 
-RemoteRecord createRecord(GameState gameState){
-  return RemoteRecord('boardstate', 'mov', 'matchid');
-}
-
-List<String> getStateKeyFromBoard(GameState gs) {
-  //0 - pawn in my graveyard
-  //1 - rock in my graveyard
-  //2 - bishop in my graveyard
-  //3 - knight in my graveyard
-  //4 - 15 board: p:pawn r:rock b:bishop k:knight e:empty // m:my e:enemy
-  //16 - pawn in enemy graveyard
-  //17 - pawn in enemy graveyard
-  //18 - pawn in enemy graveyard
-  //19 - pawn in enemy graveyard
-
-  List<String> stateKey = [];
-
-  stateKey.add(gs.myGraveyard.any((t) => t.char == chrt.pawn) ? '1' : '0');
-  stateKey.add(gs.myGraveyard.any((t) => t.char == chrt.rock) ? '1' : '0');
-  stateKey.add(gs.myGraveyard.any((t) => t.char == chrt.bishop) ? '1' : '0');
-  stateKey.add(gs.myGraveyard.any((t) => t.char == chrt.knight) ? '1' : '0');
-  for (var row in gs.board) {
-    for (var v in row) {
-      stateKey.add('${v.char.name[0]}${v.owner == gs.playersTurn ? 'm' : 'e'}');
-    }
-  }
-  stateKey.add(gs.enemyGraveyard.any((t) => t.char == chrt.pawn) ? '1' : '0');
-  stateKey.add(gs.enemyGraveyard.any((t) => t.char == chrt.rock) ? '1' : '0');
-  stateKey.add(gs.enemyGraveyard.any((t) => t.char == chrt.bishop) ? '1' : '0');
-  stateKey.add(gs.enemyGraveyard.any((t) => t.char == chrt.knight) ? '1' : '0');
-
-  return stateKey;
+RemoteRecord createRecord(
+    String gameState, Move move, String matchId, bool winner) {
+  return RemoteRecord(
+      gameState, move.getMoveCode(), winner ? '1' : '0', matchId);
 }
 
 Move getPlay(GameState gameState) {
-  List<String> stateKey = getStateKeyFromBoard(gameState);
+  List<String> stateKey = gameState.getStateKey();
   if (isNewState(stateKey)) {
     return makeDecision(gameState);
   }
@@ -89,22 +73,22 @@ Move makeDecision(GameState gameState) {
 List<Tile> getMyPieces(GameState gameState) {
   List<Tile> myPieces = [];
   myPieces.addAll(gameState.myGraveyard);
-  gameState.board.forEach((row) {
+  for (var row in gameState.board) {
     myPieces.addAll(row.where((Tile t) => t.owner == gameState.playersTurn));
-  });
+  }
 
   return myPieces;
 }
 
 List<Move> getMoves(Tile myPiece, GameState gameState) {
   List<Move> moves = [];
-  gameState.board.forEach((row) {
-    row.forEach((tile) {
+  for (var row in gameState.board) {
+    for (var tile in row) {
       if (checkIfValidPosition(tile, myPiece)) {
-        moves.add(Move(myPiece, tile));
+        moves.add(Move(myPiece, tile, gameState.playersTurn));
       }
-    });
-  });
+    }
+  }
   return moves;
 }
 
