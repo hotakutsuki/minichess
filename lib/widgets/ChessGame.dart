@@ -17,7 +17,7 @@ class ChessGame extends StatefulWidget {
 }
 
 class _MyChessGamePage extends State<ChessGame> {
-  bool isVsPc = false;
+  bool isVsPc = true;
 
   List<List<Tile>> board = [];
   List<Tile> graveyardW = [];
@@ -37,6 +37,9 @@ class _MyChessGamePage extends State<ChessGame> {
     board = createNewBoard();
     if (isVsPc) {
       lastPlayedPlayer = player.black;
+    }
+    if (!isGameOver && isVsPc) {
+      playAsPc();
     }
   }
 
@@ -147,11 +150,14 @@ class _MyChessGamePage extends State<ChessGame> {
     }
   }
 
-  onTapTile(Tile? tile) {
+  onTapTile(Tile? tile) async {
+    print(tile);
     if (tile == null) {
+      print('ERROR 1');
       return;
     }
     if (selectedTile == null) {
+      print('decidiendo...');
       if (tile.char != chrt.empty && lastPlayedPlayer != tile.owner) {
         setState(() {
           selectedTile = tile;
@@ -160,6 +166,7 @@ class _MyChessGamePage extends State<ChessGame> {
         });
       }
     } else {
+      print('jugando $selectedTile');
       setState(() {
         if (checkIfValidPosition(tile, selectedTile)) {
           recordHistory(tile);
@@ -170,21 +177,22 @@ class _MyChessGamePage extends State<ChessGame> {
         restarSelected(tile);
         highlightAvailableOptions();
       });
-      if (!isGameOver && isVsPc && lastPlayedPlayer == player.white) {
-        playAsPc();
+      if (!isGameOver && isVsPc) {
+        await playAsPc();
       }
     }
   }
 
-  void playAsPc() async {
-    Move move = getPlay(getCurrentGameState());
-    // await Future.delayed(const Duration(milliseconds: 500));
+  playAsPc() async {
+    Move move = await getPlay(getCurrentGameState());
+    print('playing $move');
+    // await Future.delayed(const Duration(milliseconds: 1000));
     onTapTile(move.initialTile);
-    // await Future.delayed(const Duration(milliseconds: 500));
+    // await Future.delayed(const Duration(milliseconds: 5000));
     onTapTile(move.finalTile);
   }
 
-  void gameOver(player p) {
+  void gameOver(player p) async {
     setState(() {
       isGameOver = true;
       winner = p;
@@ -192,6 +200,25 @@ class _MyChessGamePage extends State<ChessGame> {
       whiteClockState.currentState?.stopTimer();
     });
     storeMovemntHistory(boardHistory, whiteHistory, blackHistory, winner);
+    // await Future.delayed(const Duration(milliseconds: 500));
+    restartGame();
+    initState();
+  }
+
+  void restartGame() {
+    setState(() {
+      board = createNewBoard();
+      selectedTile = null;
+      graveyardB = [];
+      graveyardW = [];
+      lastPlayedPlayer = player.none;
+      winner = player.none;
+      isGameOver = false;
+      blackHistory.clear();
+      whiteHistory.clear();
+      boardHistory.clear();
+    });
+    resetTimers();
   }
 
   Widget restartButton() {
@@ -199,21 +226,7 @@ class _MyChessGamePage extends State<ChessGame> {
       height: 40,
       width: 150,
       child: ElevatedButton(
-        onPressed: () {
-          setState(() {
-            board = createNewBoard();
-            selectedTile = null;
-            graveyardB = [];
-            graveyardW = [];
-            lastPlayedPlayer = player.none;
-            winner = player.none;
-            isGameOver = false;
-            blackHistory.clear();
-            whiteHistory.clear();
-            boardHistory.clear();
-          });
-          resetTimers();
-        },
+        onPressed: restartGame,
         child: const Text(
           'Restart',
         ),

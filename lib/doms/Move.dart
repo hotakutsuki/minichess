@@ -1,3 +1,5 @@
+import 'package:minichess/doms/GameState.dart';
+
 import '../utils/Enums.dart';
 import '../utils/utils.dart';
 import 'Tile.dart';
@@ -15,25 +17,24 @@ class Move {
         '->${finalTile?.i}${finalTile?.j}';
   }
 
-  getOppositeI(int n) {
+  static getOppositeI(int n) {
     return 3 - n;
   }
 
-  getOppositej(int n) {
+  static getOppositej(int n) {
     return 2 - n;
   }
 
-  String getMoveCode() {
+  String getMoveCode(playersTurn) {
     if (isFromGraveyard(initialTile)) {
-      return '${initialTile.char.name[0]}${initialTile.char.name[1]}'
-          '.${finalTile?.i}${finalTile?.j}';
+      return '${initialTile.char.name}||${finalTile!.i}|${finalTile!.j}';
     } else {
       if (playersTurn == player.white) {
-        return '${getOppositeI(initialTile!.i!)}${getOppositej(initialTile!.j!)}'
-            '.${getOppositeI(finalTile!.i!)!}${getOppositej(finalTile!.j!)}';
+        return '${getOppositeI(initialTile!.i!)}|${getOppositej(initialTile!.j!)}'
+            '|${getOppositeI(finalTile!.i!)!}|${getOppositej(finalTile!.j!)}';
       }
       if (playersTurn == player.black) {
-        return '${initialTile?.i}${initialTile?.j}.${finalTile?.i}${finalTile?.j}';
+        return '${initialTile?.i}|${initialTile?.j}|${finalTile?.i}|${finalTile?.j}';
       }
     }
     return 'error';

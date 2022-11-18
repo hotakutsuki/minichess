@@ -58,7 +58,7 @@ class GameState {
     List<String> arr = getStateKey();
     String s = '';
     for (var e in arr) {
-      s += '$e.';
+      s += '$e|';
     }
     return s;
   }

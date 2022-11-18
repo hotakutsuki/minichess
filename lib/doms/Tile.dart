@@ -20,6 +20,6 @@ class Tile {
 
   @override
   String toString() {
-    return char.toString();
+    return '${char.name} $i$j';
   }
 }
