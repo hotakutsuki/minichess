@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:minichess/screens/HomeScreen.dart';
 import 'package:minichess/widgets/ChessGame.dart';
 
 void main() {
@@ -32,6 +33,6 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
-    return const ChessGame();
+    return HomeScreen();
   }
 }

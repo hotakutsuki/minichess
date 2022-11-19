@@ -72,24 +72,51 @@ List<RemoteRecord> createRemoteHistoryArray(
 RemoteRecord createRecord(String gameState, Move move, String matchId,
     bool winner, player playersTurn) {
   return RemoteRecord(
-      gameState, move.getMoveCode(playersTurn), winner ? '1' : '0', matchId);
+      gameState, move.getMoveCode(), winner ? '1' : '0', matchId);
+}
+
+Move? getCheckMate(GameState gs) {
+  Move? move;
+  getMyPieces(gs).forEach((p) {
+    getMoves(p, gs).forEach((m) {
+      if (m.finalTile.char == chrt.king) {
+        move = m;
+      }
+    });
+  });
+  return move;
 }
 
 Future<Move> getPlay(GameState gameState) async {
-  print('getting play...');
+  Move? checkMate = getCheckMate(gameState);
+  if (checkMate != null) {
+    return checkMate;
+  }
+
+  if (!(await isConnected())) {
+    print('Playing without internet...');
+    return makeLocalDecision(gameState);
+  }
+
   String stateKey = gameState.toString();
+
   List<String> remotePlaysResponse = await fetchRemotePlays(stateKey);
   if (isNewState(remotePlaysResponse)) {
     print('Playing locally...');
     Move move = makeLocalDecision(gameState);
-    print(move);
+    // print(move);
     return move;
   }
-  print('Playing remotely...');
-  print(gameState);
-  Move move = getRemotePlay(remotePlaysResponse, gameState);
-  print(move);
-  return move;
+  if (gameState.gamemode == gameMode.training && getRandomIO() == 0) {
+    print('Forcing locally by luck');
+    return makeLocalDecision(gameState);
+    // print(move);
+  } else {
+    print('Playing remotely...');
+    print(gameState);
+    return getRemotePlay(remotePlaysResponse, gameState);
+    // print(move);
+  }
 }
 
 isNewState(List<String> remotePlays) {
@@ -103,8 +130,15 @@ Future<List<String>> fetchRemotePlays(String stateKey) async {
   });
   print('\nuri');
   print(uri);
-  var response = await http.get(uri);
+  http.Response response;
+  try {
+    response = await http.get(uri);
+  } catch (e) {
+    print('Network error. playing random');
+    return remotePlays;
+  }
   if (response.statusCode != 200) {
+    print('Response Status code error: ${response.statusCode}');
     return remotePlays;
   }
   RegExp exp = RegExp(
@@ -149,7 +183,7 @@ Move getRemotePlay(List<String> remotePlaysReponse, GameState gs) {
     Tile finalTile = gs.board[int.parse(spliced[2])][int.parse(spliced[3])];
     return Move(initialTile, finalTile, gs.playersTurn);
   }).toList();
-  print(remoteMoves);
+  // print(remoteMoves);
   return getRandomObject(remoteMoves);
 }
 

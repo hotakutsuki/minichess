@@ -1,5 +1,3 @@
-import 'package:minichess/doms/GameState.dart';
-
 import '../utils/Enums.dart';
 import '../utils/utils.dart';
 import 'Tile.dart';
@@ -13,8 +11,8 @@ class Move {
 
   @override
   String toString() {
-    return '${initialTile?.char.name} ${initialTile?.i}${initialTile?.j}'
-        '->${finalTile?.i}${finalTile?.j}';
+    return '${initialTile.char.name} ${initialTile.owner.name} ${initialTile.i}${initialTile.j}'
+        '->${finalTile.char.name} ${finalTile.owner.name} ${finalTile.i}${finalTile.j}';
   }
 
   static getOppositeI(int n) {
@@ -25,7 +23,7 @@ class Move {
     return 2 - n;
   }
 
-  String getMoveCode(playersTurn) {
+  String getMoveCode() {
     if (isFromGraveyard(initialTile)) {
       return '${initialTile.char.name}||${finalTile!.i}|${finalTile!.j}';
     } else {

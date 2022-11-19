@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:minichess/ai/Ai.dart';
 import 'package:minichess/doms/GameState.dart';
+import 'package:minichess/screens/GameOverScreen.dart';
 import 'package:minichess/utils/Enums.dart';
 import 'package:minichess/widgets/ChessBoard.dart';
 import '../doms/Move.dart';
@@ -10,15 +11,15 @@ import 'Clock.dart';
 import 'Graveyard.dart';
 
 class ChessGame extends StatefulWidget {
-  const ChessGame({Key? key}) : super(key: key);
+  const ChessGame({Key? key, required this.gamemode}) : super(key: key);
+
+  final gameMode gamemode;
 
   @override
   State<ChessGame> createState() => _MyChessGamePage();
 }
 
 class _MyChessGamePage extends State<ChessGame> {
-  bool isVsPc = true;
-
   List<List<Tile>> board = [];
   List<Tile> graveyardW = [];
   List<Tile> graveyardB = [];
@@ -33,12 +34,20 @@ class _MyChessGamePage extends State<ChessGame> {
   final GlobalKey<ClockState> whiteClockState = GlobalKey<ClockState>();
   final GlobalKey<ClockState> blackClockState = GlobalKey<ClockState>();
 
+  @override
   initState() {
-    board = createNewBoard();
-    if (isVsPc) {
-      lastPlayedPlayer = player.black;
+    switch (widget.gamemode) {
+      case gameMode.solo:
+        lastPlayedPlayer = player.none;
+        break;
+      case gameMode.training:
+      case gameMode.vs:
+        lastPlayedPlayer = player.black;
     }
-    if (!isGameOver && isVsPc) {
+
+    board = createNewBoard();
+
+    if (!isGameOver && widget.gamemode == gameMode.training) {
       playAsPc();
     }
   }
@@ -61,6 +70,7 @@ class _MyChessGamePage extends State<ChessGame> {
       isBlacksTurn() ? graveyardB : graveyardW,
       isWhitesTurn() ? graveyardB : graveyardW,
       getPlayersTurn(),
+      widget.gamemode,
     );
   }
 
@@ -151,13 +161,10 @@ class _MyChessGamePage extends State<ChessGame> {
   }
 
   onTapTile(Tile? tile) async {
-    print(tile);
     if (tile == null) {
-      print('ERROR 1');
-      return;
+      throw Exception("Error On Tap tile");
     }
     if (selectedTile == null) {
-      print('decidiendo...');
       if (tile.char != chrt.empty && lastPlayedPlayer != tile.owner) {
         setState(() {
           selectedTile = tile;
@@ -166,7 +173,6 @@ class _MyChessGamePage extends State<ChessGame> {
         });
       }
     } else {
-      print('jugando $selectedTile');
       setState(() {
         if (checkIfValidPosition(tile, selectedTile)) {
           recordHistory(tile);
@@ -177,7 +183,10 @@ class _MyChessGamePage extends State<ChessGame> {
         restarSelected(tile);
         highlightAvailableOptions();
       });
-      if (!isGameOver && isVsPc) {
+      if (!isGameOver &&
+          (widget.gamemode == gameMode.training ||
+              (widget.gamemode == gameMode.solo &&
+                  getPlayersTurn() == player.black))) {
         await playAsPc();
       }
     }
@@ -185,10 +194,15 @@ class _MyChessGamePage extends State<ChessGame> {
 
   playAsPc() async {
     Move move = await getPlay(getCurrentGameState());
-    print('playing $move');
-    // await Future.delayed(const Duration(milliseconds: 1000));
+    // getCurrentGameState().printState();
+    print('generated move: $move');
+    if (widget.gamemode == gameMode.solo) {
+      await Future.delayed(const Duration(milliseconds: 500));
+    }
     onTapTile(move.initialTile);
-    // await Future.delayed(const Duration(milliseconds: 5000));
+    if (widget.gamemode == gameMode.solo) {
+      await Future.delayed(const Duration(milliseconds: 500));
+    }
     onTapTile(move.finalTile);
   }
 
@@ -199,10 +213,14 @@ class _MyChessGamePage extends State<ChessGame> {
       blackClockState.currentState?.stopTimer();
       whiteClockState.currentState?.stopTimer();
     });
-    storeMovemntHistory(boardHistory, whiteHistory, blackHistory, winner);
-    // await Future.delayed(const Duration(milliseconds: 500));
-    restartGame();
-    initState();
+    if (await isConnected()) {
+      print('saving match...');
+      storeMovemntHistory(boardHistory, whiteHistory, blackHistory, winner);
+    }
+    if (widget.gamemode == gameMode.training) {
+      restartGame();
+      initState();
+    }
   }
 
   void restartGame() {
@@ -219,19 +237,6 @@ class _MyChessGamePage extends State<ChessGame> {
       boardHistory.clear();
     });
     resetTimers();
-  }
-
-  Widget restartButton() {
-    return SizedBox(
-      height: 40,
-      width: 150,
-      child: ElevatedButton(
-        onPressed: restartGame,
-        child: const Text(
-          'Restart',
-        ),
-      ),
-    );
   }
 
   @override
@@ -261,37 +266,20 @@ class _MyChessGamePage extends State<ChessGame> {
                   key: whiteClockState,
                   player: player.white,
                   gameOver: gameOver),
-              restartButton(),
+              SizedBox(
+                height: 40,
+                width: 150,
+                child: ElevatedButton(
+                  onPressed: restartGame,
+                  child: const Text(
+                    'Restart',
+                  ),
+                ),
+              ),
             ],
           ),
         ),
-        !isGameOver
-            ? const SizedBox()
-            : Container(
-                width: double.infinity,
-                height: double.infinity,
-                color: winner == player.white
-                    ? const Color.fromARGB(225, 255, 255, 255)
-                    : const Color.fromARGB(225, 0, 0, 0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                        'Winner: ${winner == player.white ? 'White' : 'Black'}',
-                        style: TextStyle(
-                            color: winner == player.white
-                                ? Colors.black
-                                : Colors.white,
-                            fontSize: 48,
-                            fontWeight: FontWeight.bold)),
-                    SizedBox(
-                        width: 250,
-                        height: 250,
-                        child: getImage(chrt.queen, winner)),
-                    restartButton(),
-                  ],
-                ),
-              )
+        !isGameOver ? const SizedBox() : GameOverScreen(winner, restartGame)
       ]),
     );
   }

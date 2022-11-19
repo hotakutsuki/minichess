@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:minichess/utils/Enums.dart';
 import '../doms/Tile.dart';
@@ -34,22 +35,40 @@ createNewBoard() {
 Widget getImage(chrt char, player owner) {
   switch (char) {
     case chrt.pawn:
-      return Image.asset(owner == player.white ? 'assets/images/pawnW.png' : 'assets/images/pawnB.png',
+      return Image.asset(
+        owner == player.white
+            ? 'assets/images/pawnW.png'
+            : 'assets/images/pawnB.png',
       );
     case chrt.knight:
-      return Image.asset(owner == player.white ? 'assets/images/knightW.png' : 'assets/images/knightB.png',
+      return Image.asset(
+        owner == player.white
+            ? 'assets/images/knightW.png'
+            : 'assets/images/knightB.png',
       );
     case chrt.king:
-      return Image.asset(owner == player.white ? 'assets/images/kingW.png' : 'assets/images/kingB.png',
+      return Image.asset(
+        owner == player.white
+            ? 'assets/images/kingW.png'
+            : 'assets/images/kingB.png',
       );
     case chrt.bishop:
-      return Image.asset(owner == player.white ? 'assets/images/bishopW.png' : 'assets/images/bishopB.png',
+      return Image.asset(
+        owner == player.white
+            ? 'assets/images/bishopW.png'
+            : 'assets/images/bishopB.png',
       );
     case chrt.rock:
-      return Image.asset(owner == player.white ? 'assets/images/rockW.png' : 'assets/images/rockB.png',
+      return Image.asset(
+        owner == player.white
+            ? 'assets/images/rockW.png'
+            : 'assets/images/rockB.png',
       );
     case chrt.queen:
-      return Image.asset(owner == player.white ? 'assets/images/queenW.png' : 'assets/images/queenB.png',
+      return Image.asset(
+        owner == player.white
+            ? 'assets/images/queenW.png'
+            : 'assets/images/queenB.png',
       );
     case chrt.empty:
       return const SizedBox.expand();
@@ -129,6 +148,12 @@ bool isFromGraveyard(Tile tile) {
   return tile.i == null;
 }
 
+Future<bool> isConnected() async {
+  var connectivityResult = await (Connectivity().checkConnectivity());
+  return connectivityResult == ConnectivityResult.mobile ||
+      connectivityResult == ConnectivityResult.wifi;
+}
+
 bool checkIfValidPosition(Tile tile, Tile? selectedTile) {
   if (selectedTile == null) {
     return false;
@@ -147,7 +172,7 @@ bool checkIfValidPosition(Tile tile, Tile? selectedTile) {
           }
         case chrt.king:
           return (selectedTile.i! + 1 == tile.i &&
-              selectedTile.j! + 1 == tile.j) ||
+                  selectedTile.j! + 1 == tile.j) ||
               (selectedTile.i! + 1 == tile.i && selectedTile.j == tile.j) ||
               (selectedTile.i! + 1 == tile.i &&
                   selectedTile.j! - 1 == tile.j) ||
@@ -159,7 +184,7 @@ bool checkIfValidPosition(Tile tile, Tile? selectedTile) {
               (selectedTile.i! - 1 == tile.i && selectedTile.j! - 1 == tile.j);
         case chrt.bishop:
           return (selectedTile.i! + 1 == tile.i &&
-              selectedTile.j! + 1 == tile.j) ||
+                  selectedTile.j! + 1 == tile.j) ||
               (selectedTile.i! + 1 == tile.i &&
                   selectedTile.j! - 1 == tile.j) ||
               (selectedTile.i! - 1 == tile.i &&
@@ -173,7 +198,7 @@ bool checkIfValidPosition(Tile tile, Tile? selectedTile) {
         case chrt.knight:
           if (selectedTile.owner == player.white) {
             return (selectedTile.i! + 1 == tile.i &&
-                selectedTile.j == tile.j) ||
+                    selectedTile.j == tile.j) ||
                 (selectedTile.i == tile.i && selectedTile.j! + 1 == tile.j) ||
                 (selectedTile.i == tile.i && selectedTile.j! - 1 == tile.j) ||
                 (selectedTile.i! - 1 == tile.i && selectedTile.j == tile.j) ||
@@ -183,7 +208,7 @@ bool checkIfValidPosition(Tile tile, Tile? selectedTile) {
                     selectedTile.j! - 1 == tile.j);
           } else {
             return (selectedTile.i! + 1 == tile.i &&
-                selectedTile.j == tile.j) ||
+                    selectedTile.j == tile.j) ||
                 (selectedTile.i == tile.i && selectedTile.j! + 1 == tile.j) ||
                 (selectedTile.i == tile.i && selectedTile.j! - 1 == tile.j) ||
                 (selectedTile.i! - 1 == tile.i && selectedTile.j == tile.j) ||
