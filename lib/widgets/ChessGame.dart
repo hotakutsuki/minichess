@@ -20,11 +20,14 @@ class ChessGame extends StatefulWidget {
 }
 
 class _MyChessGamePage extends State<ChessGame> {
-  List<List<Tile>> board = [];
-  List<Tile> graveyardW = [];
-  List<Tile> graveyardB = [];
+  late GameState gs;
+
+  // List<List<Tile>> board = [];
+  // List<Tile> graveyardW = [];
+  // List<Tile> graveyardB = [];
   Tile? selectedTile;
-  player lastPlayedPlayer = player.black;
+
+  late player playersTurn;
   player winner = player.none;
   bool isGameOver = false;
   List<String> boardHistory = [];
@@ -36,106 +39,65 @@ class _MyChessGamePage extends State<ChessGame> {
 
   @override
   initState() {
-    switch (widget.gamemode) {
-      case gameMode.solo:
-        lastPlayedPlayer = player.none;
-        break;
-      case gameMode.training:
-      case gameMode.vs:
-        lastPlayedPlayer = player.black;
-    }
-
-    board = createNewBoard();
-
+    // List<Tile> empty = [];
+    // List<Tile> empty2 = [];
+    gs = GameState.named(
+      board: createNewBoard(),
+      enemyGraveyard: <Tile>[],
+      myGraveyard: <Tile>[],
+    );
+    playersTurn = player.white;
+    // playersTurn = widget.gamemode == gameMode.solo ? player.none : player.white;
     if (!isGameOver && widget.gamemode == gameMode.training) {
       playAsPc();
     }
   }
 
-  bool isWhitesTurn() {
-    return lastPlayedPlayer == player.black || lastPlayedPlayer == player.none;
-  }
-
-  bool isBlacksTurn() {
-    return lastPlayedPlayer == player.white;
-  }
-
-  player getPlayersTurn() {
-    return isBlacksTurn() ? player.black : player.white;
-  }
+  // bool isWhitesTurn() {
+  //   return gs.playersTurn == player.white;
+  // }
+  //
+  // bool isBlacksTurn() {
+  //   return gs.playersTurn == player.black;
+  // }
+  //
+  // player getPlayersTurn() {
+  //   return gs.playersTurn;
+  // }
 
   GameState getCurrentGameState() {
-    return GameState(
-      board,
-      isBlacksTurn() ? graveyardB : graveyardW,
-      isWhitesTurn() ? graveyardB : graveyardW,
-      getPlayersTurn(),
-      widget.gamemode,
-    );
+    return gs;
+    // return GameState(
+    //   board,
+    //   isBlacksTurn() ? graveyardB : graveyardW,
+    //   isWhitesTurn() ? graveyardB : graveyardW,
+    //   getPlayersTurn(),
+    //   widget.gamemode,
+    // );
   }
 
-  isDIfferentTile(Tile newTile) {
-    return selectedTile!.i != newTile.i || selectedTile!.j != newTile.j;
-  }
-
-  void sendPieceToGrave(Tile newTile) {
-    if (board[newTile.i!][newTile.j!].char != chrt.empty) {
-      if (newTile.owner == player.white) {
-        graveyardB.add(Tile.fromParameters(newTile.char, player.black));
-      } else {
-        graveyardW.add(Tile.fromParameters(newTile.char, player.white));
-      }
-    }
-  }
-
-  void transformPawn(Tile newTile) {
-    if (selectedTile!.char == chrt.pawn) {
-      if (selectedTile!.owner == player.white && newTile.i == 0) {
-        newTile.char = chrt.knight;
-      }
-      if (selectedTile!.owner == player.black && newTile.i == 3) {
-        newTile.char = chrt.knight;
-      }
-    }
-  }
-
-  void checkIfWin(Tile newTile) {
-    if (newTile.char == chrt.king) {
-      gameOver(selectedTile!.owner);
-    }
-  }
-
-  void rewritePosition(Tile newTile) {
-    checkIfWin(newTile);
-    newTile.char = selectedTile!.char;
-    newTile.owner = selectedTile!.owner;
-    transformPawn(newTile);
-    if (isFromGraveyard(selectedTile!)) {
-      graveyardB.removeWhere((element) => element.isSelected);
-      graveyardW.removeWhere((element) => element.isSelected);
-    } else {
-      selectedTile!.char = chrt.empty;
-      selectedTile!.owner = player.none;
-    }
-  }
+  // isDIfferentTile(Tile newTile) {
+  //   return selectedTile!.i != newTile.i || selectedTile!.j != newTile.j;
+  // }
 
   highlightAvailableOptions() {
-    for (var row in board) {
+    for (var row in gs.board) {
       for (var v in row) {
-        v.isOption = checkIfValidPosition(v, selectedTile);
+        v.isOption =
+            selectedTile != null && checkIfValidMove(Move(selectedTile!, v));
       }
     }
   }
 
   void setTimersAndPlayers() {
-    if (selectedTile!.owner == player.white) {
+    if (playersTurn == player.white) {
       whiteClockState.currentState?.stopTimer();
       blackClockState.currentState?.startTimer();
-      lastPlayedPlayer = player.white;
+      // lastPlayedPlayer = player.white;
     } else {
       whiteClockState.currentState?.startTimer();
       blackClockState.currentState?.stopTimer();
-      lastPlayedPlayer = player.black;
+      // lastPlayedPlayer = player.black;
     }
   }
 
@@ -153,19 +115,24 @@ class _MyChessGamePage extends State<ChessGame> {
 
   void recordHistory(Tile tile) {
     boardHistory.add(getCurrentGameState().toString());
-    if (selectedTile!.owner == player.white) {
-      whiteHistory.add(Move(selectedTile!, tile, getPlayersTurn()));
+    if (playersTurn == player.white) {
+      whiteHistory.add(Move(selectedTile!, tile));
     } else {
-      blackHistory.add(Move(selectedTile!, tile, getPlayersTurn()));
+      blackHistory.add(Move(selectedTile!, tile));
     }
   }
 
-  onTapTile(Tile? tile) async {
-    if (tile == null) {
-      throw Exception("Error On Tap tile");
+  void togglePlayersTurn() {
+    if (playersTurn == player.white) {
+      playersTurn = player.black;
+    } else if (playersTurn == player.black) {
+      playersTurn = player.white;
     }
+  }
+
+  onTapTile(Tile tile) async {
     if (selectedTile == null) {
-      if (tile.char != chrt.empty && lastPlayedPlayer != tile.owner) {
+      if (tile.char != chrt.empty && (tile.owner == possession.mine)) {
         setState(() {
           selectedTile = tile;
           tile.isSelected = true;
@@ -174,11 +141,16 @@ class _MyChessGamePage extends State<ChessGame> {
       }
     } else {
       setState(() {
-        if (checkIfValidPosition(tile, selectedTile)) {
+        if (checkIfValidMove(Move(selectedTile!, tile))) {
           recordHistory(tile);
           setTimersAndPlayers();
-          sendPieceToGrave(tile);
-          rewritePosition(tile);
+          Move move = Move(selectedTile!, tile);
+          if (checkIfWin(move)) {
+            gameOver(playersTurn);
+          }
+          gs.changeGameState(move);
+          gs.rotate();
+          togglePlayersTurn();
         }
         restarSelected(tile);
         highlightAvailableOptions();
@@ -186,23 +158,22 @@ class _MyChessGamePage extends State<ChessGame> {
       if (!isGameOver &&
           (widget.gamemode == gameMode.training ||
               (widget.gamemode == gameMode.solo &&
-                  getPlayersTurn() == player.black))) {
+                  playersTurn == player.black))) {
         await playAsPc();
       }
     }
   }
 
   playAsPc() async {
-    Move move = await getPlay(getCurrentGameState());
-    // getCurrentGameState().printState();
+    Move move = await getPlay(getCurrentGameState(), widget.gamemode);
     print('generated move: $move');
-    if (widget.gamemode == gameMode.solo) {
-      await Future.delayed(const Duration(milliseconds: 500));
-    }
+    // if (widget.gamemode == gameMode.solo) {
+    await Future.delayed(const Duration(milliseconds: 500));
+    // }
     onTapTile(move.initialTile);
-    if (widget.gamemode == gameMode.solo) {
-      await Future.delayed(const Duration(milliseconds: 500));
-    }
+    // if (widget.gamemode == gameMode.solo) {
+    await Future.delayed(const Duration(milliseconds: 500));
+    // }
     onTapTile(move.finalTile);
   }
 
@@ -219,17 +190,12 @@ class _MyChessGamePage extends State<ChessGame> {
     }
     if (widget.gamemode == gameMode.training) {
       restartGame();
-      initState();
     }
   }
 
   void restartGame() {
     setState(() {
-      board = createNewBoard();
       selectedTile = null;
-      graveyardB = [];
-      graveyardW = [];
-      lastPlayedPlayer = player.none;
       winner = player.none;
       isGameOver = false;
       blackHistory.clear();
@@ -237,6 +203,7 @@ class _MyChessGamePage extends State<ChessGame> {
       boardHistory.clear();
     });
     resetTimers();
+    initState();
   }
 
   @override
@@ -258,10 +225,23 @@ class _MyChessGamePage extends State<ChessGame> {
                       player: player.black,
                       gameOver: gameOver)),
               Graveyard(
-                  graveyard: graveyardB, p: player.black, onTapTile: onTapTile),
-              ChessBoard(matrix: board, onTapTile: onTapTile),
+                  graveyard: playersTurn == player.white
+                      ? gs.enemyGraveyard
+                      : gs.myGraveyard,
+                  p: player.black,
+                  onTapTile: onTapTile),
+              RotatedBox(
+                  quarterTurns: playersTurn == player.white ? 0 : 2,
+                  child: ChessBoard(
+                      matrix: gs.board,
+                      onTapTile: onTapTile,
+                      playersTurn: playersTurn)),
               Graveyard(
-                  graveyard: graveyardW, p: player.white, onTapTile: onTapTile),
+                  graveyard: playersTurn == player.white
+                      ? gs.myGraveyard
+                      : gs.enemyGraveyard,
+                  p: player.white,
+                  onTapTile: onTapTile),
               Clock(
                   key: whiteClockState,
                   player: player.white,
@@ -276,6 +256,7 @@ class _MyChessGamePage extends State<ChessGame> {
                   ),
                 ),
               ),
+              Text('${playersTurn ?? 'none'}'),
             ],
           ),
         ),

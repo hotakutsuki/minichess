@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
+import '../doms/Tile.dart';
 import 'ChessTile.dart';
 
 class ChessBoard extends StatelessWidget {
-  const ChessBoard({Key? key, required this.matrix, required this.onTapTile}) : super(key: key);
+  const ChessBoard(
+      {Key? key,
+      required this.matrix,
+      required this.onTapTile,
+      this.playersTurn})
+      : super(key: key);
 
-  final matrix;
+  final List<List<Tile>> matrix;
   final onTapTile;
+  final playersTurn;
 
   getTable() {
     var table = matrix.asMap().entries.map<TableRow>((row) {
@@ -13,7 +20,11 @@ class ChessBoard extends StatelessWidget {
       return TableRow(
           children: row.value.asMap().entries.map<Widget>((v) {
         int j = v.key;
-        return ChessTile(tile: matrix[i][j], onTapTile: onTapTile);
+        return ChessTile(
+          tile: matrix.reversed.toList()[i][j],
+          onTapTile: onTapTile,
+          playersTurn: playersTurn,
+        );
       }).toList());
     }).toList();
     return table;

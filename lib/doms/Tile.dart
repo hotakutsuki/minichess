@@ -7,12 +7,12 @@ class Tile {
         char = otherTile.char,
         owner = otherTile.owner;
 
-  Tile.fromParameters(chrt nC, player nP) :
+  Tile.fromParameters(chrt nC, possession nP) :
         char = nC,
         owner = nP;
 
   chrt char;
-  player owner;
+  possession owner;
   int? i;
   int? j;
   bool isSelected = false;
@@ -20,6 +20,6 @@ class Tile {
 
   @override
   String toString() {
-    return '${char.name} $i$j';
+    return '${owner.name}${char.name}$i$j';
   }
 }

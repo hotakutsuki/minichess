@@ -2,30 +2,31 @@ import 'dart:math';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:minichess/utils/Enums.dart';
+import '../doms/Move.dart';
 import '../doms/Tile.dart';
 
 createNewBoard() {
   var matrix = [
     [
-      Tile(chrt.rock, player.black, 0, 0),
-      Tile(chrt.king, player.black, 0, 1),
-      Tile(chrt.bishop, player.black, 0, 2)
+      Tile(chrt.bishop, possession.mine, 0, 0),
+      Tile(chrt.king, possession.mine, 1, 0),
+      Tile(chrt.rock, possession.mine, 2, 0)
     ],
     [
-      Tile(chrt.empty, player.none, 1, 0),
-      Tile(chrt.pawn, player.black, 1, 1),
-      Tile(chrt.empty, player.none, 1, 2)
+      Tile(chrt.empty, possession.none, 0, 1),
+      Tile(chrt.pawn, possession.mine, 1, 1),
+      Tile(chrt.empty, possession.none, 2, 1)
     ],
     [
-      Tile(chrt.empty, player.none, 2, 0),
-      Tile(chrt.pawn, player.white, 2, 1),
-      Tile(chrt.empty, player.none, 2, 2)
+      Tile(chrt.empty, possession.none, 0, 2),
+      Tile(chrt.pawn, possession.enemy, 1, 2),
+      Tile(chrt.empty, possession.none, 2, 2)
     ],
     [
-      Tile(chrt.bishop, player.white, 3, 0),
-      Tile(chrt.king, player.white, 3, 1),
-      Tile(chrt.rock, player.white, 3, 2)
-    ]
+      Tile(chrt.rock, possession.enemy, 0, 3),
+      Tile(chrt.king, possession.enemy, 1, 3),
+      Tile(chrt.bishop, possession.enemy, 2, 3)
+    ],
   ];
 
   // printMatrix(matrix);
@@ -154,69 +155,63 @@ Future<bool> isConnected() async {
       connectivityResult == ConnectivityResult.wifi;
 }
 
-bool checkIfValidPosition(Tile tile, Tile? selectedTile) {
-  if (selectedTile == null) {
-    return false;
-  } else if (isFromGraveyard(selectedTile)) {
-    return tile.char == chrt.empty;
+bool checkIfValidMove(Move m) {
+  if (isFromGraveyard(m.initialTile)) {
+    return m.finalTile.char == chrt.empty;
   } else {
-    if (selectedTile.owner == tile.owner) {
+    if (m.initialTile.owner == m.finalTile.owner) {
       return false;
     } else {
-      switch (selectedTile.char) {
+      switch (m.initialTile.char) {
         case chrt.pawn:
-          if (selectedTile.owner == player.white) {
-            return selectedTile.i! - 1 == tile.i && selectedTile.j == tile.j;
+          // print(selectedTile);
+          if (m.initialTile.owner == possession.mine) {
+            return m.initialTile.i! == m.finalTile.i && m.initialTile.j == (m.finalTile.j! - 1);
           } else {
-            return selectedTile.i! + 1 == tile.i && selectedTile.j == tile.j;
+            return m.initialTile.i! == m.finalTile.i && m.initialTile.j == (m.finalTile.j! + 1);
           }
         case chrt.king:
-          return (selectedTile.i! + 1 == tile.i &&
-                  selectedTile.j! + 1 == tile.j) ||
-              (selectedTile.i! + 1 == tile.i && selectedTile.j == tile.j) ||
-              (selectedTile.i! + 1 == tile.i &&
-                  selectedTile.j! - 1 == tile.j) ||
-              (selectedTile.i == tile.i && selectedTile.j! + 1 == tile.j) ||
-              (selectedTile.i == tile.i && selectedTile.j! - 1 == tile.j) ||
-              (selectedTile.i! - 1 == tile.i &&
-                  selectedTile.j! + 1 == tile.j) ||
-              (selectedTile.i! - 1 == tile.i && selectedTile.j == tile.j) ||
-              (selectedTile.i! - 1 == tile.i && selectedTile.j! - 1 == tile.j);
+          return (m.initialTile.i! + 1 == m.finalTile.i &&
+                  m.initialTile.j! + 1 == m.finalTile.j) ||
+              (m.initialTile.i! + 1 == m.finalTile.i && m.initialTile.j == m.finalTile.j) ||
+              (m.initialTile.i! + 1 == m.finalTile.i &&
+                  m.initialTile.j! - 1 == m.finalTile.j) ||
+              (m.initialTile.i == m.finalTile.i && m.initialTile.j! + 1 == m.finalTile.j) ||
+              (m.initialTile.i == m.finalTile.i && m.initialTile.j! - 1 == m.finalTile.j) ||
+              (m.initialTile.i! - 1 == m.finalTile.i &&
+                  m.initialTile.j! + 1 == m.finalTile.j) ||
+              (m.initialTile.i! - 1 == m.finalTile.i && m.initialTile.j == m.finalTile.j) ||
+              (m.initialTile.i! - 1 == m.finalTile.i && m.initialTile.j! - 1 == m.finalTile.j);
         case chrt.bishop:
-          return (selectedTile.i! + 1 == tile.i &&
-                  selectedTile.j! + 1 == tile.j) ||
-              (selectedTile.i! + 1 == tile.i &&
-                  selectedTile.j! - 1 == tile.j) ||
-              (selectedTile.i! - 1 == tile.i &&
-                  selectedTile.j! + 1 == tile.j) ||
-              (selectedTile.i! - 1 == tile.i && selectedTile.j! - 1 == tile.j);
+          return (m.initialTile.i! + 1 == m.finalTile.i &&
+                  m.initialTile.j! + 1 == m.finalTile.j) ||
+              (m.initialTile.i! + 1 == m.finalTile.i &&
+                  m.initialTile.j! - 1 == m.finalTile.j) ||
+              (m.initialTile.i! - 1 == m.finalTile.i &&
+                  m.initialTile.j! + 1 == m.finalTile.j) ||
+              (m.initialTile.i! - 1 == m.finalTile.i && m.initialTile.j! - 1 == m.finalTile.j);
         case chrt.rock:
-          return (selectedTile.i! + 1 == tile.i && selectedTile.j == tile.j) ||
-              (selectedTile.i == tile.i && selectedTile.j! + 1 == tile.j) ||
-              (selectedTile.i == tile.i && selectedTile.j! - 1 == tile.j) ||
-              (selectedTile.i! - 1 == tile.i && selectedTile.j == tile.j);
+          return (m.initialTile.i! + 1 == m.finalTile.i && m.initialTile.j == m.finalTile.j) ||
+              (m.initialTile.i == m.finalTile.i && m.initialTile.j! + 1 == m.finalTile.j) ||
+              (m.initialTile.i == m.finalTile.i && m.initialTile.j! - 1 == m.finalTile.j) ||
+              (m.initialTile.i! - 1 == m.finalTile.i && m.initialTile.j == m.finalTile.j);
         case chrt.knight:
-          if (selectedTile.owner == player.white) {
-            return (selectedTile.i! + 1 == tile.i &&
-                    selectedTile.j == tile.j) ||
-                (selectedTile.i == tile.i && selectedTile.j! + 1 == tile.j) ||
-                (selectedTile.i == tile.i && selectedTile.j! - 1 == tile.j) ||
-                (selectedTile.i! - 1 == tile.i && selectedTile.j == tile.j) ||
-                (selectedTile.i! - 1 == tile.i &&
-                    selectedTile.j! + 1 == tile.j) ||
-                (selectedTile.i! - 1 == tile.i &&
-                    selectedTile.j! - 1 == tile.j);
-          } else {
-            return (selectedTile.i! + 1 == tile.i &&
-                    selectedTile.j == tile.j) ||
-                (selectedTile.i == tile.i && selectedTile.j! + 1 == tile.j) ||
-                (selectedTile.i == tile.i && selectedTile.j! - 1 == tile.j) ||
-                (selectedTile.i! - 1 == tile.i && selectedTile.j == tile.j) ||
-                (selectedTile.i! + 1 == tile.i &&
-                    selectedTile.j! + 1 == tile.j) ||
-                (selectedTile.i! + 1 == tile.i &&
-                    selectedTile.j! - 1 == tile.j);
-          }
+          if (m.initialTile.owner == player.white) {
+          return (m.initialTile.j! + 1 == m.finalTile.j && m.initialTile.i == m.finalTile.i) ||
+              (m.initialTile.j == m.finalTile.j && m.initialTile.i! + 1 == m.finalTile.i) ||
+              (m.initialTile.j == m.finalTile.j && m.initialTile.i! - 1 == m.finalTile.i) ||
+              (m.initialTile.j! - 1 == m.finalTile.j && m.initialTile.i == m.finalTile.i) ||
+              (m.initialTile.j! + 1 == m.finalTile.j &&
+                  m.initialTile.i! + 1 == m.finalTile.i) ||
+              (m.initialTile.j! + 1 == m.finalTile.j && m.initialTile.i! - 1 == m.finalTile.i);
+        } else {
+            return (m.initialTile.j! + 1 == m.finalTile.j && m.initialTile.i == m.finalTile.i) ||
+                (m.initialTile.j == m.finalTile.j && m.initialTile.i! + 1 == m.finalTile.i) ||
+                (m.initialTile.j == m.finalTile.j && m.initialTile.i! - 1 == m.finalTile.i) ||
+                (m.initialTile.j! - 1 == m.finalTile.j && m.initialTile.i == m.finalTile.i) ||
+                (m.initialTile.j! - 1 == m.finalTile.j && m.initialTile.i! + 1 == m.finalTile.i) ||
+                (m.initialTile.j! - 1 == m.finalTile.j && m.initialTile.i! - 1 == m.finalTile.i);
+        }
         case chrt.empty:
           return false;
         case chrt.queen:
@@ -224,6 +219,10 @@ bool checkIfValidPosition(Tile tile, Tile? selectedTile) {
       }
     }
   }
+}
+
+bool checkIfWin(Move move) {
+  return move.finalTile.char == chrt.king;
 }
 
 // void sleep(Duration duration) {

@@ -21,8 +21,6 @@ const String victoryEntry = 'entry.888995238';
 const String matchIdEntry = 'entry.423913528';
 const String metadatoEntry = 'entry.196101266';
 
-rotateMatrix(List<String> matrix) {}
-
 storeMovemntHistory(
   List<String> boardHistory,
   List<Move> whiteHistory,
@@ -87,10 +85,56 @@ Move? getCheckMate(GameState gs) {
   return move;
 }
 
-Future<Move> getPlay(GameState gameState) async {
+bool isInCheck(GameState gs) {
+  bool isInCheck = false;
+  for (var enemyTile in getEnemyPieces(gs)) {
+    for (var row in gs.board) {
+      for (var tile in row) {
+        Move m = Move(enemyTile, tile);
+        if (checkIfValidMove(m) &&
+            tile.char == chrt.king) {
+          isInCheck = true;
+        }
+      }
+    }
+  }
+  return isInCheck;
+}
+
+Move? runFromCheckmate(GameState gameState) {
+  List<Tile> myPieces = getMyPieces(gameState);
+  Move? result;
+  List<Move> moves = [];
+  for (var myPiece in myPieces) {
+    List<Move> myMoves = getMoves(myPiece, gameState);
+    for (var move in myMoves) {
+      GameState newGameState = GameState.clone(gameState);
+      newGameState.changeGameState(move);
+      if (!isInCheck(newGameState)) {
+        print('found a move');
+        moves.add(move);
+      }
+    }
+  }
+  if (moves.isNotEmpty){
+    result = getRandomObject(moves);
+    print('result:$result');
+  }
+  return result;
+}
+
+Future<Move> getPlay(GameState gameState, gameMode gamemode) async {
   Move? checkMate = getCheckMate(gameState);
   if (checkMate != null) {
     return checkMate;
+  }
+
+  if (isInCheck(gameState)) {
+    print('im in check');
+    Move? runFromCheckMate = runFromCheckmate(gameState);
+    if (runFromCheckMate != null) {
+      return runFromCheckMate;
+    }
   }
 
   if (!(await isConnected())) {
@@ -107,7 +151,7 @@ Future<Move> getPlay(GameState gameState) async {
     // print(move);
     return move;
   }
-  if (gameState.gamemode == gameMode.training && getRandomIO() == 0) {
+  if (gamemode == gameMode.training && getRandomIO() == 0) {
     print('Forcing locally by luck');
     return makeLocalDecision(gameState);
     // print(move);
@@ -120,7 +164,7 @@ Future<Move> getPlay(GameState gameState) async {
 }
 
 isNewState(List<String> remotePlays) {
-  return remotePlays.length <= 0;
+  return remotePlays.isEmpty;
 }
 
 Future<List<String>> fetchRemotePlays(String stateKey) async {
@@ -163,25 +207,13 @@ Move getRemotePlay(List<String> remotePlaysReponse, GameState gs) {
   List<Move> remoteMoves = remotePlaysReponse.map((resp) {
     var spliced = resp.split('|');
     if (isInt(spliced[0])) {
-      if (gs.playersTurn == player.white) {
-        return Move(
-            gs.board[Move.getOppositeI(int.parse(spliced[0]))]
-                [Move.getOppositej(int.parse(spliced[1]))],
-            gs.board[Move.getOppositeI(int.parse(spliced[2]))]
-                [Move.getOppositej(int.parse(spliced[3]))],
-            gs.playersTurn);
-      } else {
-        return Move(
-          gs.board[int.parse(spliced[0])][int.parse(spliced[1])],
-          gs.board[int.parse(spliced[2])][int.parse(spliced[3])],
-          gs.playersTurn,
-        );
-      }
+      return Move(gs.board[int.parse(spliced[0])][int.parse(spliced[1])],
+          gs.board[int.parse(spliced[2])][int.parse(spliced[3])]);
     }
     chrt char = getCharFromInitials(spliced[0]);
     Tile initialTile = gs.myGraveyard.firstWhere((t) => t.char == char);
     Tile finalTile = gs.board[int.parse(spliced[2])][int.parse(spliced[3])];
-    return Move(initialTile, finalTile, gs.playersTurn);
+    return Move(initialTile, finalTile);
   }).toList();
   // print(remoteMoves);
   return getRandomObject(remoteMoves);
@@ -208,11 +240,20 @@ Move makeLocalDecision(GameState gameState) {
   return makeLocalDecision(gameState);
 }
 
+List<Tile> getEnemyPieces(GameState gameState) {
+  List<Tile> enemyPieces = [];
+  enemyPieces.addAll(gameState.enemyGraveyard);
+  for (var row in gameState.board) {
+    enemyPieces.addAll(row.where((Tile t) => t.owner == possession.enemy));
+  }
+  return enemyPieces;
+}
+
 List<Tile> getMyPieces(GameState gameState) {
   List<Tile> myPieces = [];
   myPieces.addAll(gameState.myGraveyard);
   for (var row in gameState.board) {
-    myPieces.addAll(row.where((Tile t) => t.owner == gameState.playersTurn));
+    myPieces.addAll(row.where((Tile t) => t.owner == possession.mine));
   }
 
   return myPieces;
@@ -222,8 +263,9 @@ List<Move> getMoves(Tile myPiece, GameState gameState) {
   List<Move> moves = [];
   for (var row in gameState.board) {
     for (var tile in row) {
-      if (checkIfValidPosition(tile, myPiece)) {
-        moves.add(Move(myPiece, tile, gameState.playersTurn));
+      Move m = Move(myPiece, tile);
+      if (checkIfValidMove(m)) {
+        moves.add(m);
       }
     }
   }
