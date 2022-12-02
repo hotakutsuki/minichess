@@ -65,16 +65,16 @@ class _MyChessGamePage extends State<ChessGame> {
   //   return gs.playersTurn;
   // }
 
-  GameState getCurrentGameState() {
-    return gs;
-    // return GameState(
-    //   board,
-    //   isBlacksTurn() ? graveyardB : graveyardW,
-    //   isWhitesTurn() ? graveyardB : graveyardW,
-    //   getPlayersTurn(),
-    //   widget.gamemode,
-    // );
-  }
+  // GameState getCurrentGameState() {
+  //   return gs;
+  //   // return GameState(
+  //   //   board,
+  //   //   isBlacksTurn() ? graveyardB : graveyardW,
+  //   //   isWhitesTurn() ? graveyardB : graveyardW,
+  //   //   getPlayersTurn(),
+  //   //   widget.gamemode,
+  //   // );
+  // }
 
   // isDIfferentTile(Tile newTile) {
   //   return selectedTile!.i != newTile.i || selectedTile!.j != newTile.j;
@@ -84,7 +84,7 @@ class _MyChessGamePage extends State<ChessGame> {
     for (var row in gs.board) {
       for (var v in row) {
         v.isOption =
-            selectedTile != null && checkIfValidMove(Move(selectedTile!, v));
+            selectedTile != null && checkIfValidMove(Move(selectedTile!, v), gs, true);
       }
     }
   }
@@ -114,7 +114,7 @@ class _MyChessGamePage extends State<ChessGame> {
   }
 
   void recordHistory(Tile tile) {
-    boardHistory.add(getCurrentGameState().toString());
+    boardHistory.add(gs.toString());
     if (playersTurn == player.white) {
       whiteHistory.add(Move(selectedTile!, tile));
     } else {
@@ -141,7 +141,7 @@ class _MyChessGamePage extends State<ChessGame> {
       }
     } else {
       setState(() {
-        if (checkIfValidMove(Move(selectedTile!, tile))) {
+        if (checkIfValidMove(Move(selectedTile!, tile), gs, true)) {
           recordHistory(tile);
           setTimersAndPlayers();
           Move move = Move(selectedTile!, tile);
@@ -165,14 +165,14 @@ class _MyChessGamePage extends State<ChessGame> {
   }
 
   playAsPc() async {
-    Move move = await getPlay(getCurrentGameState(), widget.gamemode);
+    Move move = await getPlay(gs, widget.gamemode);
     print('generated move: $move');
     // if (widget.gamemode == gameMode.solo) {
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 100));
     // }
     onTapTile(move.initialTile);
     // if (widget.gamemode == gameMode.solo) {
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 100));
     // }
     onTapTile(move.finalTile);
   }
@@ -188,6 +188,7 @@ class _MyChessGamePage extends State<ChessGame> {
       print('saving match...');
       storeMovemntHistory(boardHistory, whiteHistory, blackHistory, winner);
     }
+    await Future.delayed(const Duration(milliseconds: 100));
     if (widget.gamemode == gameMode.training) {
       restartGame();
     }

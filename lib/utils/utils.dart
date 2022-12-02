@@ -2,6 +2,8 @@ import 'dart:math';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:minichess/utils/Enums.dart';
+import '../ai/Ai.dart';
+import '../doms/GameState.dart';
 import '../doms/Move.dart';
 import '../doms/Tile.dart';
 
@@ -155,7 +157,16 @@ Future<bool> isConnected() async {
       connectivityResult == ConnectivityResult.wifi;
 }
 
-bool checkIfValidMove(Move m) {
+bool hardSearchMove(Move move, GameState gs, bool hard) {
+  if (hard) {
+    return true;
+  }
+  GameState newGameState = GameState.clone(gs);
+  newGameState.changeGameState(move);
+  return !isInCheck(newGameState);
+}
+
+bool checkIfValidMove(Move m, GameState gs, [bool hard = false]) {
   if (isFromGraveyard(m.initialTile)) {
     return m.finalTile.char == chrt.empty;
   } else {
@@ -166,22 +177,37 @@ bool checkIfValidMove(Move m) {
         case chrt.pawn:
           // print(selectedTile);
           if (m.initialTile.owner == possession.mine) {
-            return m.initialTile.i! == m.finalTile.i && m.initialTile.j == (m.finalTile.j! - 1);
+            return m.initialTile.i! == m.finalTile.i &&
+                m.initialTile.j == (m.finalTile.j! - 1);
           } else {
-            return m.initialTile.i! == m.finalTile.i && m.initialTile.j == (m.finalTile.j! + 1);
+            return m.initialTile.i! == m.finalTile.i &&
+                m.initialTile.j == (m.finalTile.j! + 1);
           }
         case chrt.king:
           return (m.initialTile.i! + 1 == m.finalTile.i &&
-                  m.initialTile.j! + 1 == m.finalTile.j) ||
-              (m.initialTile.i! + 1 == m.finalTile.i && m.initialTile.j == m.finalTile.j) ||
+                  m.initialTile.j! + 1 == m.finalTile.j &&
+                  hardSearchMove(m, gs, hard)) ||
               (m.initialTile.i! + 1 == m.finalTile.i &&
-                  m.initialTile.j! - 1 == m.finalTile.j) ||
-              (m.initialTile.i == m.finalTile.i && m.initialTile.j! + 1 == m.finalTile.j) ||
-              (m.initialTile.i == m.finalTile.i && m.initialTile.j! - 1 == m.finalTile.j) ||
+                  m.initialTile.j == m.finalTile.j &&
+                  hardSearchMove(m, gs, hard)) ||
+              (m.initialTile.i! + 1 == m.finalTile.i &&
+                  m.initialTile.j! - 1 == m.finalTile.j &&
+                  hardSearchMove(m, gs, hard)) ||
+              (m.initialTile.i == m.finalTile.i &&
+                  m.initialTile.j! + 1 == m.finalTile.j &&
+                  hardSearchMove(m, gs, hard)) ||
+              (m.initialTile.i == m.finalTile.i &&
+                  m.initialTile.j! - 1 == m.finalTile.j &&
+                  hardSearchMove(m, gs, hard)) ||
               (m.initialTile.i! - 1 == m.finalTile.i &&
-                  m.initialTile.j! + 1 == m.finalTile.j) ||
-              (m.initialTile.i! - 1 == m.finalTile.i && m.initialTile.j == m.finalTile.j) ||
-              (m.initialTile.i! - 1 == m.finalTile.i && m.initialTile.j! - 1 == m.finalTile.j);
+                  m.initialTile.j! + 1 == m.finalTile.j &&
+                  hardSearchMove(m, gs, hard)) ||
+              (m.initialTile.i! - 1 == m.finalTile.i &&
+                  m.initialTile.j == m.finalTile.j &&
+                  hardSearchMove(m, gs, hard)) ||
+              (m.initialTile.i! - 1 == m.finalTile.i &&
+                  m.initialTile.j! - 1 == m.finalTile.j &&
+                  hardSearchMove(m, gs, hard));
         case chrt.bishop:
           return (m.initialTile.i! + 1 == m.finalTile.i &&
                   m.initialTile.j! + 1 == m.finalTile.j) ||
@@ -189,29 +215,45 @@ bool checkIfValidMove(Move m) {
                   m.initialTile.j! - 1 == m.finalTile.j) ||
               (m.initialTile.i! - 1 == m.finalTile.i &&
                   m.initialTile.j! + 1 == m.finalTile.j) ||
-              (m.initialTile.i! - 1 == m.finalTile.i && m.initialTile.j! - 1 == m.finalTile.j);
+              (m.initialTile.i! - 1 == m.finalTile.i &&
+                  m.initialTile.j! - 1 == m.finalTile.j);
         case chrt.rock:
-          return (m.initialTile.i! + 1 == m.finalTile.i && m.initialTile.j == m.finalTile.j) ||
-              (m.initialTile.i == m.finalTile.i && m.initialTile.j! + 1 == m.finalTile.j) ||
-              (m.initialTile.i == m.finalTile.i && m.initialTile.j! - 1 == m.finalTile.j) ||
-              (m.initialTile.i! - 1 == m.finalTile.i && m.initialTile.j == m.finalTile.j);
+          return (m.initialTile.i! + 1 == m.finalTile.i &&
+                  m.initialTile.j == m.finalTile.j) ||
+              (m.initialTile.i == m.finalTile.i &&
+                  m.initialTile.j! + 1 == m.finalTile.j) ||
+              (m.initialTile.i == m.finalTile.i &&
+                  m.initialTile.j! - 1 == m.finalTile.j) ||
+              (m.initialTile.i! - 1 == m.finalTile.i &&
+                  m.initialTile.j == m.finalTile.j);
         case chrt.knight:
           if (m.initialTile.owner == player.white) {
-          return (m.initialTile.j! + 1 == m.finalTile.j && m.initialTile.i == m.finalTile.i) ||
-              (m.initialTile.j == m.finalTile.j && m.initialTile.i! + 1 == m.finalTile.i) ||
-              (m.initialTile.j == m.finalTile.j && m.initialTile.i! - 1 == m.finalTile.i) ||
-              (m.initialTile.j! - 1 == m.finalTile.j && m.initialTile.i == m.finalTile.i) ||
-              (m.initialTile.j! + 1 == m.finalTile.j &&
-                  m.initialTile.i! + 1 == m.finalTile.i) ||
-              (m.initialTile.j! + 1 == m.finalTile.j && m.initialTile.i! - 1 == m.finalTile.i);
-        } else {
-            return (m.initialTile.j! + 1 == m.finalTile.j && m.initialTile.i == m.finalTile.i) ||
-                (m.initialTile.j == m.finalTile.j && m.initialTile.i! + 1 == m.finalTile.i) ||
-                (m.initialTile.j == m.finalTile.j && m.initialTile.i! - 1 == m.finalTile.i) ||
-                (m.initialTile.j! - 1 == m.finalTile.j && m.initialTile.i == m.finalTile.i) ||
-                (m.initialTile.j! - 1 == m.finalTile.j && m.initialTile.i! + 1 == m.finalTile.i) ||
-                (m.initialTile.j! - 1 == m.finalTile.j && m.initialTile.i! - 1 == m.finalTile.i);
-        }
+            return (m.initialTile.j! + 1 == m.finalTile.j &&
+                    m.initialTile.i == m.finalTile.i) ||
+                (m.initialTile.j == m.finalTile.j &&
+                    m.initialTile.i! + 1 == m.finalTile.i) ||
+                (m.initialTile.j == m.finalTile.j &&
+                    m.initialTile.i! - 1 == m.finalTile.i) ||
+                (m.initialTile.j! - 1 == m.finalTile.j &&
+                    m.initialTile.i == m.finalTile.i) ||
+                (m.initialTile.j! - 1 == m.finalTile.j &&
+                    m.initialTile.i! + 1 == m.finalTile.i) ||
+                (m.initialTile.j! - 1 == m.finalTile.j &&
+                    m.initialTile.i! - 1 == m.finalTile.i);
+          } else {
+            return (m.initialTile.j! + 1 == m.finalTile.j &&
+                    m.initialTile.i == m.finalTile.i) ||
+                (m.initialTile.j == m.finalTile.j &&
+                    m.initialTile.i! + 1 == m.finalTile.i) ||
+                (m.initialTile.j == m.finalTile.j &&
+                    m.initialTile.i! - 1 == m.finalTile.i) ||
+                (m.initialTile.j! - 1 == m.finalTile.j &&
+                    m.initialTile.i == m.finalTile.i) ||
+                (m.initialTile.j! + 1 == m.finalTile.j &&
+                    m.initialTile.i! + 1 == m.finalTile.i) ||
+                (m.initialTile.j! + 1 == m.finalTile.j &&
+                    m.initialTile.i! - 1 == m.finalTile.i);
+          }
         case chrt.empty:
           return false;
         case chrt.queen:
@@ -224,15 +266,3 @@ bool checkIfValidMove(Move m) {
 bool checkIfWin(Move move) {
   return move.finalTile.char == chrt.king;
 }
-
-// void sleep(Duration duration) {
-//   int milliseconds = duration.inMilliseconds;
-//   if (milliseconds < 0) {
-//     throw ArgumentError("sleep: duration cannot be negative");
-//   }
-//   if (!_EmbedderConfig._maySleep) {
-//     throw new UnsupportedError(
-//         "This embedder disallows calling dart:io's sleep()");
-//   }
-//   _ProcessUtils._sleep(milliseconds);
-// }

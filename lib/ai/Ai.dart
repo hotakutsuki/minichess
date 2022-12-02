@@ -76,7 +76,7 @@ RemoteRecord createRecord(String gameState, Move move, String matchId,
 Move? getCheckMate(GameState gs) {
   Move? move;
   getMyPieces(gs).forEach((p) {
-    getMoves(p, gs).forEach((m) {
+    getMoves(p, gs, true).forEach((m) {
       if (m.finalTile.char == chrt.king) {
         move = m;
       }
@@ -91,8 +91,7 @@ bool isInCheck(GameState gs) {
     for (var row in gs.board) {
       for (var tile in row) {
         Move m = Move(enemyTile, tile);
-        if (checkIfValidMove(m) &&
-            tile.char == chrt.king) {
+        if (checkIfValidMove(m, gs, true) && tile.char == chrt.king) {
           isInCheck = true;
         }
       }
@@ -111,14 +110,14 @@ Move? runFromCheckmate(GameState gameState) {
       GameState newGameState = GameState.clone(gameState);
       newGameState.changeGameState(move);
       if (!isInCheck(newGameState)) {
-        print('found a move');
+        // print('found a move');
         moves.add(move);
       }
     }
   }
-  if (moves.isNotEmpty){
+  if (moves.isNotEmpty) {
     result = getRandomObject(moves);
-    print('result:$result');
+    // print('result:$result');
   }
   return result;
 }
@@ -144,23 +143,29 @@ Future<Move> getPlay(GameState gameState, gameMode gamemode) async {
 
   String stateKey = gameState.toString();
 
-  List<String> remotePlaysResponse = await fetchRemotePlays(stateKey);
-  if (isNewState(remotePlaysResponse)) {
-    print('Playing locally...');
-    Move move = makeLocalDecision(gameState);
-    // print(move);
-    return move;
+  try {
+    List<String> remotePlaysResponse = await fetchRemotePlays(stateKey);
+    if (isNewState(remotePlaysResponse)) {
+      print('Playing locally...');
+      Move move = makeLocalDecision(gameState);
+      // print(move);
+      return move;
+    }
+    if (gamemode == gameMode.training && getRandomIO() == 0) {
+      print('Forcing locally by luck');
+      return makeLocalDecision(gameState);
+      // print(move);
+    } else {
+      print('Playing remotely...');
+      print(gameState);
+      return getRemotePlay(remotePlaysResponse, gameState);
+      // print(move);
+    }
+  } catch (e) {
+    print("EERRROOORRRR");
+    print(e);
   }
-  if (gamemode == gameMode.training && getRandomIO() == 0) {
-    print('Forcing locally by luck');
-    return makeLocalDecision(gameState);
-    // print(move);
-  } else {
-    print('Playing remotely...');
-    print(gameState);
-    return getRemotePlay(remotePlaysResponse, gameState);
-    // print(move);
-  }
+  return makeLocalDecision(gameState);
 }
 
 isNewState(List<String> remotePlays) {
@@ -207,12 +212,12 @@ Move getRemotePlay(List<String> remotePlaysReponse, GameState gs) {
   List<Move> remoteMoves = remotePlaysReponse.map((resp) {
     var spliced = resp.split('|');
     if (isInt(spliced[0])) {
-      return Move(gs.board[int.parse(spliced[0])][int.parse(spliced[1])],
-          gs.board[int.parse(spliced[2])][int.parse(spliced[3])]);
+      return Move(gs.board[int.parse(spliced[1])][int.parse(spliced[0])],
+          gs.board[int.parse(spliced[3])][int.parse(spliced[2])]);
     }
     chrt char = getCharFromInitials(spliced[0]);
     Tile initialTile = gs.myGraveyard.firstWhere((t) => t.char == char);
-    Tile finalTile = gs.board[int.parse(spliced[2])][int.parse(spliced[3])];
+    Tile finalTile = gs.board[int.parse(spliced[3])][int.parse(spliced[2])];
     return Move(initialTile, finalTile);
   }).toList();
   // print(remoteMoves);
@@ -230,14 +235,20 @@ bool isInt(String s) {
   return int.tryParse(s) != null;
 }
 
-Move makeLocalDecision(GameState gameState) {
-  List<Tile> myPieces = getMyPieces(gameState);
-  Tile myPiece = getRandomObject(myPieces);
-  List<Move> myMoves = getMoves(myPiece, gameState);
-  if (myMoves.isNotEmpty) {
-    return getRandomObject(myMoves);
+Move makeLocalDecision(GameState gameState, [bool hard = false]) {
+  if (hard) {
+    print("checking hard...");
   }
-  return makeLocalDecision(gameState);
+  List<Tile> myPieces = getMyPieces(gameState);
+  List<Move> allMoves = [];
+  for (var myPiece in myPieces) {
+    List<Move> myMoves = getMoves(myPiece, gameState, hard);
+    allMoves.addAll(myMoves);
+  }
+  if (allMoves.isNotEmpty) {
+    return getRandomObject(allMoves);
+  }
+  return makeLocalDecision(gameState, true);
 }
 
 List<Tile> getEnemyPieces(GameState gameState) {
@@ -259,12 +270,12 @@ List<Tile> getMyPieces(GameState gameState) {
   return myPieces;
 }
 
-List<Move> getMoves(Tile myPiece, GameState gameState) {
+List<Move> getMoves(Tile myPiece, GameState gameState, [bool hard = false]) {
   List<Move> moves = [];
   for (var row in gameState.board) {
     for (var tile in row) {
       Move m = Move(myPiece, tile);
-      if (checkIfValidMove(m)) {
+      if (checkIfValidMove(m, gameState, hard)) {
         moves.add(m);
       }
     }
