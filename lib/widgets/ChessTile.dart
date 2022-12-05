@@ -58,7 +58,7 @@ class ChessTile extends StatelessWidget {
                       : player.black),
             ),
           ),
-          Text('${tile.i}${tile.j}${tile.owner.name}'),
+          // Text('${tile.i}${tile.j}${tile.owner.name}'),
         ]),
       ),
     );

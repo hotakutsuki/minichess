@@ -16,9 +16,10 @@ class GameState {
   // player playersTurn;
   // final gameMode gamemode;
 
-  changeGameState(Move move) {
+  GameState changeGameState(Move move) {
     sendPieceToGrave(move);
     rewritePosition(move);
+    return this;
   }
 
   transformPawn(Move move) {

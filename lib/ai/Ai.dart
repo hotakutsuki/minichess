@@ -116,7 +116,8 @@ Move? runFromCheckmate(GameState gameState) {
     }
   }
   if (moves.isNotEmpty) {
-    result = getRandomObject(moves);
+    result = bestEvaluatedMove(gameState, moves);
+    // result = getRandomObject(moves);
     // print('result:$result');
   }
   return result;
@@ -143,29 +144,23 @@ Future<Move> getPlay(GameState gameState, gameMode gamemode) async {
 
   String stateKey = gameState.toString();
 
-  try {
-    List<String> remotePlaysResponse = await fetchRemotePlays(stateKey);
-    if (isNewState(remotePlaysResponse)) {
-      print('Playing locally...');
-      Move move = makeLocalDecision(gameState);
-      // print(move);
-      return move;
-    }
-    if (gamemode == gameMode.training && getRandomIO() == 0) {
-      print('Forcing locally by luck');
-      return makeLocalDecision(gameState);
-      // print(move);
-    } else {
-      print('Playing remotely...');
-      print(gameState);
-      return getRemotePlay(remotePlaysResponse, gameState);
-      // print(move);
-    }
-  } catch (e) {
-    print("EERRROOORRRR");
-    print(e);
+  List<String> remotePlaysResponse = await fetchRemotePlays(stateKey);
+  if (isNewState(remotePlaysResponse)) {
+    print('Playing locally...');
+    Move move = makeLocalDecision(gameState);
+    // print(move);
+    return move;
   }
-  return makeLocalDecision(gameState);
+  if (gamemode == gameMode.training && getRandomInt(5) == 0) {
+    print('Forcing locally by luck');
+    return makeLocalDecision(gameState);
+    // print(move);
+  } else {
+    print('Playing remotely...');
+    print(gameState);
+    return getRemotePlay(remotePlaysResponse, gameState);
+    // print(move);
+  }
 }
 
 isNewState(List<String> remotePlays) {
@@ -177,8 +172,8 @@ Future<List<String>> fetchRemotePlays(String stateKey) async {
   var uri = Uri.https(docsDomain, QUERY_URL, {
     'tq': 'select C where B = \'$stateKey\' and D = 1',
   });
-  print('\nuri');
-  print(uri);
+  // print('\nuri');
+  // print(uri);
   http.Response response;
   try {
     response = await http.get(uri);
@@ -246,9 +241,33 @@ Move makeLocalDecision(GameState gameState, [bool hard = false]) {
     allMoves.addAll(myMoves);
   }
   if (allMoves.isNotEmpty) {
-    return getRandomObject(allMoves);
+    return bestEvaluatedMove(gameState, allMoves);
+    // return getRandomObject(allMoves);
   }
   return makeLocalDecision(gameState, true);
+}
+
+Move bestEvaluatedMove(GameState gs, List<Move> allMoves) {
+  print('getting bestMoves');
+  List<int> califications = [];
+  for (var value in allMoves) {
+    califications
+        .add(evaluateState(GameState.clone(gs).changeGameState(value)));
+  }
+  print('all moves: ${allMoves}');
+  print('scores: ${califications}');
+  int maxQualification = califications[0];
+  Move move = allMoves[0];
+  int selected = 0;
+  califications.asMap().forEach((i, score) {
+    if (score > maxQualification) {
+      move = allMoves[i];
+      selected = i;
+      maxQualification = score;
+    }
+  });
+  print('selected move ${selected}: ${move}');
+  return move;
 }
 
 List<Tile> getEnemyPieces(GameState gameState) {
@@ -281,6 +300,10 @@ List<Move> getMoves(Tile myPiece, GameState gameState, [bool hard = false]) {
     }
   }
   return moves;
+}
+
+int evaluateState(GameState gs) {
+  return getMyPieces(gs).length - getEnemyPieces(gs).length;
 }
 
 getRandomObject(ts) {
