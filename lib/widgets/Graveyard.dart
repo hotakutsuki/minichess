@@ -16,7 +16,7 @@ class Graveyard extends StatelessWidget{
   Widget build(BuildContext context) {
     return SizedBox(
       width: 400,
-      height: 100,
+      height: 75,
       child: RotatedBox(
         quarterTurns:  p == player.white ? 0 : 2,
         child: ListView(

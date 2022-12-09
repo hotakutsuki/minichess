@@ -64,10 +64,10 @@ class ClockState extends State<Clock> {
     final milliseconds = strDigits((myDuration.inMilliseconds.remainder(1000)/100).floor());
     return Text(
       '$minutes:$seconds:$milliseconds',
-      style: const TextStyle(
-          fontWeight: FontWeight.bold,
-          color: Colors.black,
-          fontSize: 32),
+      style: TextStyle(
+          fontWeight: FontWeight.w600,
+          color: myDuration.inSeconds > 20 ? Colors.black87 : Colors.redAccent,
+          fontSize: 24),
     );
   }
 }

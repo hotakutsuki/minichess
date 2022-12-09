@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:minichess/ai/Ai.dart';
 import 'package:minichess/doms/GameState.dart';
@@ -96,9 +97,16 @@ class _MyChessGamePage extends State<ChessGame> {
     }
   }
 
-  onTapTile(Tile tile) async {
+  bool isValidPlay(Tile tile) {
+    if (widget.gamemode == gameMode.solo) {
+      return playersTurn == player.white;
+    }
+    return true;
+  }
+
+  play(Tile tile) async {
     if (selectedTile == null) {
-      if (tile.char != chrt.empty && (tile.owner == possession.mine)) {
+      if(tile.char != chrt.empty && tile.owner == possession.mine){
         setState(() {
           selectedTile = tile;
           tile.isSelected = true;
@@ -130,17 +138,23 @@ class _MyChessGamePage extends State<ChessGame> {
     }
   }
 
+  onTapTile(Tile tile) async {
+    if (isValidPlay(tile)){
+      play(tile);
+    }
+  }
+
   playAsPc() async {
     Move move = await getPlay(gs, widget.gamemode);
     print('generated move: $move');
     if (widget.gamemode == gameMode.solo) {
       await Future.delayed(const Duration(milliseconds: 500));
     }
-    onTapTile(move.initialTile);
+    play(move.initialTile);
     if (widget.gamemode == gameMode.solo) {
       await Future.delayed(const Duration(milliseconds: 500));
     }
-    onTapTile(move.finalTile);
+    play(move.finalTile);
   }
 
   void gameOver(player p) async {
@@ -149,10 +163,10 @@ class _MyChessGamePage extends State<ChessGame> {
       winner = p;
       blackClockState.currentState?.stopTimer();
       whiteClockState.currentState?.stopTimer();
-      if(p == player.white){
+      if (p == player.white) {
         wScore++;
       } else {
-        bScore ++;
+        bScore++;
       }
     });
     if (await isConnected()) {
@@ -186,10 +200,6 @@ class _MyChessGamePage extends State<ChessGame> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Divider(
-                height: 24,
-                color: Colors.transparent,
-              ),
               RotatedBox(
                   quarterTurns: 2,
                   child: Clock(
@@ -218,23 +228,46 @@ class _MyChessGamePage extends State<ChessGame> {
                   key: whiteClockState,
                   player: player.white,
                   gameOver: gameOver),
-              SizedBox(
-                height: 40,
-                width: 150,
-                child: ElevatedButton(
-                  onPressed: restartGame,
-                  child: const Text(
-                    'Restart',
-                  ),
-                ),
-              ),
+              // SizedBox(
+              //   height: 40,
+              //   width: 150,
+              //   child: ElevatedButton(
+              //     onPressed: restartGame,
+              //     child: const Text(
+              //       'Restart',
+              //     ),
+              //   ),
+              // ),
               // Text('${playersTurn ?? 'none'}'),
             ],
           ),
         ),
         !isGameOver
             ? const SizedBox()
-            : GameOverScreen(winner, restartGame, wScore, bScore, widget.gamemode)
+            : GameOverScreen(
+                winner, restartGame, wScore, bScore, widget.gamemode),
+        Positioned(
+          top: 8,
+          right: 8,
+          child: FloatingActionButton(
+            heroTag: 'close',
+            backgroundColor: Colors.white,
+            mini: true,
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Icon(Icons.close, color: Colors.black87),
+          ),
+        ),
+        Positioned(
+          bottom: 8,
+          right: 8,
+          child: FloatingActionButton(
+            heroTag: 'restart',
+            backgroundColor: Colors.white,
+            mini: true,
+            onPressed: restartGame,
+            child: const Icon(CupertinoIcons.refresh, color: Colors.black87),
+          ),
+        )
       ]),
     );
   }
