@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:minichess/widgets/ChessGame.dart';
 import '../utils/Enums.dart';
+import 'Tutorial.dart';
 
 class HomeScreen extends StatelessWidget {
   setMode(context, gameMode mode) {
@@ -53,6 +54,20 @@ class HomeScreen extends StatelessWidget {
                       onPressed: () => setMode(context, gameMode.training),
                       child: const Text(
                         'training',
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    height: 40,
+                    width: 150,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (context) => Tutorial()),
+                        );
+                      },
+                      child: const Text(
+                        'Tutorial',
                       ),
                     ),
                   ),
