@@ -21,7 +21,6 @@ class _TutorialState extends State<Tutorial> {
         diablePrev = controller.page == 0;
         disableNext = controller.page == 8;
       });
-
     });
     super.initState();
   }
@@ -55,9 +54,9 @@ class _TutorialState extends State<Tutorial> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Tutorial'),
-      ),
+      // appBar: AppBar(
+      //   title: const Text('Tutorial'),
+      // ),
       body: Stack(
         alignment: Alignment.center,
         children: [
@@ -65,13 +64,11 @@ class _TutorialState extends State<Tutorial> {
             controller: controller,
             children: [
               getPage('1select', 'Tap on a tile to select it.'),
-              getPage(
-                  '2move', 'Tap on any of the highlighted tiles to move.'),
+              getPage('2move', 'Tap on any of the highlighted tiles to move.'),
               getPage('3takepng', 'Tap on an enemy tile to take it.'),
-              getPage('4grave',
-                  'When a piece is taken, it goes to you graveyard.'),
               getPage(
-                  '5revive', 'You can invoke pieces from your graveyard.'),
+                  '4grave', 'When a piece is taken, it goes to you graveyard.'),
+              getPage('5revive', 'You can invoke pieces from your graveyard.'),
               getPage('6knigthpng',
                   'Reach to the top to transform a Pawn into a Knight.'),
               getPage('7win', 'Take the king to win.'),
@@ -80,6 +77,10 @@ class _TutorialState extends State<Tutorial> {
               getPage('9moves', 'These are the valid moves.'),
             ],
           ),
+          const Positioned(
+              top: 24,
+              child: Text('Tutorial',
+                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.w500))),
           Positioned(
             left: 4,
             child: FloatingActionButton(
@@ -105,6 +106,17 @@ class _TutorialState extends State<Tutorial> {
                       duration: const Duration(milliseconds: 200),
                       curve: Curves.bounceIn);
                 }),
+          ),
+          Positioned(
+            top: 8,
+            right: 8,
+            child: FloatingActionButton(
+              heroTag: 'close',
+              backgroundColor: Colors.white,
+              mini: true,
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Icon(Icons.close, color: Colors.black87),
+            ),
           ),
         ],
       ),
