@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:minichess/widgets/ChessGame.dart';
 import '../utils/Enums.dart';
@@ -31,16 +32,6 @@ class HomeScreen extends StatelessWidget {
                     height: 40,
                     width: 150,
                     child: ElevatedButton(
-                      onPressed: () => setMode(context, gameMode.vs),
-                      child: const Text(
-                        '2 players',
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    height: 40,
-                    width: 150,
-                    child: ElevatedButton(
                       onPressed: () => setMode(context, gameMode.solo),
                       child: const Text(
                         'Vs PC',
@@ -51,29 +42,54 @@ class HomeScreen extends StatelessWidget {
                     height: 40,
                     width: 150,
                     child: ElevatedButton(
-                      onPressed: () => setMode(context, gameMode.training),
+                      onPressed: () => setMode(context, gameMode.vs),
                       child: const Text(
-                        'training',
+                        '2 players',
                       ),
                     ),
                   ),
-                  SizedBox(
-                    height: 40,
-                    width: 150,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(builder: (context) => Tutorial()),
-                        );
-                      },
-                      child: const Text(
-                        'Tutorial',
-                      ),
-                    ),
-                  ),
+                  // SizedBox(
+                  //   height: 40,
+                  //   width: 150,
+                  //   child: ElevatedButton(
+                  //     onPressed: () => setMode(context, gameMode.training),
+                  //     child: const Text(
+                  //       'Training',
+                  //     ),
+                  //   ),
+                  // ),
+                  // SizedBox(
+                  //   height: 40,
+                  //   width: 150,
+                  //   child: ElevatedButton(
+                  //     onPressed: () {
+                  //       Navigator.of(context).push(
+                  //         MaterialPageRoute(builder: (context) => Tutorial()),
+                  //       );
+                  //     },
+                  //     child: const Text(
+                  //       'Tutorial',
+                  //     ),
+                  //   ),
+                  // ),
                 ],
               ),
             ),
+          ],
+        ),
+      ),
+      floatingActionButton: SizedBox(
+        height: 80,
+        child: Column(
+          children: [
+            FloatingActionButton(
+              child: const Icon(CupertinoIcons.question),
+                onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const Tutorial()),
+              );
+            }),
+            const Text('Tutorial'),
           ],
         ),
       ),

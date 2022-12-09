@@ -22,9 +22,7 @@ class ChessGame extends StatefulWidget {
 class _MyChessGamePage extends State<ChessGame> {
   late GameState gs;
 
-  // List<List<Tile>> board = [];
-  // List<Tile> graveyardW = [];
-  // List<Tile> graveyardB = [];
+  int wScore = 0, bScore = 0;
   Tile? selectedTile;
 
   late player playersTurn;
@@ -39,52 +37,22 @@ class _MyChessGamePage extends State<ChessGame> {
 
   @override
   initState() {
-    // List<Tile> empty = [];
-    // List<Tile> empty2 = [];
     gs = GameState.named(
       board: createNewBoard(),
       enemyGraveyard: <Tile>[],
       myGraveyard: <Tile>[],
     );
     playersTurn = player.white;
-    // playersTurn = widget.gamemode == gameMode.solo ? player.none : player.white;
     if (!isGameOver && widget.gamemode == gameMode.training) {
       playAsPc();
     }
   }
 
-  // bool isWhitesTurn() {
-  //   return gs.playersTurn == player.white;
-  // }
-  //
-  // bool isBlacksTurn() {
-  //   return gs.playersTurn == player.black;
-  // }
-  //
-  // player getPlayersTurn() {
-  //   return gs.playersTurn;
-  // }
-
-  // GameState getCurrentGameState() {
-  //   return gs;
-  //   // return GameState(
-  //   //   board,
-  //   //   isBlacksTurn() ? graveyardB : graveyardW,
-  //   //   isWhitesTurn() ? graveyardB : graveyardW,
-  //   //   getPlayersTurn(),
-  //   //   widget.gamemode,
-  //   // );
-  // }
-
-  // isDIfferentTile(Tile newTile) {
-  //   return selectedTile!.i != newTile.i || selectedTile!.j != newTile.j;
-  // }
-
   highlightAvailableOptions() {
     for (var row in gs.board) {
       for (var v in row) {
-        v.isOption =
-            selectedTile != null && checkIfValidMove(Move(selectedTile!, v), gs, true);
+        v.isOption = selectedTile != null &&
+            checkIfValidMove(Move(selectedTile!, v), gs, true);
       }
     }
   }
@@ -93,11 +61,9 @@ class _MyChessGamePage extends State<ChessGame> {
     if (playersTurn == player.white) {
       whiteClockState.currentState?.stopTimer();
       blackClockState.currentState?.startTimer();
-      // lastPlayedPlayer = player.white;
     } else {
       whiteClockState.currentState?.startTimer();
       blackClockState.currentState?.stopTimer();
-      // lastPlayedPlayer = player.black;
     }
   }
 
@@ -167,13 +133,13 @@ class _MyChessGamePage extends State<ChessGame> {
   playAsPc() async {
     Move move = await getPlay(gs, widget.gamemode);
     print('generated move: $move');
-    // if (widget.gamemode == gameMode.solo) {
-    await Future.delayed(const Duration(milliseconds: 100));
-    // }
+    if (widget.gamemode == gameMode.solo) {
+      await Future.delayed(const Duration(milliseconds: 500));
+    }
     onTapTile(move.initialTile);
-    // if (widget.gamemode == gameMode.solo) {
-    await Future.delayed(const Duration(milliseconds: 100));
-    // }
+    if (widget.gamemode == gameMode.solo) {
+      await Future.delayed(const Duration(milliseconds: 500));
+    }
     onTapTile(move.finalTile);
   }
 
@@ -183,6 +149,11 @@ class _MyChessGamePage extends State<ChessGame> {
       winner = p;
       blackClockState.currentState?.stopTimer();
       whiteClockState.currentState?.stopTimer();
+      if(p == player.white){
+        wScore++;
+      } else {
+        bScore ++;
+      }
     });
     if (await isConnected()) {
       print('saving match...');
@@ -257,11 +228,13 @@ class _MyChessGamePage extends State<ChessGame> {
                   ),
                 ),
               ),
-              Text('${playersTurn ?? 'none'}'),
+              // Text('${playersTurn ?? 'none'}'),
             ],
           ),
         ),
-        !isGameOver ? const SizedBox() : GameOverScreen(winner, restartGame)
+        !isGameOver
+            ? const SizedBox()
+            : GameOverScreen(winner, restartGame, wScore, bScore, widget.gamemode)
       ]),
     );
   }

@@ -3,10 +3,18 @@ import '../utils/Enums.dart';
 import '../utils/utils.dart';
 
 class GameOverScreen extends StatelessWidget {
-  const GameOverScreen(this.winner, this.restartGame, {super.key});
+  const GameOverScreen(
+      this.winner, this.restartGame, this.wScore, this.bScore, this.gamemode,
+      {super.key});
 
   final player winner;
   final VoidCallback restartGame;
+  final int wScore, bScore;
+  final gameMode gamemode;
+
+  Color getTextColor() {
+    return winner == player.white ? Colors.black : Colors.white;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,11 +29,19 @@ class GameOverScreen extends StatelessWidget {
         children: [
           Text('Winner: ${winner == player.white ? 'White' : 'Black'}',
               style: TextStyle(
-                  color: winner == player.white ? Colors.black : Colors.white,
+                  color: getTextColor(),
                   fontSize: 48,
                   fontWeight: FontWeight.bold)),
           SizedBox(
               width: 250, height: 250, child: getImage(chrt.queen, winner)),
+          Text(
+            gamemode != gameMode.solo ? '' : 'W   B\n$wScore - $bScore',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+                color: getTextColor(),
+                fontSize: 42,
+                fontWeight: FontWeight.bold),
+          ),
           SizedBox(
             height: 40,
             width: 150,
