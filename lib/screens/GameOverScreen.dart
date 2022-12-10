@@ -42,6 +42,8 @@ class GameOverScreen extends StatelessWidget {
                 fontSize: 42,
                 fontWeight: FontWeight.bold),
           ),
+          Text('GameId: ${DateTime.now().millisecondsSinceEpoch.toString()}',
+              style: TextStyle(color: getTextColor())),
           SizedBox(
             height: 40,
             width: 150,
