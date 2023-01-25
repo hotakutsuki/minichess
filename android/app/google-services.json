@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "733138640689",
+    "project_id": "minichess-34a02",
+    "storage_bucket": "minichess-34a02.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:733138640689:android:7703ef4d030ee3cd7cda10",
+        "android_client_info": {
+          "package_name": "com.hotakutsuki.minichess"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "733138640689-9qkav0thc6ppv5e9h6ua4ji3n11nmkks.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA21rOFltUgylZQ2iEVv7pGTg_FmROrWu0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "733138640689-9qkav0thc6ppv5e9h6ua4ji3n11nmkks.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "733138640689-vjqtt0thgisop6s7t2lrr97vcfisb2li.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.minichess"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

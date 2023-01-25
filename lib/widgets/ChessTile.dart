@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:minichess/utils/Enums.dart';
 import '../doms/Tile.dart';
-import '../utils/utils.dart';
+import '../utils/Utils.dart';
 
 class ChessTile extends StatelessWidget {
   const ChessTile(

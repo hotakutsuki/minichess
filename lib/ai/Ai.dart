@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:minichess/doms/RemoteRecord.dart';
 import 'package:minichess/utils/Enums.dart';
-import 'package:minichess/utils/utils.dart';
+import 'package:minichess/utils/Utils.dart';
 import '../doms/GameState.dart';
 import '../doms/Move.dart';
 import '../doms/Tile.dart';

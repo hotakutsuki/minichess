@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../utils/Enums.dart';
-import '../utils/utils.dart';
+import '../utils/Utils.dart';
 
 class GameOverScreen extends StatelessWidget {
   const GameOverScreen(

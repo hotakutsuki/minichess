@@ -7,7 +7,7 @@ import 'package:minichess/utils/Enums.dart';
 import 'package:minichess/widgets/ChessBoard.dart';
 import '../doms/Move.dart';
 import '../doms/Tile.dart';
-import '../utils/utils.dart';
+import '../utils/Utils.dart';
 import 'Clock.dart';
 import 'Graveyard.dart';
 
@@ -228,17 +228,6 @@ class _MyChessGamePage extends State<ChessGame> {
                   key: whiteClockState,
                   player: player.white,
                   gameOver: gameOver),
-              // SizedBox(
-              //   height: 40,
-              //   width: 150,
-              //   child: ElevatedButton(
-              //     onPressed: restartGame,
-              //     child: const Text(
-              //       'Restart',
-              //     ),
-              //   ),
-              // ),
-              // Text('${playersTurn ?? 'none'}'),
             ],
           ),
         ),

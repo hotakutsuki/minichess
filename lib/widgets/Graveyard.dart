@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import '../doms/Tile.dart';
 import '../utils/Enums.dart';
-import '../utils/utils.dart';
+import '../utils/Utils.dart';
 
 class Graveyard extends StatelessWidget{
   const Graveyard({Key? key, required this.graveyard, required this.p, this.onTapTile})

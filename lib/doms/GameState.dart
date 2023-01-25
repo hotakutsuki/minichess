@@ -1,5 +1,5 @@
 import 'package:minichess/utils/Enums.dart';
-import '../utils/utils.dart';
+import '../utils/Utils.dart';
 import 'Move.dart';
 import 'Tile.dart';
 

@@ -38,6 +38,14 @@ dependencies:
   flutter_launcher_icons: ^0.10.0
   http: ^0.13.5
   connectivity_plus: ^3.0.2
+  firebase_core: ^2.4.1
+  firebase_analytics: ^10.1.0
+  firebase_auth: ^4.2.5
+  firebase_crashlytics: ^3.0.9
+  google_sign_in: ^5.4.2
+  get: ^4.6.5
+  google_sign_in_web: ^0.10.2
+  cloud_firestore: ^4.3.1
 
 dev_dependencies:
   flutter_test:

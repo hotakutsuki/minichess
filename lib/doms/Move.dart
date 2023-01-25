@@ -1,5 +1,5 @@
 import '../utils/Enums.dart';
-import '../utils/utils.dart';
+import '../utils/Utils.dart';
 import 'Tile.dart';
 
 class Move {
