@@ -7,13 +7,18 @@ import '../../../data/enums.dart';
 
 class ClockController extends GetxController {
   late MatchController matchController;
-  Rx<player?> localPlayer = Rxn<player>();
+  late player localPlayer;
 
   static const gameMinutes = 2;
   Timer? countdownTimer;
-  var myDuration = Duration(minutes: gameMinutes).obs;
-  // Rx<Duration> myDuration = Rx<Duration>(const Duration(minutes: gameMinutes));
-  // Duration myDuration = Duration(minutes: gameMinutes);
+  var myDuration = const Duration(minutes: gameMinutes);
+
+  final minutes = '0$gameMinutes'.obs;
+  final seconds = '00'.obs;
+  final milliseconds = '0'.obs;
+
+  String strDigits(int n) => n.toString().padLeft(2, '0');
+  String strDigitsSeconds(int n) => (n/10).toString().padLeft(1, '0');
 
   void startTimer() {
     countdownTimer =
@@ -29,18 +34,21 @@ class ClockController extends GetxController {
   resetTimer() {
     if (countdownTimer != null){
       stopTimer();
-      myDuration.value = const Duration(minutes: gameMinutes);
+      myDuration = const Duration(minutes: gameMinutes);
     }
   }
 
   setCountDown() {
     const reduceMillisecondsBy = 100;
-    final mSeconds = myDuration.value.inMilliseconds - reduceMillisecondsBy;
+    final mSeconds = myDuration.inMilliseconds - reduceMillisecondsBy;
     if (mSeconds < 0) {
-      matchController.gameOver(localPlayer.value == player.white ? player.black : player.white);
+      matchController.gameOver(localPlayer == player.white ? player.black : player.white);
       countdownTimer!.cancel();
     } else {
-      myDuration.value = Duration(milliseconds: mSeconds);
+      myDuration = Duration(milliseconds: mSeconds);
+      minutes.value = strDigits(myDuration.inMinutes.remainder(60));
+      seconds.value = strDigits(myDuration.inSeconds.remainder(60));
+      milliseconds.value = strDigitsSeconds((myDuration.inMilliseconds.remainder(1000)/10).floor());
     }
   }
 

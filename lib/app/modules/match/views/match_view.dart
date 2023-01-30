@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
+import 'package:minichess/app/routes/app_pages.dart';
 
 import '../../../data/enums.dart';
 import '../../../utils/gameObjects/tile.dart';
@@ -48,7 +49,7 @@ class MatchView extends GetView<MatchController> {
             heroTag: 'close',
             backgroundColor: Colors.white,
             mini: true,
-            onPressed: () => Get.back(),
+            onPressed: () => Get.offAllNamed(Routes.HOME),
             child: const Icon(Icons.close, color: Colors.black87),
           ),
         ),
