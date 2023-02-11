@@ -15,6 +15,7 @@ class AuthController extends GetxController {
 
   @override
   void onInit() {
+    print('initing auth controller $googleAccount');
     super.onInit();
   }
 

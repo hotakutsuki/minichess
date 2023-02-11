@@ -27,11 +27,10 @@ class MatchView extends GetView<MatchController> {
                 RotatedBox(quarterTurns: 2, child: ClockView(player.black)),
                 Graveyard(p: player.black),
                 RotatedBox(
-                    quarterTurns: controller.playersTurn == player.white
-                        ? 0
-                        : 2,
+                    quarterTurns:
+                        controller.playersTurn == player.white ? 0 : 2,
                     child: ChessBoard(
-                        matrix: controller.gs.value.board as List<List<Tile>>,
+                        matrix: controller.gs.value!.board,
                         playersTurn: controller.playersTurn)),
                 Graveyard(p: player.white),
                 ClockView(player.white),
@@ -39,9 +38,11 @@ class MatchView extends GetView<MatchController> {
             );
           }),
         ),
-        !controller.isGameOver
-            ? const SizedBox()
-            : const GameoverView(),
+        Obx(
+          () => !controller.isGameOver.value
+              ? const SizedBox()
+              : const GameoverView(),
+        ),
         Positioned(
           top: 8,
           right: 8,
@@ -49,7 +50,7 @@ class MatchView extends GetView<MatchController> {
             heroTag: 'close',
             backgroundColor: Colors.white,
             mini: true,
-            onPressed: () => Get.offAllNamed(Routes.HOME),
+            onPressed: () => Get.offAndToNamed(Routes.HOME),//Get.offAllNamed(Routes.HOME),
             child: const Icon(Icons.close, color: Colors.black87),
           ),
         ),

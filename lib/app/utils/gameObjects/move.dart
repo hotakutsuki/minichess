@@ -5,8 +5,26 @@ import '../utils.dart';
 class Move {
   Move(this.initialTile, this.finalTile);
 
-  Tile initialTile;
-  Tile finalTile;
+  late Tile initialTile;
+  late Tile finalTile;
+
+  Move.fromString(String s){
+    initialTile = getInitialTile(s.substring(0,3));
+    finalTile = getFinalTile(s.substring(4));
+  }
+
+  Tile getInitialTile(String s){
+    return Tile(getCharFromString(), owner, i, j);
+  }
+
+  char getCharFromString(s){
+    char.
+  }
+
+  Tile getFinalTile(String s){
+    return Tile(char, owner, i, j);
+  }
+
 
   @override
   String toString() {

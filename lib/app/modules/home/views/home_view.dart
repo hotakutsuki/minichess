@@ -100,7 +100,6 @@ class HomeView extends GetView<HomeController> {
                 child: const Icon(CupertinoIcons.question),
                 onPressed: () {
                   Get.toNamed(Routes.TUTORIAL);
-                  // Get.to(TutorialView());
                 }),
             const Text('Tutorial'),
           ],

@@ -35,6 +35,7 @@ class ClockController extends GetxController {
     if (countdownTimer != null){
       stopTimer();
       myDuration = const Duration(minutes: gameMinutes);
+      updateTexts();
     }
   }
 
@@ -46,10 +47,14 @@ class ClockController extends GetxController {
       countdownTimer!.cancel();
     } else {
       myDuration = Duration(milliseconds: mSeconds);
-      minutes.value = strDigits(myDuration.inMinutes.remainder(60));
-      seconds.value = strDigits(myDuration.inSeconds.remainder(60));
-      milliseconds.value = strDigitsSeconds((myDuration.inMilliseconds.remainder(1000)/10).floor());
+      updateTexts();
     }
+  }
+
+  updateTexts(){
+    minutes.value = strDigits(myDuration.inMinutes.remainder(60));
+    seconds.value = strDigits(myDuration.inSeconds.remainder(60));
+    milliseconds.value = strDigitsSeconds((myDuration.inMilliseconds.remainder(1000)/10).floor());
   }
 
   @override

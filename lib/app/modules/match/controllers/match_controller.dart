@@ -7,13 +7,10 @@ import '../../../utils/gameObjects/GameState.dart';
 import '../../../utils/gameObjects/move.dart';
 import '../../../utils/gameObjects/tile.dart';
 import '../../../utils/utils.dart';
+import 'match_making_controller.dart';
 
 class MatchController extends GetxController {
-  Rx<GameState> gs = GameState.named(
-    board: createNewBoard(),
-    enemyGraveyard: <Tile>[],
-    myGraveyard: <Tile>[],
-  ).obs;
+  Rxn<GameState> gs = Rxn<GameState>();
   final gameMode gamemode = Get.arguments ?? gameMode.vs;
 
   int wScore = 0, bScore = 0;
@@ -21,7 +18,7 @@ class MatchController extends GetxController {
 
   player playersTurn = player.white;
   player winner = player.none;
-  bool isGameOver = false;
+  Rx<bool> isGameOver = false.obs;
   List<String> boardHistory = [];
   List<Move> whiteHistory = [];
   List<Move> blackHistory = [];
@@ -29,14 +26,12 @@ class MatchController extends GetxController {
   late ClockController whiteClockState;
   late ClockController blackClockState;
   late AiController aiController;
-  // final GlobalKey<ClockController> whiteClockState = GlobalKey<ClockController>();
-  // final GlobalKey<ClockController> blackClockState = GlobalKey<ClockController>();
 
   highlightAvailableOptions() {
-    for (var row in gs.value.board) {
+    for (var row in gs.value!.board) {
       for (Tile v in row) {
         v.isOption = selectedTile.value != null &&
-            checkIfValidMove(Move(selectedTile.value!, v), gs.value, true);
+            checkIfValidMove(Move(selectedTile.value!, v), gs.value!, true);
       }
     }
     gs.update((val) => val);
@@ -46,13 +41,9 @@ class MatchController extends GetxController {
     if (playersTurn == player.white) {
       whiteClockState.stopTimer();
       blackClockState.startTimer();
-      // whiteClockState.currentState?.stopTimer();
-      // blackClockState.currentState?.startTimer();
     } else {
       whiteClockState.startTimer();
       blackClockState.stopTimer();
-      // whiteClockState.currentState?.startTimer();
-      // blackClockState.currentState?.stopTimer();
     }
   }
 
@@ -100,7 +91,7 @@ class MatchController extends GetxController {
         highlightAvailableOptions();
       }
     } else {
-      if (checkIfValidMove(Move(selectedTile.value!, tile), gs.value, true)) {
+      if (checkIfValidMove(Move(selectedTile.value!, tile), gs.value!, true)) {
         recordHistory(tile);
         setTimersAndPlayers();
         Move move = Move(selectedTile.value!, tile);
@@ -108,12 +99,12 @@ class MatchController extends GetxController {
           gameOver(playersTurn);
         }
         gs.update((val) => val!.changeGameState(move));
-        gs.value.rotate();
+        gs.value!.rotate();
         togglePlayersTurn();
       }
       restarSelected(tile);
       highlightAvailableOptions();
-      if (!isGameOver &&
+      if (!isGameOver.value &&
           (gamemode == gameMode.training ||
               (gamemode == gameMode.solo &&
                   playersTurn == player.black))) {
@@ -129,7 +120,7 @@ class MatchController extends GetxController {
   }
 
   playAsPc() async {
-    Move move = await aiController.getPlay(gs.value, gamemode);
+    Move move = await aiController.getPlay(gs.value!, gamemode);
     print('generated move: $move');
     if (gamemode == gameMode.solo) {
       await Future.delayed(const Duration(milliseconds: 500));
@@ -142,8 +133,8 @@ class MatchController extends GetxController {
   }
 
   void gameOver(player p) async {
-    isGameOver = true;
     winner = p;
+    isGameOver.value = true;
     blackClockState.stopTimer();
     whiteClockState.stopTimer();
     if (p == player.white) {
@@ -165,7 +156,7 @@ class MatchController extends GetxController {
   void restartGame() {
     selectedTile.value = null;
     winner = player.none;
-    isGameOver = false;
+    isGameOver.value = false;
     blackHistory.clear();
     whiteHistory.clear();
     boardHistory.clear();
@@ -176,7 +167,13 @@ class MatchController extends GetxController {
 
   @override
   void onInit() {
+    print('initing match match controller');
     super.onInit();
+    gs.value = GameState.named(
+      board: createNewBoard(),
+      enemyGraveyard: <Tile>[],
+      myGraveyard: <Tile>[],
+    );
   }
 
   @override
@@ -184,9 +181,13 @@ class MatchController extends GetxController {
     whiteClockState = Get.find<ClockController>(tag: player.white.toString());
     blackClockState = Get.find<ClockController>(tag: player.black.toString());
     aiController = Get.put(AiController());
-    if (!isGameOver && gamemode == gameMode.training) {
+    if (!isGameOver.value && gamemode == gameMode.training) {
       playAsPc();
     }
+    // if (!isGameOver.value && gamemode == gameMode.online){
+    //   final matchMakingController = Get.find<MatchMakingController>();
+    //   matchMakingController.startNewMatch();
+    // }
     super.onReady();
   }
 

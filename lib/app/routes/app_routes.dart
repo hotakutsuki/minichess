@@ -9,6 +9,8 @@ abstract class Routes {
   static const AUTH = _Paths.AUTH;
   static const TUTORIAL = _Paths.TUTORIAL;
   static const HALL_OF_FAME = _Paths.HALL_OF_FAME;
+  static const ERRORS = _Paths.ERRORS;
+  static const SPLASH = _Paths.SPLASH;
 }
 
 abstract class _Paths {
@@ -19,4 +21,6 @@ abstract class _Paths {
   static const AUTH = '/auth';
   static const TUTORIAL = '/tutorial';
   static const HALL_OF_FAME = '/hall-of-fame';
+  static const ERRORS = '/errors';
+  static const SPLASH = '/splash';
 }

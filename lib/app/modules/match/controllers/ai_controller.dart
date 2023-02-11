@@ -139,7 +139,6 @@ class AiController extends GetxController {
         return runFromCheckMate;
       }
     }
-
     if (!(await isConnected())) {
       print('Playing without internet...');
       return makeLocalDecision(gameState);
@@ -160,7 +159,6 @@ class AiController extends GetxController {
       // print(move);
     } else {
       print('Playing remotely...');
-      print(gameState);
       return getRemotePlay(remotePlaysResponse, gameState);
       // print(move);
     }
@@ -275,18 +273,18 @@ class AiController extends GetxController {
 
   List<Tile> getEnemyPieces(GameState gameState) {
     List<Tile> enemyPieces = [];
-    enemyPieces.addAll(gameState.enemyGraveyard as List<Tile>);
+    enemyPieces.addAll(gameState.enemyGraveyard);
     for (var row in gameState.board) {
-      enemyPieces.addAll(row.where((t) => t.owner == possession.enemy) as List<Tile>);
+      enemyPieces.addAll(row.where((t) => t.owner == possession.enemy));
     }
     return enemyPieces;
   }
 
   List<Tile> getMyPieces(GameState gameState) {
     List<Tile> myPieces = [];
-    myPieces.addAll(gameState.myGraveyard as List<Tile>);
+    myPieces.addAll(gameState.myGraveyard);
     for (var row in gameState.board) {
-      myPieces.addAll(row.where((t) => t.owner == possession.mine) as List<Tile>);
+      myPieces.addAll(row.where((t) => t.owner == possession.mine));
     }
 
     return myPieces;

@@ -7,7 +7,11 @@ import '../controllers/auth_controller.dart';
 import 'login_view.dart';
 
 class LoginDialogView extends GetView<AuthController> {
+// class LoginDialogView extends GetView {
   const LoginDialogView({Key? key}) : super(key: key);
+  // @override
+  // AuthController controller = Get.find<AuthController>();
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(

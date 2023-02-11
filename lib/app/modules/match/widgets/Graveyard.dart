@@ -20,13 +20,13 @@ class Graveyard extends GetView {
   List<Tile> getGraveyard() {
     if (p == player.black) {
       return (matchController.playersTurn == player.white
-          ? matchController.gs.value.enemyGraveyard
-          : matchController.gs.value.myGraveyard) as List<Tile>;
+          ? matchController.gs.value!.enemyGraveyard
+          : matchController.gs.value!.myGraveyard);
     }
     if (p == player.white) {
       return (matchController.playersTurn == player.white
-          ? matchController.gs.value.myGraveyard
-          : matchController.gs.value.enemyGraveyard) as List<Tile>;
+          ? matchController.gs.value!.myGraveyard
+          : matchController.gs.value!.enemyGraveyard);
     }
     return [];
   }

@@ -9,6 +9,8 @@ import '../modules/home/bindings/home_binding.dart';
 import '../modules/home/views/home_view.dart';
 import '../modules/match/bindings/match_binding.dart';
 import '../modules/match/views/match_view.dart';
+import '../modules/splash/bindings/splash_binding.dart';
+import '../modules/splash/views/splash_view.dart';
 import '../modules/tutorial/bindings/tutorial_binding.dart';
 import '../modules/tutorial/views/tutorial_view.dart';
 
@@ -17,7 +19,7 @@ part 'app_routes.dart';
 class AppPages {
   AppPages._();
 
-  static const INITIAL = Routes.HOME;
+  static const INITIAL = Routes.SPLASH;
 
   static final routes = [
     GetPage(
@@ -32,7 +34,7 @@ class AppPages {
     ),
     GetPage(
       name: _Paths.MATCH,
-      page: () => MatchView(),
+      page: () => const MatchView(),
       binding: MatchBinding(),
     ),
     GetPage(
@@ -49,6 +51,11 @@ class AppPages {
       name: _Paths.HALL_OF_FAME,
       page: () => const HallOfFameView(),
       binding: HallOfFameBinding(),
+    ),
+    GetPage(
+      name: _Paths.SPLASH,
+      page: () => const SplashView(),
+      binding: SplashBinding(),
     ),
   ];
 }
