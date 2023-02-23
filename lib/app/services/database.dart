@@ -1,3 +1,5 @@
+import 'dart:html';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:minichess/app/data/enums.dart';
@@ -7,13 +9,17 @@ import 'package:minichess/app/modules/match/controllers/match_making_controller.
 import '../data/matchDom.dart';
 import '../data/userDom.dart';
 import '../modules/auth/controllers/auth_controller.dart';
-import '../utils/gameObjects/move.dart';
+import '../modules/match/controllers/match_controller.dart';
+import '../utils/gameObjects/tile.dart';
 
 class DatabaseController extends GetxController {
   late final AuthController authController;
-  late final MatchMakingController matchMakingController;
+  late MatchMakingController matchMakingController;
   late final ErrorsController errorsController;
   late final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  MatchController? matchController;
+  Stream? documentStream;
 
   Future<List<MatchDom>> getOpenMatches() async {
     List<MatchDom> list = [];
@@ -29,23 +35,20 @@ class DatabaseController extends GetxController {
   }
 
   Future<bool> addMatch() {
-    List<Move>moves = [];
-    print(
-        'adding match ${authController.googleAccount.value!.id}, ${gameState.open.name}');
+    matchMakingController = Get.find<MatchMakingController>();
+    List<Tile> tiles = [];
     var docRef = _firestore.collection(collections.matches.name).doc();
-    var asd = MatchDom.nameNoGuest(
-      id: docRef.id,
-      state: gameState.open,
-      hostPlayerId: authController.googleAccount.value!.id.toString(),
-      moves: moves,
+    matchMakingController.gameId.value = docRef.id;
+    print(
+        'adding match ${matchMakingController.gameId.value}, ${gameState.open.name}');
+    var newMatch = MatchDom.noGuest(
+      matchMakingController.gameId.value,
+      gameState.open,
+      tiles,
+      authController.googleAccount.value!.id.toString(),
     ).toMap();
-    print('Match: $asd');
-    return docRef.set(asd)
-        // return _firestore
-        //     .collection(collections.matches.name)
-        //     .add(asd)
-        .then((value) {
-      // matchMakingController.gameId.value = value.id;
+    print('Match: $newMatch');
+    return docRef.set(newMatch).then((value) {
       print("Match added starting...");
       return true;
     }).catchError((error) {
@@ -55,20 +58,64 @@ class DatabaseController extends GetxController {
     });
   }
 
-  Future<bool> joinToAMatch() {
-    print('id: ${matchMakingController.gameId.value}');
+  void closeMatch() {
+    print(
+        'closeing match ${matchMakingController.gameId.value}, ${gameState.open.name}');
+    documentStream = null;
+    var docRef = _firestore
+        .collection(collections.matches.name)
+        .doc(matchMakingController.gameId.value);
+    docRef.update({MatchDom.STATE: gameState.finished.name});
+  }
+
+  startListenersOfMatch() {
+    print('starting listeners and linking matchController...');
+    matchController = Get.find<MatchController>();
+
+    if (documentStream == null) {
+      documentStream = FirebaseFirestore.instance
+          .collection(collections.matches.name)
+          .doc(matchMakingController.gameId.value)
+          .snapshots();
+      print('documentStream2: $documentStream, $matchController');
+      documentStream!
+          .listen((event) => matchController!.whenPlayerTilesChange(event));
+    }
+  }
+
+  Future<bool> addPlayedTile(Tile tile) {
+    print('played tile: $tile');
+    print('documentStream1: $documentStream');
+    print('gameId: ${matchMakingController.gameId.value}');
+    print('remoteTiles: ${matchController!.remoteTiles}');
     return _firestore
         .collection(collections.matches.name)
         .doc(matchMakingController.gameId.value)
         .update({
-          MatchDom.INVITEDPLAYERID: authController.googleAccount.value!.id,
-          MatchDom.STATE: gameState.playing.name,
+          MatchDom.TILES: [...matchController!.remoteTiles, tile.toString()],
         })
         .then((value) => true)
         .catchError((e) {
           errorsController.showGenericError(e);
           return false;
         });
+  }
+
+  Future<bool> joinToAMatch() {
+    matchMakingController = Get.find<MatchMakingController>();
+    print('id: ${matchMakingController.gameId.value}');
+    return _firestore
+        .collection(collections.matches.name)
+        .doc(matchMakingController.gameId.value)
+        .update({
+      MatchDom.INVITEDPLAYERID: authController.googleAccount.value!.id,
+      MatchDom.STATE: gameState.playing.name,
+    }).then((value) {
+      return true;
+    }).catchError((e) {
+      errorsController.showGenericError(e);
+      return false;
+    });
   }
 
   Future<bool> createNewUser(User user) async {
@@ -115,9 +162,11 @@ class DatabaseController extends GetxController {
   @override
   void onReady() {
     print('databasecontroller ready');
-    matchMakingController = Get.find<MatchMakingController>();
+    // matchMakingController = Get.find<MatchMakingController>();
     authController = Get.find<AuthController>();
     errorsController = Get.find<ErrorsController>();
+    // print(
+    //     'controllers: $matchMakingController, $authController, $errorsController');
     super.onReady();
   }
 

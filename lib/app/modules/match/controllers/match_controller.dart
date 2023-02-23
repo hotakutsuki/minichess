@@ -1,8 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:minichess/app/modules/match/controllers/ai_controller.dart';
 import 'package:minichess/app/modules/match/controllers/clock_controller.dart';
 
 import '../../../data/enums.dart';
+import '../../../data/matchDom.dart';
+import '../../../routes/app_pages.dart';
+import '../../../services/database.dart';
 import '../../../utils/gameObjects/GameState.dart';
 import '../../../utils/gameObjects/move.dart';
 import '../../../utils/gameObjects/tile.dart';
@@ -26,6 +30,9 @@ class MatchController extends GetxController {
   late ClockController whiteClockState;
   late ClockController blackClockState;
   late AiController aiController;
+  late MatchMakingController matchMakingController;
+  late List<dynamic> remoteTiles = [];
+  DatabaseController dbController = Get.find<DatabaseController>();
 
   highlightAvailableOptions() {
     for (var row in gs.value!.board) {
@@ -35,6 +42,24 @@ class MatchController extends GetxController {
       }
     }
     gs.update((val) => val);
+  }
+
+  void whenPlayerTilesChange(DocumentSnapshot event) {
+    print('event: $event');
+    remoteTiles = event[MatchDom.TILES];
+    matchMakingController.searching.value = event[MatchDom.STATE] == gameState.open.name;
+    if (remoteTiles.isNotEmpty) {
+      Tile tile = Tile.fromString(remoteTiles.last);
+      if (matchMakingController.isHost.value!) {
+        if (playersTurn == player.black) {
+          play(tile);
+        }
+      } else {
+        if (playersTurn == player.white) {
+          play(tile);
+        }
+      }
+    }
   }
 
   void setTimersAndPlayers() {
@@ -80,12 +105,16 @@ class MatchController extends GetxController {
     if (gamemode == gameMode.solo) {
       return playersTurn == player.white;
     }
+    if (gamemode == gameMode.online) {
+      return (matchMakingController.isHost.value! && playersTurn == player.white) ||
+          (!matchMakingController.isHost.value! && playersTurn == player.black);
+    }
     return true;
   }
 
   play(Tile tile) async {
     if (selectedTile.value == null) {
-      if(tile.char != chrt.empty && tile.owner == possession.mine){
+      if (tile.char != chrt.empty && tile.owner == possession.mine) {
         tile.isSelected = true;
         selectedTile.value = tile;
         highlightAvailableOptions();
@@ -106,15 +135,17 @@ class MatchController extends GetxController {
       highlightAvailableOptions();
       if (!isGameOver.value &&
           (gamemode == gameMode.training ||
-              (gamemode == gameMode.solo &&
-                  playersTurn == player.black))) {
+              (gamemode == gameMode.solo && playersTurn == player.black))) {
         await playAsPc();
       }
     }
   }
 
   onTapTile(Tile tile) async {
-    if (isValidPlay(tile)){
+    if (isValidPlay(tile)) {
+      if (gamemode == gameMode.online) {
+        dbController.addPlayedTile(tile);
+      }
       play(tile);
     }
   }
@@ -145,7 +176,8 @@ class MatchController extends GetxController {
 
     if (await isConnected()) {
       print('saving match...');
-      aiController.storeMovemntHistory(boardHistory, whiteHistory, blackHistory, winner);
+      aiController.storeMovemntHistory(
+          boardHistory, whiteHistory, blackHistory, winner);
     }
     await Future.delayed(const Duration(milliseconds: 100));
     if (gamemode == gameMode.training) {
@@ -165,9 +197,13 @@ class MatchController extends GetxController {
     onInit();
   }
 
+  void closeTheGame(){
+    Get.offAndToNamed(Routes.HOME);
+    dbController.closeMatch();
+  }
+
   @override
   void onInit() {
-    print('initing match match controller');
     super.onInit();
     gs.value = GameState.named(
       board: createNewBoard(),
@@ -178,11 +214,19 @@ class MatchController extends GetxController {
 
   @override
   void onReady() {
+    print('match controller ready');
     whiteClockState = Get.find<ClockController>(tag: player.white.toString());
     blackClockState = Get.find<ClockController>(tag: player.black.toString());
     aiController = Get.put(AiController());
     if (!isGameOver.value && gamemode == gameMode.training) {
       playAsPc();
+    }
+    if (gamemode == gameMode.online) {
+      matchMakingController = Get.find<MatchMakingController>();
+      print('starting online game with $matchMakingController');
+      DatabaseController dbController = Get.find<DatabaseController>();
+      dbController.startListenersOfMatch();
+
     }
     // if (!isGameOver.value && gamemode == gameMode.online){
     //   final matchMakingController = Get.find<MatchMakingController>();

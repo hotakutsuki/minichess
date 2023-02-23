@@ -1,14 +1,15 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:minichess/app/modules/tutorial/views/tutorial_view.dart';
+import 'package:minichess/app/modules/auth/controllers/auth_controller.dart';
 import 'package:minichess/app/routes/app_pages.dart';
 import '../../../data/enums.dart';
-import '../../hallOfFame/views/hall_of_fame_view.dart';
 import '../controllers/home_controller.dart';
 
 class HomeView extends GetView<HomeController> {
-  const HomeView({Key? key}) : super(key: key);
+  HomeView({Key? key}) : super(key: key);
+
+  AuthController authController = Get.find<AuthController>();
 
   @override
   Widget build(BuildContext context) {
@@ -76,9 +77,19 @@ class HomeView extends GetView<HomeController> {
           Positioned(
             top: 4,
             right: 4,
-            child: FloatingActionButton(
-                child: const Icon(CupertinoIcons.person),
-                onPressed: () => controller.showAuthDialog()),
+            child: Obx(() {
+              return FloatingActionButton(
+                  child: authController.googleAccount.value == null
+                      ? const Icon(CupertinoIcons.person)
+                      : CircleAvatar(
+                          backgroundImage: Image.network(authController
+                                      .googleAccount.value?.photoUrl ??
+                                  '')
+                              .image,
+                          radius: 30,
+                        ),
+                  onPressed: () => controller.showAuthDialog());
+            }),
           ),
         ]),
       ),

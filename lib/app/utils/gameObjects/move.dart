@@ -1,6 +1,7 @@
 import 'package:minichess/app/utils/gameObjects/tile.dart';
 
 import '../utils.dart';
+import '../../data/enums.dart';
 
 class Move {
   Move(this.initialTile, this.finalTile);
@@ -8,22 +9,37 @@ class Move {
   late Tile initialTile;
   late Tile finalTile;
 
-  Move.fromString(String s){
-    initialTile = getInitialTile(s.substring(0,3));
-    finalTile = getFinalTile(s.substring(4));
+  Move.fromCode(String code){
+    print('getting move from: $code');
+    var codeSplited = code.split('||');
+    if (codeSplited.length > 1) {//is from graveyard
+      var moves = codeSplited[1].split('|');
+      initialTile = Tile(getCharFromString(codeSplited[0]), possession.none, null, null);
+      finalTile = Tile(chrt.empty, possession.none, moves[0] as int, moves[1] as int);
+    } else {
+      var moves = code.split('|');
+      initialTile = Tile(chrt.empty, possession.none, moves[0] as int, moves[1] as int);
+      finalTile = Tile(chrt.empty, possession.none, moves[2] as int, moves[3] as int);
+    }
+    print('obtained move: $this');
   }
 
-  Tile getInitialTile(String s){
-    return Tile(getCharFromString(), owner, i, j);
+  // Tile getInitialTileString(String s){
+  //   return Tile(getCharFromString(), owner, i, j);
+  // }
+
+  chrt getCharFromString(s){
+    for (chrt element in chrt.values) {
+      if (element.name == s){
+        return element;
+      }
+    }
+    throw Error();
   }
 
-  char getCharFromString(s){
-    char.
-  }
-
-  Tile getFinalTile(String s){
-    return Tile(char, owner, i, j);
-  }
+  // Tile getFinalTile(String s){
+  //   return Tile(char, owner, i, j);
+  // }
 
 
   @override

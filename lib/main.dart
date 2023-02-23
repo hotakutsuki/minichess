@@ -19,10 +19,10 @@ Future<void> main() async {
 
   Get.put(AuthController(), permanent: true);
   Get.put(ErrorsController(), permanent: true);
+  Get.put(DatabaseController(), permanent: true);
   Get.lazyPut<MatchMakingController>(
         () => MatchMakingController(),
   );
-  Get.put(DatabaseController(), permanent: true);
   // Get.lazyPut<DatabaseController>(
   //   () => DatabaseController(),
   // );

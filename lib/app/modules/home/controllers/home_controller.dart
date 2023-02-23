@@ -8,7 +8,7 @@ import '../../match/controllers/match_making_controller.dart';
 
 class HomeController extends GetxController {
   final AuthController authController = Get.find<AuthController>();
-  late final MatchMakingController matchMakingController;
+  late MatchMakingController matchMakingController;
 
   void setMode(gameMode mode) {
     Get.toNamed(Routes.MATCH, arguments: mode);
@@ -23,7 +23,7 @@ class HomeController extends GetxController {
       print('03');
       matchMakingController = Get.find<MatchMakingController>();
       print('04');
-      matchMakingController.startNewMatch();
+      matchMakingController.startMatch();
     }
   }
 
