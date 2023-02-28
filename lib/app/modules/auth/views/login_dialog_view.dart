@@ -19,9 +19,9 @@ class LoginDialogView extends GetView<AuthController> {
         height: 400,
         child: Obx(() {
           if (controller.googleAccount.value == null) {
-            return LoginView();
+            return const LoginView();
           } else {
-            return ProfileView();
+            return const ProfileView();
           }
         }),
       ),

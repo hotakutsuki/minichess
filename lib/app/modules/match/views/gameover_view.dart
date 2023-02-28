@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
 import 'package:minichess/app/data/enums.dart';
+import 'package:minichess/app/modules/match/controllers/match_making_controller.dart';
 
 import '../../../utils/utils.dart';
 import '../controllers/match_controller.dart';
 
 class GameoverView extends GetView<MatchController> {
-  const GameoverView({Key? key}) : super(key: key);
+  GameoverView({Key? key}) : super(key: key);
+  var matchMakingController = Get.find<MatchMakingController>();
 
   Color getTextColor() {
     return controller.winner == player.white ? Colors.black : Colors.white;
@@ -24,33 +26,55 @@ class GameoverView extends GetView<MatchController> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text('Winner: ${controller.winner == player.white ? 'White' : 'Black'}',
+          Text(
+              'Winner: ${controller.winner == player.white ? 'White' : 'Black'}',
               style: TextStyle(
                   color: getTextColor(),
                   fontSize: 48,
                   fontWeight: FontWeight.bold)),
           SizedBox(
-              width: 250, height: 250, child: getImage(chrt.queen, controller.winner)),
+              width: 250,
+              height: 250,
+              child: getImage(chrt.queen, controller.winner)),
           Text(
-            controller.gamemode != gameMode.solo ? '' : 'W   B\n${controller.wScore} - ${controller.bScore}',
+            controller.gamemode != gameMode.solo
+                ? ''
+                : 'W   B\n${controller.wScore} - ${controller.bScore}',
             textAlign: TextAlign.center,
             style: TextStyle(
                 color: getTextColor(),
                 fontSize: 42,
                 fontWeight: FontWeight.bold),
           ),
-          Text('GameId: ${DateTime.now().millisecondsSinceEpoch.toString()}',
-              style: TextStyle(color: getTextColor())),
-          SizedBox(
-            height: 40,
-            width: 150,
-            child: ElevatedButton(
-              onPressed: controller.restartGame,
-              child: const Text(
-                'Restart',
+          if (controller.gamemode != gameMode.online)
+            SizedBox(
+              height: 40,
+              width: 150,
+              child: ElevatedButton(
+                onPressed: controller.restartGame,
+                child: const Text(
+                  'Restart',
+                ),
               ),
             ),
-          ),
+          if (controller.gamemode == gameMode.online)
+            Obx(() {
+              return SizedBox(
+                  height: 50,
+                  width: 170,
+                  child: Center(
+                    child: Text(
+                      'Your Score:\n'
+                        '${matchMakingController.myLocalScore.value}'
+                        '${matchMakingController.isWinner.value! ? '+' : '-'}'
+                        '${matchMakingController.change.value}',
+                        style: const TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold)),
+                  ));
+            }),
+          Text('GameId: ${DateTime.now().millisecondsSinceEpoch.toString()}',
+              style: TextStyle(color: getTextColor())),
         ],
       ),
     );

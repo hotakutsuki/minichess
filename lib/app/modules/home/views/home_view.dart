@@ -23,71 +23,78 @@ class HomeView extends GetView<HomeController> {
             children: [
               const Text('Minichess',
                   style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold)),
-              SizedBox(
-                height: 200,
-                width: 150,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    SizedBox(
-                      height: 40,
-                      width: 150,
-                      child: ElevatedButton(
-                        onPressed: () => controller.setMode(gameMode.solo),
-                        child: const Text(
-                          'Vs PC',
+              Obx(() {
+                return SizedBox(
+                  height: 250,
+                  width: 150,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      SizedBox(
+                        height: 40,
+                        width: 150,
+                        child: ElevatedButton(
+                          onPressed: () => controller.setMode(gameMode.solo),
+                          child: const Text(
+                            'Vs PC',
+                          ),
                         ),
                       ),
-                    ),
-                    SizedBox(
-                      height: 40,
-                      width: 150,
-                      child: ElevatedButton(
-                        onPressed: () => controller.setMode(gameMode.vs),
-                        child: const Text(
-                          '2 players',
+                      SizedBox(
+                        height: 40,
+                        width: 150,
+                        child: ElevatedButton(
+                          onPressed: () => controller.setMode(gameMode.vs),
+                          child: const Text(
+                            '2 players',
+                          ),
                         ),
                       ),
-                    ),
-                    SizedBox(
-                      height: 40,
-                      width: 150,
-                      child: ElevatedButton(
-                        onPressed: () => controller.checkLogin(),
-                        child: const Text(
-                          'Multiplayer online',
+                      SizedBox(
+                        height: 40,
+                        width: 150,
+                        child: ElevatedButton(
+                          onPressed: () => controller.checkLogin(),
+                          child: const Text(
+                            'Multiplayer online',
+                          ),
                         ),
                       ),
-                    ),
-                    // SizedBox(
-                    //   height: 40,
-                    //   width: 150,
-                    //   child: ElevatedButton(
-                    //     onPressed: () => setMode(context, gameMode.training),
-                    //     child: const Text(
-                    //       'Training',
-                    //     ),
-                    //   ),
-                    // ),
-                  ],
-                ),
-              ),
+                      if(authController.user.value != null) Text(
+                          'score: ${authController.user.value?.score}',
+                          style: const TextStyle(
+                              fontSize: 28, fontWeight: FontWeight.bold))
+                      // SizedBox(
+                      //   height: 40,
+                      //   width: 150,
+                      //   child: ElevatedButton(
+                      //     onPressed: () => setMode(context, gameMode.training),
+                      //     child: const Text(
+                      //       'Training',
+                      //     ),
+                      //   ),
+                      // ),
+                    ],
+                  ),
+                );
+              }),
             ],
           ),
           Positioned(
-            top: 4,
-            right: 4,
+            top: 10,
+            right: 10,
             child: Obx(() {
               return FloatingActionButton(
-                  child: authController.googleAccount.value == null
+                  child: authController.user.value == null
                       ? const Icon(CupertinoIcons.person)
                       : CircleAvatar(
-                          backgroundImage: Image.network(authController
-                                      .googleAccount.value?.photoUrl ??
-                                  '')
-                              .image,
-                          radius: 30,
-                        ),
+                    backgroundImage: Image
+                        .network(authController
+                        .user.value?.photoUrl ??
+                        '')
+                        .image,
+                    radius: 30,
+                  ),
                   onPressed: () => controller.showAuthDialog());
             }),
           ),

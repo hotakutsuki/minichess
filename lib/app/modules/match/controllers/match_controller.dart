@@ -5,6 +5,7 @@ import 'package:minichess/app/modules/match/controllers/clock_controller.dart';
 
 import '../../../data/enums.dart';
 import '../../../data/matchDom.dart';
+import '../../../data/userDom.dart';
 import '../../../routes/app_pages.dart';
 import '../../../services/database.dart';
 import '../../../utils/gameObjects/GameState.dart';
@@ -15,6 +16,7 @@ import 'match_making_controller.dart';
 
 class MatchController extends GetxController {
   Rxn<GameState> gs = Rxn<GameState>();
+  DatabaseController databaseController = Get.find<DatabaseController>();
   final gameMode gamemode = Get.arguments ?? gameMode.vs;
 
   int wScore = 0, bScore = 0;
@@ -34,6 +36,9 @@ class MatchController extends GetxController {
   late List<dynamic> remoteTiles = [];
   DatabaseController dbController = Get.find<DatabaseController>();
 
+  Rxn<User> hostUser = Rxn<User>(null);
+  Rxn<User> invitedUser = Rxn<User>(null);
+
   highlightAvailableOptions() {
     for (var row in gs.value!.board) {
       for (Tile v in row) {
@@ -44,10 +49,17 @@ class MatchController extends GetxController {
     gs.update((val) => val);
   }
 
-  void whenPlayerTilesChange(DocumentSnapshot event) {
+  void whenMatchStateChange(DocumentSnapshot event) async {
     print('event: $event');
     remoteTiles = event[MatchDom.TILES];
-    matchMakingController.searching.value = event[MatchDom.STATE] == gameState.open.name;
+    matchMakingController.searching.value =
+        event[MatchDom.STATE] == gameState.open.name;
+
+    invitedUser.value ??= await databaseController
+        .getUserByUserId(event[MatchDom.INVITEDPLAYERID]);
+    hostUser.value ??=
+        await databaseController.getUserByUserId(event[MatchDom.HOSTPLAYERID]);
+
     if (remoteTiles.isNotEmpty) {
       Tile tile = Tile.fromString(remoteTiles.last);
       if (matchMakingController.isHost.value!) {
@@ -106,7 +118,8 @@ class MatchController extends GetxController {
       return playersTurn == player.white;
     }
     if (gamemode == gameMode.online) {
-      return (matchMakingController.isHost.value! && playersTurn == player.white) ||
+      return (matchMakingController.isHost.value! &&
+              playersTurn == player.white) ||
           (!matchMakingController.isHost.value! && playersTurn == player.black);
     }
     return true;
@@ -174,6 +187,17 @@ class MatchController extends GetxController {
       bScore++;
     }
 
+    if (gamemode == gameMode.online) {
+      bool imWinner = (p == player.black) ^ matchMakingController.isHost.value!;
+      int myScore = matchMakingController.isHost.value!
+          ? hostUser.value!.score
+          : invitedUser.value!.score;
+      int oponentScore = matchMakingController.isHost.value!
+          ? invitedUser.value!.score
+          : hostUser.value!.score;
+      matchMakingController.updateScore(imWinner, myScore, oponentScore);
+    }
+
     if (await isConnected()) {
       print('saving match...');
       aiController.storeMovemntHistory(
@@ -197,7 +221,7 @@ class MatchController extends GetxController {
     onInit();
   }
 
-  void closeTheGame(){
+  void closeTheGame() {
     Get.offAndToNamed(Routes.HOME);
     dbController.closeMatch();
   }
@@ -226,7 +250,6 @@ class MatchController extends GetxController {
       print('starting online game with $matchMakingController');
       DatabaseController dbController = Get.find<DatabaseController>();
       dbController.startListenersOfMatch();
-
     }
     // if (!isGameOver.value && gamemode == gameMode.online){
     //   final matchMakingController = Get.find<MatchMakingController>();
@@ -237,6 +260,7 @@ class MatchController extends GetxController {
 
   @override
   void onClose() {
+    print('closing match controller');
     super.onClose();
   }
 }

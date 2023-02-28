@@ -1,5 +1,3 @@
-import 'dart:html';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:minichess/app/data/enums.dart';
@@ -40,7 +38,8 @@ class DatabaseController extends GetxController {
     var docRef = _firestore.collection(collections.matches.name).doc();
     matchMakingController.gameId.value = docRef.id;
     print(
-        'adding match ${matchMakingController.gameId.value}, ${gameState.open.name}');
+        'adding match ${matchMakingController.gameId.value}, ${gameState.open
+            .name}');
     var newMatch = MatchDom.noGuest(
       matchMakingController.gameId.value,
       gameState.open,
@@ -60,7 +59,8 @@ class DatabaseController extends GetxController {
 
   void closeMatch() {
     print(
-        'closeing match ${matchMakingController.gameId.value}, ${gameState.open.name}');
+        'closeing match ${matchMakingController.gameId.value}, ${gameState.open
+            .name}');
     documentStream = null;
     var docRef = _firestore
         .collection(collections.matches.name)
@@ -79,7 +79,7 @@ class DatabaseController extends GetxController {
           .snapshots();
       print('documentStream2: $documentStream, $matchController');
       documentStream!
-          .listen((event) => matchController!.whenPlayerTilesChange(event));
+          .listen((event) => matchController!.whenMatchStateChange(event));
     }
   }
 
@@ -92,13 +92,13 @@ class DatabaseController extends GetxController {
         .collection(collections.matches.name)
         .doc(matchMakingController.gameId.value)
         .update({
-          MatchDom.TILES: [...matchController!.remoteTiles, tile.toString()],
-        })
+      MatchDom.TILES: [...matchController!.remoteTiles, tile.toString()],
+    })
         .then((value) => true)
         .catchError((e) {
-          errorsController.showGenericError(e);
-          return false;
-        });
+      errorsController.showGenericError(e);
+      return false;
+    });
   }
 
   Future<bool> joinToAMatch() {
@@ -120,9 +120,12 @@ class DatabaseController extends GetxController {
 
   Future<bool> createNewUser(User user) async {
     try {
-      await _firestore.collection("users").doc(user.id).set({
+      await _firestore.collection("users").doc().set({
+        "id": user.id,
         "name": user.name,
         "email": user.email,
+        "photoUrl": user.photoUrl,
+        "score": user.score,
       });
       return true;
     } catch (e) {
@@ -134,11 +137,68 @@ class DatabaseController extends GetxController {
   Future<User> getUser(String uid) async {
     try {
       DocumentSnapshot doc =
-          await _firestore.collection("users").doc(uid).get();
+      await _firestore.collection("users").doc(uid).get();
       return User.fromDocStanpshot(doc);
     } catch (e) {
       print(e);
       rethrow;
+    }
+  }
+
+  Future<User?> getUserByUserId(String uid) async {
+    print('tryin to get user uid: $uid');
+    try {
+      var docs =
+      await _firestore.collection(collections.users.name).where(
+          'id', isEqualTo: uid).get();
+      if (docs.docs.isNotEmpty) {
+        print(docs.docs[0].toString());
+        return User.fromDocStanpshot(docs.docs[0]);
+      } else {
+        return null;
+      }
+    } catch (e) {
+      print(e);
+      rethrow;
+    }
+  }
+
+  Future<String?> getUserDocIByUserId(String uid) async {
+    print('tryin to get user uid: $uid');
+    try {
+      var docs =
+      await _firestore.collection(collections.users.name).where(
+          'id', isEqualTo: uid).get();
+      if (docs.docs.isNotEmpty) {
+        return docs.docs[0].id;
+      } else {
+        return null;
+      }
+    } catch (e) {
+      print(e);
+      rethrow;
+    }
+  }
+
+  updateScore(int score) async {
+    String? docId = await getUserDocIByUserId(authController.user.value!.id);
+    if (docId != null){
+      var docRef = _firestore
+          .collection(collections.users.name)
+          .doc(docId);
+      await docRef.update({User.SCORE: score});
+      authController.user.value!.score = score;
+    }
+  }
+
+  updateProfilePic(String url) async {
+    String? docId = await getUserDocIByUserId(authController.user.value!.id);
+    if (docId != null){
+      var docRef = _firestore
+          .collection(collections.users.name)
+          .doc(docId);
+      await docRef.update({User.PHOTOURL: url});
+      authController.user.value!.photoUrl = url;
     }
   }
 
