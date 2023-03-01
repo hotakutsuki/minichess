@@ -25,7 +25,6 @@ class DatabaseController extends GetxController {
         .collection(collections.matches.name)
         .where('state', isEqualTo: gameState.open.name)
         .get();
-    print('docs number: ${matchesSnapshots.docs.length}');
     list.addAll(matchesSnapshots.docs
         .map((e) => MatchDom.fromSnapshot(e.id, e.data()))
         .toList());
@@ -37,18 +36,13 @@ class DatabaseController extends GetxController {
     List<Tile> tiles = [];
     var docRef = _firestore.collection(collections.matches.name).doc();
     matchMakingController.gameId.value = docRef.id;
-    print(
-        'adding match ${matchMakingController.gameId.value}, ${gameState.open
-            .name}');
     var newMatch = MatchDom.noGuest(
       matchMakingController.gameId.value,
       gameState.open,
       tiles,
       authController.googleAccount.value!.id.toString(),
     ).toMap();
-    print('Match: $newMatch');
     return docRef.set(newMatch).then((value) {
-      print("Match added starting...");
       return true;
     }).catchError((error) {
       print("Failed to start match: $error");
@@ -58,9 +52,6 @@ class DatabaseController extends GetxController {
   }
 
   void closeMatch() {
-    print(
-        'closeing match ${matchMakingController.gameId.value}, ${gameState.open
-            .name}');
     documentStream = null;
     var docRef = _firestore
         .collection(collections.matches.name)
@@ -69,7 +60,6 @@ class DatabaseController extends GetxController {
   }
 
   startListenersOfMatch() {
-    print('starting listeners and linking matchController...');
     matchController = Get.find<MatchController>();
 
     if (documentStream == null) {
@@ -77,28 +67,23 @@ class DatabaseController extends GetxController {
           .collection(collections.matches.name)
           .doc(matchMakingController.gameId.value)
           .snapshots();
-      print('documentStream2: $documentStream, $matchController');
       documentStream!
           .listen((event) => matchController!.whenMatchStateChange(event));
     }
   }
 
   Future<bool> addPlayedTile(Tile tile) {
-    print('played tile: $tile');
-    print('documentStream1: $documentStream');
-    print('gameId: ${matchMakingController.gameId.value}');
-    print('remoteTiles: ${matchController!.remoteTiles}');
     return _firestore
         .collection(collections.matches.name)
         .doc(matchMakingController.gameId.value)
         .update({
-      MatchDom.TILES: [...matchController!.remoteTiles, tile.toString()],
-    })
+          MatchDom.TILES: [...matchController!.remoteTiles, tile.toString()],
+        })
         .then((value) => true)
         .catchError((e) {
-      errorsController.showGenericError(e);
-      return false;
-    });
+          errorsController.showGenericError(e);
+          return false;
+        });
   }
 
   Future<bool> joinToAMatch() {
@@ -120,12 +105,15 @@ class DatabaseController extends GetxController {
 
   Future<bool> createNewUser(User user) async {
     try {
-      await _firestore.collection("users").doc().set({
-        "id": user.id,
-        "name": user.name,
-        "email": user.email,
-        "photoUrl": user.photoUrl,
-        "score": user.score,
+      await _firestore.collection(collections.users.name).doc().set({
+        User.ID: user.id,
+        User.NAME: user.name,
+        User.EMAIL: user.email,
+        User.PHOTOURL: user.photoUrl,
+        User.SCORE: user.score,
+        User.COUNTRY: user.country,
+        User.COUNTRYCODE: user.countryCode,
+        User.CITY: user.city,
       });
       return true;
     } catch (e) {
@@ -134,11 +122,14 @@ class DatabaseController extends GetxController {
     }
   }
 
-  Future<User> getUser(String uid) async {
+  Future<User?> getUser(String uid) async {
     try {
       DocumentSnapshot doc =
-      await _firestore.collection("users").doc(uid).get();
-      return User.fromDocStanpshot(doc);
+          await _firestore.collection("users").doc(uid).get();
+      if (doc.data() != null) {
+        return User.fromDocStanpshot(doc.data() as Map<String, dynamic>);
+      }
+      return null;
     } catch (e) {
       print(e);
       rethrow;
@@ -146,14 +137,13 @@ class DatabaseController extends GetxController {
   }
 
   Future<User?> getUserByUserId(String uid) async {
-    print('tryin to get user uid: $uid');
     try {
-      var docs =
-      await _firestore.collection(collections.users.name).where(
-          'id', isEqualTo: uid).get();
+      var docs = await _firestore
+          .collection(collections.users.name)
+          .where(User.ID, isEqualTo: uid)
+          .get();
       if (docs.docs.isNotEmpty) {
-        print(docs.docs[0].toString());
-        return User.fromDocStanpshot(docs.docs[0]);
+        return User.fromDocStanpshot(docs.docs[0].data());
       } else {
         return null;
       }
@@ -164,11 +154,11 @@ class DatabaseController extends GetxController {
   }
 
   Future<String?> getUserDocIByUserId(String uid) async {
-    print('tryin to get user uid: $uid');
     try {
-      var docs =
-      await _firestore.collection(collections.users.name).where(
-          'id', isEqualTo: uid).get();
+      var docs = await _firestore
+          .collection(collections.users.name)
+          .where(User.ID, isEqualTo: uid)
+          .get();
       if (docs.docs.isNotEmpty) {
         return docs.docs[0].id;
       } else {
@@ -182,23 +172,27 @@ class DatabaseController extends GetxController {
 
   updateScore(int score) async {
     String? docId = await getUserDocIByUserId(authController.user.value!.id);
-    if (docId != null){
-      var docRef = _firestore
-          .collection(collections.users.name)
-          .doc(docId);
+    if (docId != null) {
+      var docRef = _firestore.collection(collections.users.name).doc(docId);
       await docRef.update({User.SCORE: score});
       authController.user.value!.score = score;
     }
   }
 
-  updateProfilePic(String url) async {
+  updateInfo(photoUrl, country, countryCode, city) async {
     String? docId = await getUserDocIByUserId(authController.user.value!.id);
-    if (docId != null){
-      var docRef = _firestore
-          .collection(collections.users.name)
-          .doc(docId);
-      await docRef.update({User.PHOTOURL: url});
-      authController.user.value!.photoUrl = url;
+    if (docId != null) {
+      var docRef = _firestore.collection(collections.users.name).doc(docId);
+      await docRef.update({
+        User.PHOTOURL: photoUrl,
+        User.COUNTRY: country,
+        User.COUNTRYCODE: countryCode,
+        User.CITY: city,
+      });
+      authController.user.value!.photoUrl = photoUrl;
+      authController.user.value!.country = country;
+      authController.user.value!.countryCode = countryCode;
+      authController.user.value!.city = city;
     }
   }
 
@@ -215,18 +209,13 @@ class DatabaseController extends GetxController {
 
   @override
   void onInit() {
-    print('databasecontroller init');
     super.onInit();
   }
 
   @override
   void onReady() {
-    print('databasecontroller ready');
-    // matchMakingController = Get.find<MatchMakingController>();
     authController = Get.find<AuthController>();
     errorsController = Get.find<ErrorsController>();
-    // print(
-    //     'controllers: $matchMakingController, $authController, $errorsController');
     super.onReady();
   }
 
