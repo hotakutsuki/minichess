@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:minichess/app/data/enums.dart';
@@ -12,12 +14,12 @@ import '../utils/gameObjects/tile.dart';
 
 class DatabaseController extends GetxController {
   late final AuthController authController;
-  late MatchMakingController matchMakingController;
+  late MatchController matchController;
   late final ErrorsController errorsController;
   late final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  MatchController? matchController;
   Stream? documentStream;
+  late StreamSubscription<dynamic> listener;
 
   Future<List<MatchDom>> getOpenMatches() async {
     List<MatchDom> list = [];
@@ -32,12 +34,12 @@ class DatabaseController extends GetxController {
   }
 
   Future<bool> addMatch() {
-    matchMakingController = Get.find<MatchMakingController>();
+    matchController = Get.find<MatchController>();
     List<Tile> tiles = [];
     var docRef = _firestore.collection(collections.matches.name).doc();
-    matchMakingController.gameId.value = docRef.id;
+    matchController.gameId.value = docRef.id;
     var newMatch = MatchDom.noGuest(
-      matchMakingController.gameId.value,
+      matchController.gameId.value,
       gameState.open,
       tiles,
       authController.googleAccount.value!.id.toString(),
@@ -52,32 +54,35 @@ class DatabaseController extends GetxController {
   }
 
   void closeMatch() {
+    listener.cancel();
     documentStream = null;
-    var docRef = _firestore
-        .collection(collections.matches.name)
-        .doc(matchMakingController.gameId.value);
-    docRef.update({MatchDom.STATE: gameState.finished.name});
+    if (matchController != null && matchController!.gamemode == gameMode.online){
+      var docRef = _firestore
+          .collection(collections.matches.name)
+          .doc(matchController.gameId.value);
+      docRef.update({MatchDom.STATE: gameState.finished.name});
+    }
   }
 
   startListenersOfMatch() {
     matchController = Get.find<MatchController>();
-
     if (documentStream == null) {
+      print('listening to game: ${matchController.gameId.value}');
       documentStream = FirebaseFirestore.instance
           .collection(collections.matches.name)
-          .doc(matchMakingController.gameId.value)
+          .doc(matchController.gameId.value)
           .snapshots();
-      documentStream!
-          .listen((event) => matchController!.whenMatchStateChange(event));
+      listener = documentStream!
+          .listen((event) => matchController.whenMatchStateChange(event));
     }
   }
 
-  Future<bool> addPlayedTile(Tile tile) {
+  Future<bool> updatePlayedHistory() {
     return _firestore
         .collection(collections.matches.name)
-        .doc(matchMakingController.gameId.value)
+        .doc(matchController.gameId.value)
         .update({
-          MatchDom.TILES: [...matchController!.remoteTiles, tile.toString()],
+          MatchDom.TILES: matchController.localTiles,
         })
         .then((value) => true)
         .catchError((e) {
@@ -87,11 +92,11 @@ class DatabaseController extends GetxController {
   }
 
   Future<bool> joinToAMatch() {
-    matchMakingController = Get.find<MatchMakingController>();
-    print('id: ${matchMakingController.gameId.value}');
+    matchController = Get.find<MatchController>();
+    print('joining to: ${matchController.gameId.value}');
     return _firestore
         .collection(collections.matches.name)
-        .doc(matchMakingController.gameId.value)
+        .doc(matchController.gameId.value)
         .update({
       MatchDom.INVITEDPLAYERID: authController.googleAccount.value!.id,
       MatchDom.STATE: gameState.playing.name,
@@ -199,7 +204,7 @@ class DatabaseController extends GetxController {
   getCurrentMatch() {
     final Stream<DocumentSnapshot> _MatchDocumentSnapshot = _firestore
         .collection(collections.matches.name)
-        .doc(matchMakingController.gameId.value)
+        .doc(matchController.gameId.value)
         .snapshots();
 
     _MatchDocumentSnapshot.listen((event) {

@@ -9,7 +9,7 @@ import '../controllers/match_controller.dart';
 
 class GameoverView extends GetView<MatchController> {
   GameoverView({Key? key}) : super(key: key);
-  var matchMakingController = Get.find<MatchMakingController>();
+  // var matchMakingController = Get.find<MatchController>();
 
   Color getTextColor() {
     return controller.winner == player.white ? Colors.black : Colors.white;
@@ -36,16 +36,15 @@ class GameoverView extends GetView<MatchController> {
               width: 250,
               height: 250,
               child: getImage(chrt.queen, controller.winner)),
-          Text(
-            controller.gamemode != gameMode.solo
-                ? ''
-                : 'W   B\n${controller.wScore} - ${controller.bScore}',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-                color: getTextColor(),
-                fontSize: 42,
-                fontWeight: FontWeight.bold),
-          ),
+          if (controller.gamemode == gameMode.solo || controller.gamemode == gameMode.vs)
+            Text(
+              'W   B\n${controller.wScore} - ${controller.bScore}',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  color: getTextColor(),
+                  fontSize: 42,
+                  fontWeight: FontWeight.bold),
+            ),
           if (controller.gamemode != gameMode.online)
             SizedBox(
               height: 40,
@@ -60,15 +59,16 @@ class GameoverView extends GetView<MatchController> {
           if (controller.gamemode == gameMode.online)
             Obx(() {
               return SizedBox(
-                  height: 50,
+                  height: 100,
                   width: 170,
                   child: Center(
                     child: Text(
-                      'Your Score:\n'
-                        '${matchMakingController.myLocalScore.value}'
-                        '${matchMakingController.isWinner.value! ? '+' : '-'}'
-                        '${matchMakingController.change.value}',
-                        style: const TextStyle(
+                        'Your Score:\n'
+                        '${controller.myLocalScore.value}'
+                        '${controller.isWinner.value! ? '+' : '-'}'
+                        '${controller.scoreChange.value}',
+                        style: TextStyle(
+                            color: getTextColor(),
                             fontSize: 28,
                             fontWeight: FontWeight.bold)),
                   ));

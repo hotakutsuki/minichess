@@ -25,14 +25,14 @@ class AiController extends GetxController {
   static const String metadatoEntry = 'entry.196101266';
 
   storeMovemntHistory(
-      List<String> boardHistory,
-      List<Move> whiteHistory,
-      List<Move> blackHistory,
-      player winner,
-      ) async {
+    List<String> boardHistory,
+    List<Move> whiteHistory,
+    List<Move> blackHistory,
+    player winner,
+  ) async {
     List<RemoteRecord> records = createRemoteHistoryArray(
         boardHistory, whiteHistory, blackHistory, winner);
-    List<Future> futures = records.map((record) {
+    records.map((record) {
       var url = Uri.https(docsDomain, '$DOC_URL$POST_URL', {
         usp: ppurl,
         boardEntry: record.boardstate,
@@ -41,18 +41,17 @@ class AiController extends GetxController {
         matchIdEntry: record.matchid,
         metadatoEntry: '',
       });
-      // print(url);
-      return http.get(url);
-    }).toList();
-    await Future.wait(futures);
+      print(url);
+      http.get(url);
+    });
   }
 
   List<RemoteRecord> createRemoteHistoryArray(
-      List<String> boardHistory,
-      List<Move> whiteHistory,
-      List<Move> blackHistory,
-      player winner,
-      ) {
+    List<String> boardHistory,
+    List<Move> whiteHistory,
+    List<Move> blackHistory,
+    player winner,
+  ) {
     String matchId = DateTime.now().millisecondsSinceEpoch.toString();
     List<RemoteRecord> records = [];
     int i = 0, j = 0;

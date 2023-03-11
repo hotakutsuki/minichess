@@ -17,10 +17,6 @@ class SplashBinding extends Bindings {
     // Get.lazyPut<ErrorsController>(
     //       () => ErrorsController(),
     // );
-    // Get.put(MatchMakingController());
-    // Get.lazyPut<MatchMakingController>(
-    //       () => MatchMakingController(),
-    // );
     Get.put(SplashController());
   }
 }

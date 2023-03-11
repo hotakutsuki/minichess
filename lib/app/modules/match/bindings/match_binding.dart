@@ -11,12 +11,6 @@ import '../controllers/match_controller.dart';
 class MatchBinding extends Bindings {
   @override
   void dependencies() {
-    // Get.lazyPut<DatabaseController>(
-    //   () => DatabaseController(),
-    // );
-    // Get.lazyPut<MatchMakingController>(
-    //   () => MatchMakingController(),
-    // );
     Get.lazyPut<GameoverController>(
       () => GameoverController(),
     );

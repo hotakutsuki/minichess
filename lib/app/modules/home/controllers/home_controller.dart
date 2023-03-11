@@ -8,22 +8,19 @@ import '../../match/controllers/match_making_controller.dart';
 
 class HomeController extends GetxController {
   final AuthController authController = Get.find<AuthController>();
-  late MatchMakingController matchMakingController;
+  // late MatchMakingController matchMakingController;
 
   void setMode(gameMode mode) {
     Get.toNamed(Routes.MATCH, arguments: mode);
   }
 
   void checkLogin() {
-    print('01 $authController');
     if (authController.googleAccount.value == null) {
-      print('02');
       showAuthDialog();
     } else {
-      print('03');
-      matchMakingController = Get.find<MatchMakingController>();
-      print('04');
-      matchMakingController.startMatch();
+      setMode(gameMode.online);
+      // matchMakingController = Get.find<MatchMakingController>();
+      // matchMakingController.startMatch();
     }
   }
 
