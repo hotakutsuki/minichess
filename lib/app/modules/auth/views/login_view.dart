@@ -21,6 +21,7 @@ class LoginView extends GetView<AuthController> {
           ],
         ),
         const Text('We need you to login in order to establish your score'),
+        Text(controller.contactText.value),
         FloatingActionButton.extended(
           icon: Image.asset(
             'assets/images/glogo.png',

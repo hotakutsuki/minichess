@@ -1,11 +1,8 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-
 import 'package:get/get.dart';
-
 import 'app/modules/auth/controllers/auth_controller.dart';
 import 'app/modules/errors/controllers/errors_controller.dart';
-import 'app/modules/match/controllers/match_making_controller.dart';
 import 'app/routes/app_pages.dart';
 import 'app/services/database.dart';
 import 'firebase_options.dart';
@@ -20,6 +17,7 @@ Future<void> main() async {
   Get.put(AuthController(), permanent: true);
   Get.put(ErrorsController(), permanent: true);
   Get.put(DatabaseController(), permanent: true);
+
   // Get.lazyPut<MatchMakingController>(
   //       () => MatchMakingController(),
   // );

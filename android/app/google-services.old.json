@@ -14,14 +14,6 @@
       },
       "oauth_client": [
         {
-          "client_id": "733138640689-n81kf852je2ffevbjg4k9q9u22k7eo24.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.hotakutsuki.minichess",
-            "certificate_hash": "f88c521f46bb59d295be69d7ea2e975aafb4a232"
-          }
-        },
-        {
           "client_id": "733138640689-9qkav0thc6ppv5e9h6ua4ji3n11nmkks.apps.googleusercontent.com",
           "client_type": 3
         }
