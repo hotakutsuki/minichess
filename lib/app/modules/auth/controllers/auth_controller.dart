@@ -13,7 +13,7 @@ class AuthController extends GetxController {
   var googleAccount = Rx<GoogleSignInAccount?>(null);
   Rxn<User> user = Rxn<User>(null);
   late final DatabaseController dbController;
-  final RxString contactText = 'asd'.obs;
+  final RxString contactText = ''.obs;
 
   login() async {
     // print('login... ${_googleSignIn.requestScopes(['s'])}');

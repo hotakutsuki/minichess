@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:minichess/app/modules/match/controllers/ai_controller.dart';
@@ -5,6 +7,7 @@ import 'package:minichess/app/modules/match/controllers/clock_controller.dart';
 
 import '../../../data/enums.dart';
 import '../../../data/matchDom.dart';
+import '../../../data/usefullData.dart';
 import '../../../data/userDom.dart';
 import '../../../routes/app_pages.dart';
 import '../../../services/database.dart';
@@ -31,8 +34,14 @@ class MatchController extends GetxController {
   List<Move> whiteHistory = [];
   List<Move> blackHistory = [];
 
+  Timer? countdownTimer;
+  var myDuration = const Duration(seconds: 100);
+  final searchingSeconds = '100'.obs;
+  final serchingTimeLimit = getRandomIntBetween(90, 98);
+
   late ClockController whiteClockState;
   late ClockController blackClockState;
+  late ClockController searchingClockState;
   late AiController aiController;
   List<dynamic> remoteTiles = [];
   List<dynamic> localTiles = [];
@@ -46,6 +55,8 @@ class MatchController extends GetxController {
   Rxn<bool> isWinner = Rxn<bool>();
   Rxn<int> myLocalScore = Rxn<int>();
   Rxn<int> scoreChange = Rxn<int>();
+
+  bool isFake = false;
 
   Function eq = const ListEquality().equals;
 
@@ -91,7 +102,8 @@ class MatchController extends GetxController {
     isWinner.value = imWinner;
     myLocalScore.value = myScore;
     scoreChange.value = (100 * ratio).round();
-    int newScore = imWinner ? myScore + scoreChange.value : myScore - scoreChange.value;
+    int newScore =
+        imWinner ? myScore + scoreChange.value : myScore - scoreChange.value;
     print('radio: $ratio, change: ${scoreChange.value}');
     dbController.updateScore(newScore);
   }
@@ -107,14 +119,13 @@ class MatchController extends GetxController {
   }
 
   void whenMatchStateChange(DocumentSnapshot event) async {
-    searching.value =
-        event[MatchDom.STATE] == gameState.open.name;
+    searching.value = event[MatchDom.STATE] == gameState.open.name;
     remoteTiles = event[MatchDom.TILES];
     if (remoteTiles.length > localTiles.length) {
       localTiles = List.from(remoteTiles);
       if (remoteTiles.isNotEmpty) {
         Tile tile = Tile.fromString(remoteTiles.last);
-        if (isFromGraveyard(tile)){
+        if (isFromGraveyard(tile)) {
           play(gs.value!.myGraveyard.firstWhere((t) => t.char == tile.char));
         } else {
           play(gs.value!.board[tile.j!][tile.i!]);
@@ -122,11 +133,29 @@ class MatchController extends GetxController {
       }
     }
     if (event[MatchDom.INVITEDPLAYERID] != null) {
-      invitedUser.value ??=
-          await dbController.getUserByUserId(event[MatchDom.INVITEDPLAYERID]);
+      if (event[MatchDom.INVITEDPLAYERID] == 'fake') {
+        print('playing fake match');
+        invitedUser.value ??= createFakeUser();
+        isFake = true;
+      } else {
+        stopTimer();
+        isFake = false;
+        invitedUser.value ??=
+            await dbController.getUserByUserId(event[MatchDom.INVITEDPLAYERID]);
+      }
     }
     hostUser.value ??=
         await dbController.getUserByUserId(event[MatchDom.HOSTPLAYERID]);
+  }
+
+  User createFakeUser() {
+    int rndImage = getRandomIntBetween(3400, 4300);
+    int rndScore = getRandomIntBetween(3000, 8000);
+    var imageUrl = 'https://thispersondoesnotexist.xyz/img/$rndImage.jpg';
+    int rndName = getRandomInt(UsefullData.mixedNames.length - 1);
+    var name = UsefullData.mixedNames[rndName];
+    return User('fake', name, 'unknown', imageUrl, rndScore, 'unknown',
+        'unknown', 'city');
   }
 
   void setTimersAndPlayers() {
@@ -173,8 +202,7 @@ class MatchController extends GetxController {
       return playersTurn == player.white;
     }
     if (gamemode == gameMode.online) {
-      return (isHost.value! &&
-              playersTurn == player.white) ||
+      return (isHost.value! && playersTurn == player.white) ||
           (!isHost.value! && playersTurn == player.black);
     }
     return true;
@@ -204,7 +232,8 @@ class MatchController extends GetxController {
       highlightAvailableOptions();
       if (!isGameOver.value &&
           (gamemode == gameMode.training ||
-              (gamemode == gameMode.solo && playersTurn == player.black))) {
+              (gamemode == gameMode.solo && playersTurn == player.black) ||
+              (gamemode == gameMode.online && playersTurn == player.black && isFake))) {
         await playAsPc();
       }
     }
@@ -223,14 +252,15 @@ class MatchController extends GetxController {
   }
 
   playAsPc() async {
+    print('playing as pc');
     Move move = await aiController.getPlay(gs.value!, gamemode);
     print('generated move: $move');
-    if (gamemode == gameMode.solo) {
-      await Future.delayed(const Duration(milliseconds: 500));
+    if (gamemode == gameMode.solo || gamemode == gameMode.online) {
+      await Future.delayed(Duration(milliseconds: getRandomIntBetween(400, 1000)));
     }
     play(move.initialTile);
-    if (gamemode == gameMode.solo) {
-      await Future.delayed(const Duration(milliseconds: 500));
+    if (gamemode == gameMode.solo || gamemode == gameMode.online) {
+      await Future.delayed(Duration(milliseconds: getRandomIntBetween(400, 1000)));
     }
     play(move.finalTile);
   }
@@ -248,12 +278,10 @@ class MatchController extends GetxController {
 
     if (gamemode == gameMode.online) {
       bool imWinner = (p == player.black) ^ isHost.value!;
-      int myScore = isHost.value!
-          ? hostUser.value!.score
-          : invitedUser.value!.score;
-      int oponentScore = isHost.value!
-          ? invitedUser.value!.score
-          : hostUser.value!.score;
+      int myScore =
+          isHost.value! ? hostUser.value!.score : invitedUser.value!.score;
+      int oponentScore =
+          isHost.value! ? invitedUser.value!.score : hostUser.value!.score;
       updateScore(imWinner, myScore, oponentScore);
     }
 
@@ -282,18 +310,47 @@ class MatchController extends GetxController {
 
   void closeTheGame() {
     restartGame();
-    if(gamemode == gameMode.online){
+    if (gamemode == gameMode.online) {
       dbController.closeMatch();
     }
     Get.offAndToNamed(Routes.HOME);
   }
 
-  initBoardState(){
+  initBoardState() {
     gs.value = GameState.named(
       board: createNewBoard(),
       enemyGraveyard: <Tile>[],
       myGraveyard: <Tile>[],
     );
+  }
+
+  void startTimer() {
+    countdownTimer =
+        Timer.periodic(const Duration(seconds: 1), (_) => setCountDown());
+  }
+
+  stopTimer() {
+    if (countdownTimer != null) {
+      countdownTimer!.cancel();
+    }
+  }
+
+  setCountDown() {
+    const reduceSecondsBy = 1;
+    final mSeconds = myDuration.inSeconds - reduceSecondsBy;
+    if (mSeconds < serchingTimeLimit) {
+      countdownTimer!.cancel();
+      startFakeOnlineGame();
+    } else {
+      myDuration = Duration(seconds: mSeconds);
+      searchingSeconds.value = strDigits(myDuration.inSeconds.remainder(100));
+    }
+  }
+
+  String strDigits(int n) => n.toString().padLeft(2, '0');
+
+  startFakeOnlineGame() {
+    dbController.setMatchAsFake();
   }
 
   @override
@@ -304,6 +361,9 @@ class MatchController extends GetxController {
     //       () => MatchMakingController(),
     // );
     searching.value = gamemode == gameMode.online;
+    if (searching.value) {
+      startTimer();
+    }
   }
 
   @override
@@ -314,7 +374,7 @@ class MatchController extends GetxController {
     aiController = Get.put(AiController());
     if (gamemode == gameMode.online) {
       bool result = await startOnlineMatch();
-      if (result){
+      if (result) {
         dbController.startListenersOfMatch();
       } else {
         closeTheGame();

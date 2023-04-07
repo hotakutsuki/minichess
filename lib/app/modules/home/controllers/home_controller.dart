@@ -1,8 +1,10 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:get/get.dart';
 import 'package:minichess/app/modules/auth/controllers/auth_controller.dart';
+import 'package:flutter/foundation.dart';
 import '../../../data/enums.dart';
 import '../../../routes/app_pages.dart';
+import '../../../services/database.dart';
 import '../../auth/views/login_dialog_view.dart';
 import '../../match/controllers/match_making_controller.dart';
 
@@ -47,12 +49,19 @@ class HomeController extends GetxController {
       provisional: false,
       sound: true,
     );
-
-    print('User granted permission: ${settings.authorizationStatus}');
-
-    String? token = await messaging.getToken(
-      vapidKey: "BMnLhmaBDEW0nIVy5544WoLoHt4UFgCZsi2RBKGOSy_8dJbyW0UVXwxpXvWcpCfzPRStgLOHvALVu34ZDb6CcmM",
-    );
+    // print('User granted permission: ${settings.authorizationStatus}');
+    if(settings.authorizationStatus == AuthorizationStatus.authorized){
+      // print('getting token...');
+      String? token = await messaging.getToken(
+        vapidKey: "BMnLhmaBDEW0nIVy5544WoLoHt4UFgCZsi2RBKGOSy_8dJbyW0UVXwxpXvWcpCfzPRStgLOHvALVu34ZDb6CcmM",
+      );
+      // print('token: $token');
+      DatabaseController dbController = Get.find<DatabaseController>();
+      dbController.recordToken(token);
+      if (defaultTargetPlatform == TargetPlatform.android || defaultTargetPlatform == TargetPlatform.iOS){
+        messaging.subscribeToTopic("newMatches");
+      }
+    }
 
     super.onReady();
   }

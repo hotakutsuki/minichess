@@ -18,12 +18,8 @@
   },
   "functions": [
     {
-      "source": "functions",
-      "codebase": "default"
-    },
-    {
-      "source": "functions1",
-      "codebase": "functions",
+      "source": "firebasefunctions",
+      "codebase": "firebasefunctions",
       "ignore": [
         "node_modules",
         ".git",

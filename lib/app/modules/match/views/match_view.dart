@@ -25,6 +25,7 @@ class MatchView extends GetView<MatchController> {
             height: 20,
           ),
           const Text('looking for another player...'),
+          Text(controller.searchingSeconds.value),
           const SizedBox(
             height: 20,
           ),
@@ -131,7 +132,7 @@ class MatchView extends GetView<MatchController> {
             child: const Icon(Icons.close, color: Colors.black87),
           ),
         ),
-        Positioned(
+        if (controller.gamemode != gameMode.online) Positioned(
           bottom: 8,
           right: 8,
           child: FloatingActionButton(

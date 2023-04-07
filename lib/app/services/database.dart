@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
@@ -100,6 +101,22 @@ class DatabaseController extends GetxController {
         .update({
       MatchDom.INVITEDPLAYERID: authController.googleAccount.value!.id,
       MatchDom.STATE: gameState.playing.name,
+    }).then((value) {
+      return true;
+    }).catchError((e) {
+      errorsController.showGenericError(e);
+      return false;
+    });
+  }
+
+  Future<bool> setMatchAsFake() {
+    matchController = Get.find<MatchController>();
+    return _firestore
+        .collection(collections.matches.name)
+        .doc(matchController.gameId.value)
+        .update({
+      MatchDom.INVITEDPLAYERID: "fake",
+      MatchDom.STATE: gameState.fake.name,
     }).then((value) {
       return true;
     }).catchError((e) {
@@ -210,6 +227,36 @@ class DatabaseController extends GetxController {
     _MatchDocumentSnapshot.listen((event) {
       print(event);
     });
+  }
+
+  recordToken(String? token) async {
+    if (token == null){
+      return;
+    }
+    try {
+      var docs = await _firestore
+          .collection(collections.tokens.name)
+          .where("token", isEqualTo: token)
+          .get();
+      if (docs.docs.isEmpty) {
+        var docref = _firestore
+            .collection(collections.tokens.name)
+            .doc();
+        Map<String, String> data =  HashMap();
+        data["token"] = token;
+        await docref.set(data);
+      }
+    } catch (e) {
+      print(e);
+      rethrow;
+    }
+  }
+
+  getAllTokens() async {
+    var tokenDocs = await _firestore.collection(collections.tokens.name).get();
+    var tokens = tokenDocs.docs.reduce((value, element) => element["token"]);
+    print('all tokens: ${tokens}');
+    return tokens;
   }
 
   @override

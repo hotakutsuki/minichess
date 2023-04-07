@@ -90,9 +90,14 @@ getRandomIO() {
   return rnd.nextInt(2);
 }
 
-getRandomInt(int max) {
+getRandomInt(int max, [min]) {
   var rnd = Random();
   return rnd.nextInt(max);
+}
+
+getRandomIntBetween(int min, int max) {
+  var rnd = Random();
+  return min + rnd.nextInt(max - min);
 }
 
 void printMatrix(var matrix) {
