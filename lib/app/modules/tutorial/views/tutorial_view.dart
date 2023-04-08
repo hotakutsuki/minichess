@@ -35,7 +35,7 @@ class TutorialView extends GetView<TutorialController> {
             ],
           ),
           const Positioned(
-              top: 24,
+              top: 40,
               child: Text('Tutorial',
                   style: TextStyle(fontSize: 28, fontWeight: FontWeight.w500))),
           Positioned(
@@ -73,7 +73,7 @@ class TutorialView extends GetView<TutorialController> {
             }),
           ),
           Positioned(
-            top: 8,
+            top: 40,
             right: 8,
             child: FloatingActionButton(
               heroTag: 'close',

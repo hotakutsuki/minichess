@@ -122,7 +122,7 @@ class MatchView extends GetView<MatchController> {
               !controller.isGameOver.value ? const SizedBox() : GameoverView(),
         ),
         Positioned(
-          top: 8,
+          top: 40,
           right: 8,
           child: FloatingActionButton(
             heroTag: 'close',

@@ -9,6 +9,7 @@ import '../../../services/database.dart';
 class AuthController extends GetxController {
   final _googleSignIn = GoogleSignIn(scopes: [
     'email',
+    'https://www.googleapis.com/auth/contacts.readonly',
   ],);
   var googleAccount = Rx<GoogleSignInAccount?>(null);
   Rxn<User> user = Rxn<User>(null);

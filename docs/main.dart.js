@@ -22030,7 +22030,7 @@ while(true)switch(s){case 0:if($.at==null)A.NV()
 $.at.toString
 q=A.a21(A.aFZ())
 p=$.ay()
-o=A.a(["email"],t.s)
+o=A.a(["email","https://www.googleapis.com/auth/contacts.readonly"],t.s)
 n=t.c
 m=t.X
 l=t.l
@@ -72858,7 +72858,7 @@ return A.zP(A.a([A.arw(A.as3(s==null?"":s).c,12),B.wc,A.d4(a.b,r,r,r),B.wc,A.d4(
 I(a){var s,r=null,q=A.qr(new A.eW(new A.a7k(this),r),r,r),p=$.B
 if(p==null)p=$.B=B.h
 s=A.k(this).h("aV.T")
-p=A.a([q,new A.eW(new A.a7l(this),r),A.mn(r,A.kk(B.j,B.h8,r,"close",!0,p.a4(0,r,s).ga5S()),r,r,r,8,8,r)],t.p)
+p=A.a([q,new A.eW(new A.a7l(this),r),A.mn(r,A.kk(B.j,B.h8,r,"close",!0,p.a4(0,r,s).ga5S()),r,r,r,8,40,r)],t.p)
 q=$.B
 if((q==null?$.B=B.h:q).a4(0,r,s).CW!==B.Y){q=$.B
 p.push(A.mn(8,A.kk(B.j,B.BB,r,"restart",!0,(q==null?$.B=B.h:q).a4(0,r,s).gPn()),r,r,r,8,r,r))}return A.zU(r,A.ip(B.be,p,B.aZ),r,r)}}
@@ -73028,7 +73028,7 @@ r=$.B;(r==null?$.B=B.h:r).a4(0,q,s).toString
 r=$.B;(r==null?$.B=B.h:r).a4(0,q,s).toString
 r=$.B;(r==null?$.B=B.h:r).a4(0,q,s).toString
 s=t.p
-return A.zU(q,A.ip(B.D,A.a([A.axn(A.a([new A.hF("1select","Tap on a tile to select it.",q),new A.hF("2move","Tap on any of the highlighted tiles to move.",q),new A.hF("3takepng","Tap on an enemy tile to take it.",q),new A.hF("4grave","When a piece is taken, it goes to you graveyard.",q),new A.hF("5revive","You can invoke pieces from your graveyard.",q),new A.hF("6knigthpng","Reach to the top to transform a Pawn into a Knight.",q),new A.hF("7win","Take the king to win.",q),new A.hF("8clock","But watch out your clock. If it gets to 0, you lose.",q),new A.hF("9moves","These are the valid moves.",q)],s),p,q),B.Hl,A.mn(q,new A.eW(new A.ahG(this),q),q,q,4,q,q,q),A.mn(q,new A.eW(new A.ahH(this),q),q,q,q,4,q,q),A.mn(q,A.kk(B.j,B.h8,q,"close",!0,new A.ahI()),q,q,q,8,8,q)],s),B.aZ),q,q)}}
+return A.zU(q,A.ip(B.D,A.a([A.axn(A.a([new A.hF("1select","Tap on a tile to select it.",q),new A.hF("2move","Tap on any of the highlighted tiles to move.",q),new A.hF("3takepng","Tap on an enemy tile to take it.",q),new A.hF("4grave","When a piece is taken, it goes to you graveyard.",q),new A.hF("5revive","You can invoke pieces from your graveyard.",q),new A.hF("6knigthpng","Reach to the top to transform a Pawn into a Knight.",q),new A.hF("7win","Take the king to win.",q),new A.hF("8clock","But watch out your clock. If it gets to 0, you lose.",q),new A.hF("9moves","These are the valid moves.",q)],s),p,q),B.Hl,A.mn(q,new A.eW(new A.ahG(this),q),q,q,4,q,q,q),A.mn(q,new A.eW(new A.ahH(this),q),q,q,q,4,q,q),A.mn(q,A.kk(B.j,B.h8,q,"close",!0,new A.ahI()),q,q,q,8,40,q)],s),B.aZ),q,q)}}
 A.ahG.prototype={
 $0(){var s=this.a,r=$.B
 if(r==null)r=$.B=B.h
@@ -78940,7 +78940,7 @@ B.Hj=new A.rV(4,"unknown")
 B.Hk=new A.z3(null,null,null,null,null,null,null,null,null,null)
 B.wv=new A.u(!0,null,null,null,null,null,28,B.aI,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
 B.Ny=new A.cz("Tutorial",null,B.wv,null,null,null)
-B.Hl=new A.mm(null,24,null,null,null,null,B.Ny,null)
+B.Hl=new A.mm(null,40,null,null,null,null,B.Ny,null)
 B.Hm=new A.Lf(null)
 B.Hn=new A.rY(null,null,null,null,null)
 B.Ho=new A.Lj(!1)
