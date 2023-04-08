@@ -81,7 +81,7 @@ class HomeView extends GetView<HomeController> {
             ],
           ),
           Positioned(
-            top: 10,
+            top: 40,
             right: 10,
             child: Obx(() {
               return FloatingActionButton(

@@ -22,7 +22,7 @@ class AuthController extends GetxController {
       await _googleSignIn.signIn();
     } catch (error) {
       print('error: $error');
-      contactText.value = error.toString();
+      contactText.value = '$error';
     }
   }
 

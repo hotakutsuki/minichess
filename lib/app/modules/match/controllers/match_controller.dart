@@ -37,7 +37,7 @@ class MatchController extends GetxController {
   Timer? countdownTimer;
   var myDuration = const Duration(seconds: 100);
   final searchingSeconds = '100'.obs;
-  final serchingTimeLimit = getRandomIntBetween(90, 98);
+  final serchingTimeLimit = getRandomIntBetween(20, 40);
 
   late ClockController whiteClockState;
   late ClockController blackClockState;
