@@ -32,8 +32,13 @@ class AuthController extends GetxController {
   setUserInfoInBD() async {
     print('googleAccount: ${googleAccount.value}');
     if (googleAccount.value != null) {
-      var response = await http.get(Uri.parse('http://ip-api.com/json'));
-      Map<String, dynamic> ipJson = jsonDecode(response.body);
+      Map<String, dynamic> ipJson = <String, dynamic>{};
+      try {
+        var response = await http.get(Uri.parse('http://ip-api.com/json'));
+        ipJson = jsonDecode(response.body);
+      } catch(e) {
+        print(e);
+      }
       user.value = await dbController.getUserByUserId(googleAccount.value!.id);
       print('logged user: ${user.value}');
       if (user.value == null) {
