@@ -15,7 +15,7 @@
     the `--base-href` argument provided to `flutter build`.
   -->
 <!--  <base href="/">-->
-
+  <meta name="google-signin-client_id" content="733138640689-9qkav0thc6ppv5e9h6ua4ji3n11nmkks.apps.googleusercontent.com">
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="A new Flutter project.">
@@ -34,7 +34,7 @@
 
   <script>
     // The value below is injected by flutter build, do not touch.
-    var serviceWorkerVersion = '3186411431';
+    var serviceWorkerVersion = '494830474';
   </script>
   <!-- This script adds the flutter initialization JS code -->
   <script src="flutter.js" defer></script>
@@ -54,5 +54,15 @@
       });
     });
   </script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("/firebase-messaging-sw.js");
+      });
+    }
+  </script>
 </body>
+<script type="text/javascript">
+  window.flutterWebRenderer = "html";
+</script>
 </html>

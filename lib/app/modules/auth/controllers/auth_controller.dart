@@ -19,7 +19,9 @@ class AuthController extends GetxController {
     // print('login... ${_googleSignIn.requestScopes(['s'])}');
     // googleAccount.value = await _googleSignIn.signIn();
     try {
+      print('login with google...');
       await _googleSignIn.signIn();
+      print('logged...');
     } catch (error) {
       print('error: $error');
       contactText.value = '$error';
