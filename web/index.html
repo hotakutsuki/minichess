@@ -54,5 +54,15 @@
       });
     });
   </script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("/firebase-messaging-sw.js");
+      });
+    }
+  </script>
 </body>
+<script type="text/javascript">
+  window.flutterWebRenderer = "html";
+</script>
 </html>
