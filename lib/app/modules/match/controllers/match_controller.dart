@@ -303,6 +303,7 @@ class MatchController extends GetxController {
     blackHistory.clear();
     whiteHistory.clear();
     boardHistory.clear();
+    playersTurn = player.white;
 
     resetTimers();
     initBoardState();

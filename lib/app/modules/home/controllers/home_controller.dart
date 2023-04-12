@@ -57,9 +57,10 @@ class HomeController extends GetxController {
       );
       // print('token: $token');
       DatabaseController dbController = Get.find<DatabaseController>();
-      dbController.recordToken(token);
       if (defaultTargetPlatform == TargetPlatform.android || defaultTargetPlatform == TargetPlatform.iOS){
         messaging.subscribeToTopic("newMatches");
+      } else {
+        dbController.recordToken(token);
       }
     }
 

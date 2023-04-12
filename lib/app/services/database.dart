@@ -230,6 +230,7 @@ class DatabaseController extends GetxController {
   }
 
   recordToken(String? token) async {
+    print('trying to record new token');
     if (token == null){
       return;
     }
@@ -238,7 +239,9 @@ class DatabaseController extends GetxController {
           .collection(collections.tokens.name)
           .where("token", isEqualTo: token)
           .get();
+      print('token founds: ${docs.docs}');
       if (docs.docs.isEmpty) {
+        print('adding new token: $token');
         var docref = _firestore
             .collection(collections.tokens.name)
             .doc();
