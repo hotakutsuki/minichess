@@ -22343,8 +22343,7 @@ return A.G(null,r)}})
 return A.H($async$ar_,r)},
 Wg(){var s=0,r=A.I(t.H),q,p,o,n,m,l,k
 var $async$Wg=A.J(function(a,b){if(a===1)return A.F(b,r)
-while(true)switch(s){case 0:A.ahx(A.a([B.AE,B.AF],t.UW))
-if($.au==null)A.BB()
+while(true)switch(s){case 0:if($.au==null)A.BB()
 $.au.toString
 q=A.IC(A.aHx())
 A.axv(A.aQR())
@@ -74321,8 +74320,9 @@ if(!r&&q!=null){A.aO("doing something in android")
 this.a.RO(0,A.ew(s),s.d,s.r,new A.KF(A.awp("mini_chess_channel","Mini Chess Notifications",p,!1,!0,p,q.w,B.C_,!0,B.HC,p,p),p))}},
 $S:517}
 A.arw.prototype={
-$2(a,b){if(b.c!=null)return B.NB
-else if(b.b!=null)return new A.xf(new A.xr("/splash","Application",!1,$.aD8(),null),null)
+$2(a,b){A.ahx(A.a([B.AE,B.AF],t.UW))
+if(b.c!=null)return B.NB
+else if(b.b!=null)return new A.xf(new A.xr("/splash","Inti: The Sun Game",!1,$.aD8(),null),null)
 else return B.mt},
 $S:518}
 A.Zp.prototype={
