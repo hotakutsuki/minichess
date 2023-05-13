@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:get/get_state_manager/src/simple/get_view.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 
 import '../../../utils/gameObjects/tile.dart';
+import '../controllers/match_controller.dart';
 import 'ChessTile.dart';
 
 class ChessBoard extends GetView {
-  const ChessBoard(
+  ChessBoard(
       {Key? key,
         required this.matrix,
         // required this.onTapTile,
@@ -13,7 +15,7 @@ class ChessBoard extends GetView {
       : super(key: key);
 
   final List<List<Tile>> matrix;
-  // final onTapTile;
+  MatchController matchController = Get.find<MatchController>();
   final playersTurn;
 
   getTable() {
@@ -24,7 +26,6 @@ class ChessBoard extends GetView {
             int j = v.key;
             return ChessTile(
               tile: matrix.reversed.toList()[i][j],
-              // onTapTile: onTapTile,
               playersTurn: playersTurn,
             );
           }).toList());

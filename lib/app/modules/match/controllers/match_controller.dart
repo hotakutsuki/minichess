@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:minichess/app/modules/match/controllers/ai_controller.dart';
 import 'package:minichess/app/modules/match/controllers/clock_controller.dart';
+import 'package:minichess/app/modules/match/controllers/tile_controller.dart';
 
 import '../../../data/enums.dart';
 import '../../../data/matchDom.dart';
@@ -16,7 +17,6 @@ import '../../../utils/gameObjects/move.dart';
 import '../../../utils/gameObjects/tile.dart';
 import '../../../utils/utils.dart';
 import '../../home/controllers/home_controller.dart';
-import 'match_making_controller.dart';
 
 class MatchController extends GetxController {
   Rxn<GameState> gs = Rxn<GameState>();
@@ -224,6 +224,7 @@ class MatchController extends GetxController {
         if (checkIfWin(move)) {
           gameOver(playersTurn);
         }
+        await animateTile(move);
         gs.update((val) => val!.changeGameState(move));
         gs.value!.rotate();
         togglePlayersTurn();
@@ -239,12 +240,16 @@ class MatchController extends GetxController {
     }
   }
 
-  onTapTile(Tile tile) async {
+  animateTile(Move move) async {
+    TileController tileController = Get.find<TileController>(tag: '${move.initialTile.i}${move.initialTile.j}');
+    await tileController.animateTile(move.finalTile.i! - move.initialTile.i!, move.initialTile.j! - move.finalTile.j!);
+  }
+
+  onTapTile(Tile tile, [TileController? controller]) async {
     print('tapping tile: $tile');
     if (isValidPlay(tile)) {
       if (gamemode == gameMode.online) {
         localTiles.add(tile.toString());
-        print('localTiles $localTiles');
         dbController.updatePlayedHistory();
       }
       play(tile);
@@ -358,9 +363,6 @@ class MatchController extends GetxController {
   void onInit() {
     super.onInit();
     initBoardState();
-    // Get.lazyPut<MatchMakingController>(
-    //       () => MatchMakingController(),
-    // );
     searching.value = gamemode == gameMode.online;
     if (searching.value) {
       startTimer();

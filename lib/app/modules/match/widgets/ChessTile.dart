@@ -8,6 +8,7 @@ import '../../../utils/gameObjects/tile.dart';
 import '../../../utils/utils.dart';
 import '../../../data/enums.dart';
 import '../controllers/match_controller.dart';
+import '../controllers/tile_controller.dart';
 
 class ChessTile extends GetView {
   ChessTile(
@@ -18,6 +19,9 @@ class ChessTile extends GetView {
   // final onTapTile;
   final player? playersTurn;
   MatchController matchController = Get.find<MatchController>();
+
+  late final TileController tileController = Get.put(
+      TileController(), tag: '${tile.i}${tile.j}');
 
   Color getTileColor() {
     if (tile.isSelected) {
@@ -43,7 +47,7 @@ class ChessTile extends GetView {
       width: 100,
       height: 100,
       child: InkWell(
-        onTap: () => matchController.onTapTile(tile),
+        onTap: () => matchController.onTapTile(tile, tileController),
         child: Stack(children: [
           RotatedBox(
             quarterTurns: tile.owner == possession.mine ? 0 : 2,
@@ -56,11 +60,23 @@ class ChessTile extends GetView {
                   ])),
               padding: const EdgeInsets.all(4.0),
               alignment: Alignment.center,
-              child: getImage(
-                  tile.char,
-                  getbool(tile.owner == possession.mine)
-                      ? player.white
-                      : player.black),
+              child: AnimatedBuilder(
+                animation: tileController.animationController,
+                child: getImage(
+                    tile.char,
+                    getbool(tile.owner == possession.mine)
+                        ? player.white
+                        : player.black),
+                builder: (BuildContext context, Widget? child) {
+                  return Transform.translate(
+                      offset: Offset(
+                          tileController.x * 100 * tileController.animationController.drive(CurveTween(curve: Curves.easeOutExpo)).value,
+                          tileController.y * 100 * tileController.animationController.drive(CurveTween(curve: Curves.easeOutExpo)).value
+                      ),
+                      child: child,
+                  );
+                },
+              ),
             ),
           ),
           // Text('${tile.i}${tile.j}${tile.owner.name}'),

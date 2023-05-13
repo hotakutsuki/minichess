@@ -3,10 +3,9 @@ import 'package:get/get.dart';
 import 'package:minichess/app/modules/match/controllers/ai_controller.dart';
 import 'package:minichess/app/modules/match/controllers/clock_controller.dart';
 import 'package:minichess/app/modules/match/controllers/gameover_controller.dart';
-import 'package:minichess/app/modules/match/controllers/match_making_controller.dart';
 
-import '../../../services/database.dart';
 import '../controllers/match_controller.dart';
+import '../controllers/tile_controller.dart';
 
 class MatchBinding extends Bindings {
   @override
@@ -22,6 +21,9 @@ class MatchBinding extends Bindings {
     );
     Get.lazyPut<MatchController>(
       () => MatchController(),
+    );
+    Get.lazyPut<TileController>(
+      () => TileController(),
     );
   }
 }
