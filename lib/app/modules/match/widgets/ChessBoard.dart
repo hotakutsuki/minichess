@@ -35,15 +35,9 @@ class ChessBoard extends GetView {
 
   @override
   Widget build(BuildContext context) {
-    return (matrix == null
-        ? const Placeholder()
-        : SizedBox(
-      width: 300,
-      height: 400,
-      child: Table(
-        border: TableBorder.all(color: Colors.black12),
-        children: getTable(),
-      ),
-    ));
+    return Table(
+      border: TableBorder.all(color: Colors.black12),
+      children: getTable(),
+    );
   }
 }

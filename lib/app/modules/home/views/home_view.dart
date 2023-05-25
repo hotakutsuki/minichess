@@ -23,6 +23,11 @@ class HomeView extends GetView<HomeController> {
             children: [
               const Text('Minichess',
                   style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold)),
+              Container(
+                  height: 50,
+                  child: SizedBox(
+                      height: 25,
+                      child: Image.asset('assets/images/icon.png'))),
               Obx(() {
                 return SizedBox(
                   height: 250,
@@ -54,75 +59,99 @@ class HomeView extends GetView<HomeController> {
                         height: 40,
                         width: 150,
                         child: ElevatedButton(
-                          onPressed: () => controller.checkLogin(),
+                          onPressed: controller.isOnline
+                              ? () => controller.checkLogin()
+                              : null,
                           child: const Text(
                             'Multiplayer online',
                           ),
                         ),
                       ),
-                      if(authController.user.value != null) Text(
-                          'score: ${authController.user.value?.score}',
-                          style: const TextStyle(
-                              fontSize: 28, fontWeight: FontWeight.bold))
-                      // SizedBox(
-                      //   height: 40,
-                      //   width: 150,
-                      //   child: ElevatedButton(
-                      //     onPressed: () => setMode(context, gameMode.training),
-                      //     child: const Text(
-                      //       'Training',
-                      //     ),
-                      //   ),
-                      // ),
+                      if (authController.user.value != null)
+                        Text('score: ${authController.user.value?.score}',
+                            style: const TextStyle(
+                                fontSize: 28, fontWeight: FontWeight.bold))
                     ],
                   ),
                 );
               }),
             ],
           ),
-          Positioned(
-            top: 40,
-            right: 10,
-            child: Obx(() {
-              return FloatingActionButton(
-                  child: authController.user.value == null
-                      ? const Icon(CupertinoIcons.person)
-                      : CircleAvatar(
-                    backgroundImage: Image
-                        .network(authController
-                        .user.value?.photoUrl ??
-                        '')
-                        .image,
-                    radius: 30,
-                  ),
-                  onPressed: () => controller.showAuthDialog());
-            }),
-          ),
+          if (controller.isOnline)
+            Positioned(
+              top: 40,
+              right: 10,
+              child: Obx(() {
+                return FloatingActionButton(
+                    child: authController.user.value == null
+                        ? const Icon(CupertinoIcons.person)
+                        : CircleAvatar(
+                            backgroundImage: Image.network(
+                                    authController.user.value?.photoUrl ?? '')
+                                .image,
+                            radius: 30,
+                          ),
+                    onPressed: () => controller.showAuthDialog());
+              }),
+            ),
+          Obx(
+            () => AnimatedPositioned(
+              top: controller.isLoading.value
+                  ? 10
+                  : -MediaQuery.of(context).size.height,
+              left: 10,
+              curve: Curves.easeOutExpo,
+              duration: const Duration(milliseconds: 500),
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16.0),
+                  color: Colors.blueGrey,
+                ),
+                width: MediaQuery.of(context).size.width - 20,
+                height: MediaQuery.of(context).size.height - 20,
+                child: Center(
+                    child: SizedBox(
+                        height: 25,
+                        child: Image.asset('assets/images/icon.png'))),
+              ),
+            ),
+          )
         ]),
       ),
-      floatingActionButton: SizedBox(
-        height: 180,
-        child: Column(
-          children: [
-            FloatingActionButton(
-                heroTag: 'records',
-                child: const Icon(Icons.stacked_bar_chart),
-                onPressed: () {
-                  Get.toNamed(Routes.HALL_OF_FAME);
-                }),
-            const SizedBox(
-              height: 12,
+      floatingActionButton: Stack(children: [
+        Obx(
+          () => AnimatedPositioned(
+            right: !controller.isLoading.value ? 0 : -60,
+            bottom: 0,
+            curve: Curves.easeOutExpo,
+            duration: const Duration(milliseconds: 500),
+            child: SizedBox(
+              height: 180,
+              child: Column(
+                children: [
+                  if (controller.isOnline)
+                    FloatingActionButton(
+                        heroTag: 'records',
+                        child: const Icon(Icons.stacked_bar_chart),
+                        onPressed: () {
+                          Get.toNamed(Routes.HALL_OF_FAME);
+                        }),
+                  const SizedBox(
+                    height: 12,
+                  ),
+                  FloatingActionButton(
+                      heroTag: 'tutorial',
+                      child: const Icon(CupertinoIcons.question),
+                      onPressed: () {
+                        Get.toNamed(Routes.TUTORIAL);
+                      }),
+                  const Text('Tutorial'),
+                ],
+              ),
             ),
-            FloatingActionButton(
-                heroTag: 'tutorial',
-                child: const Icon(CupertinoIcons.question),
-                onPressed: () {
-                  Get.toNamed(Routes.TUTORIAL);
-                }),
-            const Text('Tutorial'),
-          ],
-        ),
-      ),
+          ),
+        )
+      ]),
     );
   }
 }

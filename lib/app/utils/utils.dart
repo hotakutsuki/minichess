@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import '../data/enums.dart';
 import '../modules/match/controllers/ai_controller.dart';
+import '../modules/match/controllers/tile_controller.dart';
 import 'gameObjects/GameState.dart';
 import 'gameObjects/move.dart';
 import 'gameObjects/tile.dart';

@@ -1,35 +1,31 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
-
 import '../../../utils/gameObjects/tile.dart';
 import '../../../utils/utils.dart';
 import '../../../data/enums.dart';
 import '../controllers/match_controller.dart';
+import 'package:vector_math/vector_math_64.dart' as math;
+
 import '../controllers/tile_controller.dart';
 
 class ChessTile extends GetView {
-  ChessTile(
-      {Key? key, required this.tile, this.playersTurn})
-      : super(key: key);
+  ChessTile({Key? key, required this.tile, this.playersTurn}) : super(key: key);
 
   final Tile tile;
-  // final onTapTile;
   final player? playersTurn;
   MatchController matchController = Get.find<MatchController>();
 
   late final TileController tileController = Get.put(
-      TileController(), tag: '${tile.i}${tile.j}');
+      TileController(), tag: tile.toString());
 
   Color getTileColor() {
     if (tile.isSelected) {
       return Colors.blueGrey;
     } else {
-      return getbool((tile.i! + tile.j!) % 2 == 0)
-          ? Colors.brown
-          : const Color.fromARGB(255, 253, 238, 187);
+      return Colors.transparent;
+      // return getbool((tile.i! + tile.j!) % 2 == 0)
+      //     ? Colors.brown
+      //     : const Color.fromARGB(255, 253, 238, 187);
     }
   }
 
@@ -47,40 +43,52 @@ class ChessTile extends GetView {
       width: 100,
       height: 100,
       child: InkWell(
-        onTap: () => matchController.onTapTile(tile, tileController),
-        child: Stack(children: [
-          RotatedBox(
-            quarterTurns: tile.owner == possession.mine ? 0 : 2,
-            child: Container(
-              decoration: BoxDecoration(
-                  gradient: RadialGradient(colors: [
-                    tile.isOption ? Colors.blueGrey : getTileColor(),
-                    getTileColor(),
-                    getTileColor()
-                  ])),
-              padding: const EdgeInsets.all(4.0),
-              alignment: Alignment.center,
-              child: AnimatedBuilder(
-                animation: tileController.animationController,
-                child: getImage(
-                    tile.char,
-                    getbool(tile.owner == possession.mine)
-                        ? player.white
-                        : player.black),
-                builder: (BuildContext context, Widget? child) {
-                  return Transform.translate(
-                      offset: Offset(
-                          tileController.x * 100 * tileController.animationController.drive(CurveTween(curve: Curves.easeOutExpo)).value,
-                          tileController.y * 100 * tileController.animationController.drive(CurveTween(curve: Curves.easeOutExpo)).value
-                      ),
-                      child: child,
-                  );
-                },
+        onTap: () => matchController.onTapTile(tile),
+        child: RotatedBox(
+          quarterTurns: tile.owner == possession.mine ? 0 : 2,
+          child: Container(
+            decoration: BoxDecoration(
+              color: tile.isSelected ? Colors.blueGrey : Colors.transparent,
+              image: tile.isOption ? const DecorationImage(
+                image: AssetImage('assets/images/selected.png'),
+              ) : null,
+            ),
+            child: AnimatedBuilder(
+              animation: tileController.animationController,
+              child: Center(
+                child: SizedBox(
+                  width: 90,
+                  height: 90,
+                  child: getImage(
+                      tile.char,
+                      getbool(tile.owner == possession.mine)
+                          ? player.white
+                          : player.black),
+                ),
               ),
+              builder: (BuildContext context, Widget? child) {
+                return Transform(
+                    origin: const Offset(50, 50),
+                    transform: Matrix4.compose(
+                      tileController.translation * tileController.animationController
+                            .drive(CurveTween(curve: Curves.easeOutExpo))
+                            .value,
+                    math.Quaternion.euler(0, 0,
+                        tileController.rotation * tileController.animationController
+                            .drive(CurveTween(curve: Curves.easeOutExpo))
+                            .value),
+                      math.Vector3.all(tileController.iScale +
+                          (tileController.fScale - tileController.iScale) * tileController.animationController
+                              .drive(CurveTween(curve: Curves.easeOutExpo))
+                              .value
+                      ),
+                  ),
+                  child: child,
+                );
+              },
             ),
           ),
-          // Text('${tile.i}${tile.j}${tile.owner.name}'),
-        ]),
+        ),
       ),
     );
   }

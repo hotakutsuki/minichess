@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
+import 'package:minichess/app/modules/match/controllers/GraveyardController.dart';
 import 'package:minichess/app/modules/match/controllers/ai_controller.dart';
 import 'package:minichess/app/modules/match/controllers/clock_controller.dart';
 import 'package:minichess/app/modules/match/controllers/tile_controller.dart';
@@ -59,6 +60,8 @@ class MatchController extends GetxController {
   bool isFake = false;
 
   Function eq = const ListEquality().equals;
+
+  var isLoading = true.obs;
 
   Future<bool> startOnlineMatch() async {
     List<MatchDom> openMatches = await dbController.getOpenMatches();
@@ -224,7 +227,7 @@ class MatchController extends GetxController {
         if (checkIfWin(move)) {
           gameOver(playersTurn);
         }
-        await animateTile(move);
+        await animateTiles(move);
         gs.update((val) => val!.changeGameState(move));
         gs.value!.rotate();
         togglePlayersTurn();
@@ -240,12 +243,32 @@ class MatchController extends GetxController {
     }
   }
 
-  animateTile(Move move) async {
-    TileController tileController = Get.find<TileController>(tag: '${move.initialTile.i}${move.initialTile.j}');
-    await tileController.animateTile(move.finalTile.i! - move.initialTile.i!, move.initialTile.j! - move.finalTile.j!);
+  animateTiles(Move move) async {
+    if (gs.value!.board[move.finalTile.j!][move.finalTile.i!].char != chrt.empty){
+      GraveyardController gyController = Get.find<GraveyardController>(tag: playersTurn.name);
+      // int length = gyController.getGraveyard(
+      //     playersTurn == player.white ? player.black : player.white).length;
+      int length = gyController.getGraveyard(playersTurn).length;
+      TileController takenTileController = Get.find<TileController>(tag: move.finalTile.toString());
+      takenTileController.animateTile(move.finalTile.i!, - 1 - move.finalTile.j!, null, null, length);
+      gyController.animateGraveyard();
+    }
+    if (isFromGraveyard(move.initialTile)){
+      GraveyardController gyController = Get.find<GraveyardController>(tag: playersTurn.name);
+      // GraveyardController gyController = Get.find<GraveyardController>();
+      int idx = gyController.getGraveyard(playersTurn)
+          .indexWhere((element) => element.isSelected);
+      print('reviving index: $idx');
+      TileController tileController = Get.find<TileController>(tag: move.initialTile.toString());
+      await tileController.animateTile(null, null, move.finalTile.i, move.finalTile.j, idx);
+    }
+    if (!isFromGraveyard(move.initialTile)) {
+      TileController tileController = Get.find<TileController>(tag: move.initialTile.toString());
+      await tileController.animateTile(move.initialTile.i!, move.initialTile.j!, move.finalTile.i, move.finalTile.j);
+    }
   }
 
-  onTapTile(Tile tile, [TileController? controller]) async {
+  onTapTile(Tile tile) async {
     print('tapping tile: $tile');
     if (isValidPlay(tile)) {
       if (gamemode == gameMode.online) {
@@ -386,6 +409,8 @@ class MatchController extends GetxController {
     if (!isGameOver.value && gamemode == gameMode.training) {
       playAsPc();
     }
+    await Future.delayed(const Duration(milliseconds: 1000));
+    isLoading.value = false;
     super.onReady();
   }
 

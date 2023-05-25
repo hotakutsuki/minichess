@@ -29,6 +29,6 @@ class Tile {
 
   @override
   String toString() {
-    return '${owner.name} ${char.name} $i $j';
+    return '${owner.name} ${char.name} $i $j $isSelected';
   }
 }

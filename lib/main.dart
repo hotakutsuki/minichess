@@ -48,7 +48,6 @@ Future<void> main() async {
     AndroidNotification? android = message.notification?.android;
 
     if (notification != null && android != null) {
-      print('doing something in android');
       flutterLocalNotificationsPlugin.show(
           notification.hashCode,
           notification.title,
@@ -68,20 +67,33 @@ Future<void> main() async {
       future: _fbApp,
       builder: (context, snapshot) {
         SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown,]);
-        if (snapshot.hasError){
-          return const Text("There was an error. try again later");
-        } else if (snapshot.hasData) {
-          return FirebaseNotificationsHandler(
-            child: GetMaterialApp(
-              debugShowCheckedModeBanner: false,
-              title: "Inti: The Sun Game",
-              initialRoute: AppPages.INITIAL,
-              getPages: AppPages.routes,
-            ),
-          );
-        } else {
-          return const Center(child: CircularProgressIndicator());
-        }
+        return GetMaterialApp(
+          defaultTransition: Transition.noTransition,
+          debugShowCheckedModeBanner: false,
+          title: "Inti: The Sun Game",
+          initialRoute: AppPages.INITIAL,
+          getPages: AppPages.routes,
+          theme: ThemeData(
+            colorScheme: ColorScheme.fromSwatch(
+              accentColor: Colors.blueGrey,
+              primarySwatch: Colors.blueGrey
+            )
+          ),
+        );
+        // if (snapshot.hasError){
+        //   return const Text("There was an error. try again later");
+        // } else if (snapshot.hasData) {
+        //   return FirebaseNotificationsHandler(
+        //     child: GetMaterialApp(
+        //       debugShowCheckedModeBanner: false,
+        //       title: "Inti: The Sun Game",
+        //       initialRoute: AppPages.INITIAL,
+        //       getPages: AppPages.routes,
+        //     ),
+        //   );
+        // } else {
+        //   return const Center(child: CircularProgressIndicator());
+        // }
       },
     ),
   );

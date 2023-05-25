@@ -64,6 +64,34 @@ class MatchView extends GetView<MatchController> {
     return controller.gamemode == gameMode.online;
   }
 
+  Widget userInfo(Rxn<User> user) {
+    return RotatedBox(
+      quarterTurns: isOnline() && controller.isHost.value == true ? 0 : 2,
+      child: userAvatarMatch(user.value),
+    );
+  }
+
+  Widget clock(int turns, player player) {
+    return RotatedBox(quarterTurns: turns, child: ClockView(player));
+  }
+
+  Widget board() {
+    return SizedBox(
+      width: 300,
+      height: 400,
+      child: Stack(
+        children: [
+          Image.asset('assets/images/board.png'),
+          RotatedBox(
+              quarterTurns: controller.playersTurn == player.white ? 0 : 2,
+              child: ChessBoard(
+                  matrix: controller.gs.value!.board,
+                  playersTurn: controller.playersTurn)),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -73,41 +101,26 @@ class MatchView extends GetView<MatchController> {
             return Stack(
               children: [
                 RotatedBox(
-                  quarterTurns: isOnline() &&
-                          controller.isHost.value == false
-                      ? 2
-                      : 0,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      RotatedBox(
-                        quarterTurns: isOnline() &&
-                                controller.isHost.value ==
-                                    true
-                            ? 0
-                            : 2,
-                        child: userAvatarMatch(controller.invitedUser.value),
-                      ),
-                      RotatedBox(
-                          quarterTurns: 2, child: ClockView(player.black)),
-                      Graveyard(p: player.black),
-                      RotatedBox(
-                          quarterTurns:
-                              controller.playersTurn == player.white ? 0 : 2,
-                          child: ChessBoard(
-                              matrix: controller.gs.value!.board,
-                              playersTurn: controller.playersTurn)),
-                      Graveyard(p: player.white),
-                      ClockView(player.white),
-                      RotatedBox(
-                        quarterTurns: isOnline() &&
-                                controller.isHost.value ==
-                                    true
-                            ? 0
-                            : 2,
-                        child: userAvatarMatch(controller.hostUser.value),
-                      ),
-                    ],
+                  quarterTurns:
+                      isOnline() && controller.isHost.value == false ? 2 : 0,
+                  child: SizedBox(
+                    height: 650,
+                    width: 360,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        board(),
+                        Positioned(top: 50, child: Graveyard(p: player.black)),
+                        Positioned(
+                            bottom: 50, child: Graveyard(p: player.white)),
+                        Positioned(
+                            top: 0, child: userInfo(controller.invitedUser)),
+                        Positioned(
+                            bottom: 0, child: userInfo(controller.hostUser)),
+                        Positioned(top: 20, child: clock(2, player.black)),
+                        Positioned(bottom: 20, child: clock(0, player.white)),
+                      ],
+                    ),
                   ),
                 ),
                 isOnline() && controller.searching.value
@@ -132,16 +145,33 @@ class MatchView extends GetView<MatchController> {
             child: const Icon(Icons.close, color: Colors.black87),
           ),
         ),
-        if (controller.gamemode != gameMode.online) Positioned(
-          bottom: 8,
-          right: 8,
-          child: FloatingActionButton(
-            heroTag: 'restart',
-            backgroundColor: Colors.white,
-            mini: true,
-            onPressed: controller.restartGame,
-            child: const Icon(CupertinoIcons.refresh, color: Colors.black87),
+        if (controller.gamemode != gameMode.online)
+          Positioned(
+            bottom: 8,
+            right: 8,
+            child: FloatingActionButton(
+              heroTag: 'restart',
+              backgroundColor: Colors.white,
+              mini: true,
+              onPressed: controller.restartGame,
+              child: const Icon(CupertinoIcons.refresh, color: Colors.black87),
+            ),
           ),
+        Obx(() => AnimatedPositioned(
+          top: controller.isLoading.value ? 10 : - MediaQuery.of(context).size.height,
+          left: 10,
+          curve: Curves.easeOutExpo,
+          duration: const Duration(milliseconds: 500),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16.0),
+              color: Colors.blueGrey,
+            ),
+            width: MediaQuery.of(context).size.width - 20,
+            height: MediaQuery.of(context).size.height - 20,
+            child: Center(child: SizedBox(height: 25, child: Image.asset('assets/images/icon.png'))),
+          ),
+        ),
         )
       ]),
     );

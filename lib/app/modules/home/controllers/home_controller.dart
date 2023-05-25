@@ -6,15 +6,19 @@ import '../../../data/enums.dart';
 import '../../../routes/app_pages.dart';
 import '../../../services/database.dart';
 import '../../auth/views/login_dialog_view.dart';
-import '../../match/controllers/match_making_controller.dart';
+import '../../../utils/utils.dart';
 
 class HomeController extends GetxController {
-  FirebaseMessaging messaging = FirebaseMessaging.instance;
-
+  late FirebaseMessaging messaging;
+  late bool isOnline = false;
+  var isLoading = false.obs;
   final AuthController authController = Get.find<AuthController>();
 
-  void setMode(gameMode mode) {
+  void setMode(gameMode mode) async {
+    isLoading.value = true;
+    await Future.delayed(const Duration(milliseconds: 500));
     Get.toNamed(Routes.MATCH, arguments: mode);
+    isLoading.value = false;
   }
 
   void checkLogin() {
@@ -28,18 +32,20 @@ class HomeController extends GetxController {
   }
 
   void showAuthDialog() {
-    Get.dialog(LoginDialogView(), barrierDismissible: true);
+    Get.dialog(const LoginDialogView(), barrierDismissible: true);
   }
 
   @override
-  void onInit() {
-    print('initing home controller');
+  void onInit() async {
+    isOnline = await isConnected();
+    if (isOnline) {
+      messaging = FirebaseMessaging.instance;
+    }
     super.onInit();
   }
 
   @override
   void onReady() async {
-    print('ready home controller $authController');
     NotificationSettings settings = await messaging.requestPermission(
       alert: true,
       announcement: false,
@@ -51,11 +57,9 @@ class HomeController extends GetxController {
     );
     // print('User granted permission: ${settings.authorizationStatus}');
     if(settings.authorizationStatus == AuthorizationStatus.authorized){
-      // print('getting token...');
       String? token = await messaging.getToken(
         vapidKey: "BMnLhmaBDEW0nIVy5544WoLoHt4UFgCZsi2RBKGOSy_8dJbyW0UVXwxpXvWcpCfzPRStgLOHvALVu34ZDb6CcmM",
       );
-      // print('token: $token');
       DatabaseController dbController = Get.find<DatabaseController>();
       if (defaultTargetPlatform == TargetPlatform.android || defaultTargetPlatform == TargetPlatform.iOS){
         messaging.subscribeToTopic("newMatches");

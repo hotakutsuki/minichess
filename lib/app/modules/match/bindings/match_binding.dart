@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:minichess/app/modules/match/controllers/GraveyardController.dart';
 
 import 'package:minichess/app/modules/match/controllers/ai_controller.dart';
 import 'package:minichess/app/modules/match/controllers/clock_controller.dart';
@@ -24,6 +25,9 @@ class MatchBinding extends Bindings {
     );
     Get.lazyPut<TileController>(
       () => TileController(),
+    );
+    Get.lazyPut<GraveyardController>(
+          () => GraveyardController(),
     );
   }
 }
