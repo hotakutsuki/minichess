@@ -1,4 +1,5 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:minichess/app/modules/auth/controllers/auth_controller.dart';
 import 'package:flutter/foundation.dart';
@@ -12,6 +13,7 @@ class HomeController extends GetxController {
   late FirebaseMessaging messaging;
   late bool isOnline = false;
   var isLoading = false.obs;
+  var shouldShowDialog = false.obs;
   final AuthController authController = Get.find<AuthController>();
 
   void setMode(gameMode mode) async {
@@ -32,7 +34,8 @@ class HomeController extends GetxController {
   }
 
   void showAuthDialog() {
-    Get.dialog(const LoginDialogView(), barrierDismissible: true);
+    shouldShowDialog.value = true;
+    // Get.dialog(const LoginDialogView(), barrierDismissible: true);
   }
 
   @override

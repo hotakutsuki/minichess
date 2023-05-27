@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../data/enums.dart';
 import '../../../data/userDom.dart';
+import '../../../utils/utils.dart';
 import '../controllers/match_controller.dart';
 import '../widgets/ChessBoard.dart';
 import '../widgets/Graveyard.dart';
@@ -95,85 +96,88 @@ class MatchView extends GetView<MatchController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(children: [
-        Center(
-          child: Obx(() {
-            return Stack(
-              children: [
-                RotatedBox(
-                  quarterTurns:
-                      isOnline() && controller.isHost.value == false ? 2 : 0,
-                  child: SizedBox(
-                    height: 650,
-                    width: 360,
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        board(),
-                        Positioned(top: 50, child: Graveyard(p: player.black)),
-                        Positioned(
-                            bottom: 50, child: Graveyard(p: player.white)),
-                        Positioned(
-                            top: 0, child: userInfo(controller.invitedUser)),
-                        Positioned(
-                            bottom: 0, child: userInfo(controller.hostUser)),
-                        Positioned(top: 20, child: clock(2, player.black)),
-                        Positioned(bottom: 20, child: clock(0, player.white)),
-                      ],
+      body: Transform.scale(
+        scale: getScale(context),
+        child: Stack(children: [
+          Center(
+            child: Obx(() {
+              return Stack(
+                children: [
+                  RotatedBox(
+                    quarterTurns:
+                        isOnline() && controller.isHost.value == false ? 2 : 0,
+                    child: SizedBox(
+                      height: 650,
+                      width: 360,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          board(),
+                          Positioned(top: 50, child: Graveyard(p: player.black)),
+                          Positioned(
+                              bottom: 50, child: Graveyard(p: player.white)),
+                          Positioned(
+                              top: 0, child: userInfo(controller.invitedUser)),
+                          Positioned(
+                              bottom: 0, child: userInfo(controller.hostUser)),
+                          Positioned(top: 20, child: clock(2, player.black)),
+                          Positioned(bottom: 20, child: clock(0, player.white)),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                isOnline() && controller.searching.value
-                    ? searchingWidget()
-                    : const SizedBox(),
-              ],
-            );
-          }),
-        ),
-        Obx(
-          () =>
-              !controller.isGameOver.value ? const SizedBox() : GameoverView(),
-        ),
-        Positioned(
-          top: 40,
-          right: 8,
-          child: FloatingActionButton(
-            heroTag: 'close',
-            backgroundColor: Colors.white,
-            mini: true,
-            onPressed: controller.closeTheGame,
-            child: const Icon(Icons.close, color: Colors.black87),
+                  isOnline() && controller.searching.value
+                      ? searchingWidget()
+                      : const SizedBox(),
+                ],
+              );
+            }),
           ),
-        ),
-        if (controller.gamemode != gameMode.online)
+          Obx(
+            () =>
+                !controller.isGameOver.value ? const SizedBox() : GameoverView(),
+          ),
           Positioned(
-            bottom: 8,
+            top: 40,
             right: 8,
             child: FloatingActionButton(
-              heroTag: 'restart',
+              heroTag: 'close',
               backgroundColor: Colors.white,
               mini: true,
-              onPressed: controller.restartGame,
-              child: const Icon(CupertinoIcons.refresh, color: Colors.black87),
+              onPressed: controller.closeTheGame,
+              child: const Icon(Icons.close, color: Colors.black87),
             ),
           ),
-        Obx(() => AnimatedPositioned(
-          top: controller.isLoading.value ? 10 : - MediaQuery.of(context).size.height,
-          left: 10,
-          curve: Curves.easeOutExpo,
-          duration: const Duration(milliseconds: 500),
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16.0),
-              color: Colors.blueGrey,
+          if (controller.gamemode != gameMode.online)
+            Positioned(
+              bottom: 8,
+              right: 8,
+              child: FloatingActionButton(
+                heroTag: 'restart',
+                backgroundColor: Colors.white,
+                mini: true,
+                onPressed: controller.restartGame,
+                child: const Icon(CupertinoIcons.refresh, color: Colors.black87),
+              ),
             ),
-            width: MediaQuery.of(context).size.width - 20,
-            height: MediaQuery.of(context).size.height - 20,
-            child: Center(child: SizedBox(height: 25, child: Image.asset('assets/images/icon.png'))),
+          Obx(() => AnimatedPositioned(
+            top: controller.isLoading.value ? 10 : -MediaQuery.of(context).size.height,
+            left: 5,
+            curve: Curves.easeOutExpo,
+            duration: const Duration(milliseconds: 500),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16.0),
+                color: Colors.blueGrey,
+              ),
+              width: MediaQuery.of(context).size.width - 10,
+              height: MediaQuery.of(context).size.height - 20,
+              child: Center(child: SizedBox(height: 25, child: Image.asset('assets/images/icon.png'))),
+            ),
           ),
-        ),
-        )
-      ]),
+          )
+        ]),
+      ),
     );
   }
 }

@@ -39,6 +39,13 @@ createNewBoard() {
   return matrix;
 }
 
+double getScale(BuildContext context){
+  double h = MediaQuery.of(context).size.height / 700;
+  double w = MediaQuery.of(context).size.width / 396;
+  double minimun = min(h,w);
+  return min(minimun,1);
+}
+
 Widget getImage(chrt char, player owner) {
   switch (char) {
     case chrt.pawn:

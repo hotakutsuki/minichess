@@ -246,8 +246,6 @@ class MatchController extends GetxController {
   animateTiles(Move move) async {
     if (gs.value!.board[move.finalTile.j!][move.finalTile.i!].char != chrt.empty){
       GraveyardController gyController = Get.find<GraveyardController>(tag: playersTurn.name);
-      // int length = gyController.getGraveyard(
-      //     playersTurn == player.white ? player.black : player.white).length;
       int length = gyController.getGraveyard(playersTurn).length;
       TileController takenTileController = Get.find<TileController>(tag: move.finalTile.toString());
       takenTileController.animateTile(move.finalTile.i!, - 1 - move.finalTile.j!, null, null, length);
@@ -255,10 +253,7 @@ class MatchController extends GetxController {
     }
     if (isFromGraveyard(move.initialTile)){
       GraveyardController gyController = Get.find<GraveyardController>(tag: playersTurn.name);
-      // GraveyardController gyController = Get.find<GraveyardController>();
-      int idx = gyController.getGraveyard(playersTurn)
-          .indexWhere((element) => element.isSelected);
-      print('reviving index: $idx');
+      int idx = gyController.getGraveyard(playersTurn).indexWhere((element) => element.isSelected);
       TileController tileController = Get.find<TileController>(tag: move.initialTile.toString());
       await tileController.animateTile(null, null, move.finalTile.i, move.finalTile.j, idx);
     }
@@ -324,7 +319,9 @@ class MatchController extends GetxController {
     }
   }
 
-  void restartGame() {
+  void restartGame() async {
+    isLoading.value = true;
+
     selectedTile.value = null;
     winner = player.none;
     isGameOver.value = false;
@@ -332,9 +329,11 @@ class MatchController extends GetxController {
     whiteHistory.clear();
     boardHistory.clear();
     playersTurn = player.white;
-
     resetTimers();
     initBoardState();
+
+    await Future.delayed(const Duration(milliseconds: 1000));
+    isLoading.value = false;
   }
 
   void closeTheGame() {
