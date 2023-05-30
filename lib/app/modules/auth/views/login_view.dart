@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
+import 'package:minichess/app/modules/home/controllers/home_controller.dart';
 
 import '../controllers/auth_controller.dart';
 
 class LoginView extends GetView<AuthController> {
-  const LoginView({Key? key}) : super(key: key);
+  LoginView({Key? key}) : super(key: key);
+  // HomeController homeController = Get.find<HomeController>();
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -17,6 +19,7 @@ class LoginView extends GetView<AuthController> {
             const Text("Login"),
             IconButton(
                 onPressed: () => Get.back(closeOverlays: true),
+                // onPressed: () => homeController.shouldShowDialog.value = false,
                 icon: const Icon(Icons.close))
           ],
         ),

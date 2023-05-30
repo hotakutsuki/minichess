@@ -15,13 +15,13 @@ class HomeView extends GetView<HomeController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Transform.scale(
-        scale: getScale(context),
-        child: SizedBox(
-          width: double.infinity,
-          height: double.infinity,
-          child: Stack(alignment: Alignment.center, children: [
-            Column(
+      body: SizedBox(
+        width: double.infinity,
+        height: double.infinity,
+        child: Stack(alignment: Alignment.center, children: [
+          Transform.scale(
+            scale: getScale(context),
+            child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Text('Minichess',
@@ -62,7 +62,7 @@ class HomeView extends GetView<HomeController> {
                           height: 40,
                           width: 150,
                           child: ElevatedButton(
-                            onPressed: controller.isOnline
+                            onPressed: controller.isOnline.value
                                 ? () => controller.checkLogin()
                                 : null,
                             child: const Text(
@@ -80,65 +80,61 @@ class HomeView extends GetView<HomeController> {
                 }),
               ],
             ),
-            AnimatedPositioned(
-              top: 40,
-              right: controller.isOnline ? 10 : - 60,
+          ),
+          AnimatedPositioned(
+            top: 40,
+            right: controller.isOnline.value ? 10 : - 60,
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeInOutExpo,
+            child: Obx(() {
+              return FloatingActionButton(
+                heroTag: 'person',
+                  child: authController.user.value == null
+                      ? const Icon(CupertinoIcons.person)
+                      : CircleAvatar(
+                    backgroundImage: Image.network(
+                        authController.user.value?.photoUrl ?? '')
+                        .image,
+                    radius: 30,
+                  ),
+                  onPressed: () => controller.showAuthDialog());
+            }),
+          ),
+          Obx(
+            () => AnimatedPositioned(
+              top: controller.isLoading.value ? 10 : -MediaQuery.of(context).size.height,
+              left: 5,
+              curve: Curves.easeOutExpo,
               duration: const Duration(milliseconds: 500),
-              curve: Curves.easeInOutExpo,
-              child: Obx(() {
-                return FloatingActionButton(
-                  heroTag: 'person',
-                    child: authController.user.value == null
-                        ? const Icon(CupertinoIcons.person)
-                        : CircleAvatar(
-                      backgroundImage: Image.network(
-                          authController.user.value?.photoUrl ?? '')
-                          .image,
-                      radius: 30,
-                    ),
-                    onPressed: () => controller.showAuthDialog());
-              }),
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16.0),
+                  color: Colors.blueGrey,
+                ),
+                width: MediaQuery.of(context).size.width - 10,
+                height: MediaQuery.of(context).size.height - 20,
+                child: Center(
+                    child: SizedBox(
+                        height: 25,
+                        child: Image.asset('assets/images/icon.png'))),
+              ),
             ),
-            Obx(
-              () => AnimatedPositioned(
-                top: controller.isLoading.value ? 10 : -MediaQuery.of(context).size.height,
-                left: 5,
+          ),
+          Obx(() =>
+              AnimatedPositioned(
+                top: controller.shouldShowDialog.value
+                    ? 0
+                    : -MediaQuery.of(context).size.height,
                 curve: Curves.easeOutExpo,
                 duration: const Duration(milliseconds: 500),
                 child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16.0),
-                    color: Colors.blueGrey,
-                  ),
-                  width: MediaQuery.of(context).size.width - 10,
-                  height: MediaQuery.of(context).size.height - 20,
-                  child: Center(
-                      child: SizedBox(
-                          height: 25,
-                          child: Image.asset('assets/images/icon.png'))),
+                  color: Colors.black54,
+                  width: MediaQuery.of(context).size.width,
+                  height: MediaQuery.of(context).size.height,
+                  child: const LoginDialogView(),
                 ),
-              ),
-            ),
-            Obx(() =>
-                AnimatedPositioned(
-                  top: controller.shouldShowDialog.value
-                      ? 10
-                      : -MediaQuery.of(context).size.height,
-                  left: 10,
-                  curve: Curves.easeOutExpo,
-                  duration: const Duration(milliseconds: 500),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16.0),
-                      color: Colors.blueGrey,
-                    ),
-                    width: MediaQuery.of(context).size.width - 20,
-                    height: MediaQuery.of(context).size.height - 20,
-                    child: const LoginDialogView(),
-                  ),
-                )),
-          ]),
-        ),
+              )),
+        ]),
       ),
       floatingActionButton: Stack(children: [
         Obx(
@@ -151,7 +147,7 @@ class HomeView extends GetView<HomeController> {
               height: 180,
               child: Column(
                 children: [
-                  if (controller.isOnline)
+                  if (controller.isOnline.value)
                     FloatingActionButton(
                         heroTag: 'records',
                         child: const Icon(Icons.stacked_bar_chart),

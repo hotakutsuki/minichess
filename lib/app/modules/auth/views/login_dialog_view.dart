@@ -7,10 +7,7 @@ import '../controllers/auth_controller.dart';
 import 'login_view.dart';
 
 class LoginDialogView extends GetView<AuthController> {
-// class LoginDialogView extends GetView {
   const LoginDialogView({Key? key}) : super(key: key);
-  // @override
-  // AuthController controller = Get.find<AuthController>();
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +16,7 @@ class LoginDialogView extends GetView<AuthController> {
         height: 400,
         child: Obx(() {
           if (controller.googleAccount.value == null) {
-            return const LoginView();
+            return LoginView();
           } else {
             return const ProfileView();
           }

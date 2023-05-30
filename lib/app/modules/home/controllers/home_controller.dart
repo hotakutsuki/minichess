@@ -11,7 +11,7 @@ import '../../../utils/utils.dart';
 
 class HomeController extends GetxController {
   late FirebaseMessaging messaging;
-  late bool isOnline = false;
+  var isOnline = false.obs;
   var isLoading = false.obs;
   var shouldShowDialog = false.obs;
   final AuthController authController = Get.find<AuthController>();
@@ -34,21 +34,21 @@ class HomeController extends GetxController {
   }
 
   void showAuthDialog() {
-    shouldShowDialog.value = true;
-    // Get.dialog(const LoginDialogView(), barrierDismissible: true);
+    // shouldShowDialog.value = true;
+    Get.dialog(const LoginDialogView(), barrierDismissible: true);
   }
 
   @override
   void onInit() async {
-    isOnline = await isConnected();
-    if (isOnline) {
-      messaging = FirebaseMessaging.instance;
-    }
     super.onInit();
   }
 
   @override
   void onReady() async {
+    isOnline.value = await isConnected();
+    if (isOnline.value) {
+      messaging = FirebaseMessaging.instance;
+    }
     NotificationSettings settings = await messaging.requestPermission(
       alert: true,
       announcement: false,
