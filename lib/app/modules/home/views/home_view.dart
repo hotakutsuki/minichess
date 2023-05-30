@@ -73,7 +73,7 @@ class HomeView extends GetView<HomeController> {
                         if (authController.user.value != null)
                           Text('score: ${authController.user.value?.score}',
                               style: const TextStyle(
-                                  fontSize: 28, fontWeight: FontWeight.bold))
+                                  fontSize: 20, fontWeight: FontWeight.bold))
                       ],
                     ),
                   );
@@ -81,24 +81,26 @@ class HomeView extends GetView<HomeController> {
               ],
             ),
           ),
-          AnimatedPositioned(
-            top: 40,
-            right: controller.isOnline.value ? 10 : - 60,
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.easeInOutExpo,
-            child: Obx(() {
-              return FloatingActionButton(
-                heroTag: 'person',
-                  child: authController.user.value == null
-                      ? const Icon(CupertinoIcons.person)
-                      : CircleAvatar(
-                    backgroundImage: Image.network(
-                        authController.user.value?.photoUrl ?? '')
-                        .image,
-                    radius: 30,
-                  ),
-                  onPressed: () => controller.showAuthDialog());
-            }),
+          Obx(
+            () => AnimatedPositioned(
+              top: 40,
+              right: controller.isOnline.value ? 10 : - 60,
+              duration: const Duration(milliseconds: 500),
+              curve: Curves.easeInOutExpo,
+              child: Obx(() {
+                return FloatingActionButton(
+                  heroTag: 'person',
+                    child: authController.user.value == null
+                        ? const Icon(CupertinoIcons.person)
+                        : CircleAvatar(
+                      backgroundImage: Image.network(
+                          authController.user.value?.photoUrl ?? '')
+                          .image,
+                      radius: 30,
+                    ),
+                    onPressed: () => controller.showAuthDialog());
+              }),
+            ),
           ),
           Obx(
             () => AnimatedPositioned(
