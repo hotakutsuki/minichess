@@ -4,3 +4,4 @@ enum possession { mine, enemy, none }
 enum gameMode { vs, solo, online, training }
 enum gameState { open, playing, finished, blocked, fake, unknown }
 enum collections {matches, users, tokens}
+enum sharedPrefs {userName}

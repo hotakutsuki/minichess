@@ -24,7 +24,7 @@ class HomeController extends GetxController {
   }
 
   void checkLogin() {
-    if (authController.googleAccount.value == null) {
+    if (authController.user.value == null) {
       showAuthDialog();
     } else {
       setMode(gameMode.online);

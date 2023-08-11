@@ -1,14 +1,14 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 class User {
   String id;
   String name;
-  String email;
+  String? email;
   String? photoUrl;
+  int score;
   String? country;
   String? countryCode;
   String? city;
-  int score;
+  String? password;
+
 
   static const String ID = 'id';
   static const String NAME = 'name';
@@ -18,24 +18,28 @@ class User {
   static const String COUNTRY = 'country';
   static const String COUNTRYCODE = 'countryCode';
   static const String CITY = 'city';
+  static const String PASSWORD = 'password';
 
   User(this.id, this.name, this.email, this.photoUrl, this.score, this.country,
-      this.countryCode, this.city);
+      this.countryCode, this.city, this.password);
 
-  User.fromDocStanpshot(Map<String, dynamic> snapshot)
+  User.basicUser(this.id, this.name, this.score);
+
+  User.fromDocStanpshot(Map<String, dynamic> snapshot, String id)
       : this(
-          snapshot[ID],
+          id,
           snapshot[NAME],
-          snapshot[EMAIL],
+          snapshot.containsKey(EMAIL) ? snapshot[EMAIL] : '',
           snapshot.containsKey(PHOTOURL) ? snapshot[PHOTOURL] : '',
           snapshot[SCORE],
           snapshot.containsKey(COUNTRY) ? snapshot[COUNTRY] : '',
           snapshot.containsKey(COUNTRYCODE) ? snapshot[COUNTRYCODE] : '',
           snapshot.containsKey(CITY) ? snapshot[CITY] : '',
+          snapshot.containsKey(PASSWORD) ? snapshot[PASSWORD] : '',
         );
 
   @override
   String toString() {
-    return '$name $email $id $score';
+    return '$name $id $score';
   }
 }

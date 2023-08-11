@@ -19,7 +19,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final Future<FirebaseApp> _fbApp = Firebase.initializeApp(
+  final Future<FirebaseApp> fbApp = Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
@@ -64,7 +64,7 @@ Future<void> main() async {
 
   runApp(
     FutureBuilder(
-      future: _fbApp,
+      future: fbApp,
       builder: (context, snapshot) {
         SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown,]);
         return GetMaterialApp(

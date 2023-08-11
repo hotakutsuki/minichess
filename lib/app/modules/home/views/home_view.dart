@@ -25,7 +25,8 @@ class HomeView extends GetView<HomeController> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Text('Minichess',
-                    style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold)),
+                    style:
+                        TextStyle(fontSize: 48, fontWeight: FontWeight.bold)),
                 Container(
                     height: 50,
                     child: SizedBox(
@@ -84,27 +85,34 @@ class HomeView extends GetView<HomeController> {
           Obx(
             () => AnimatedPositioned(
               top: 40,
-              right: controller.isOnline.value ? 10 : - 60,
+              right: controller.isOnline.value ? 10 : -60,
               duration: const Duration(milliseconds: 500),
               curve: Curves.easeInOutExpo,
               child: Obx(() {
                 return FloatingActionButton(
-                  heroTag: 'person',
+                    heroTag: 'person',
                     child: authController.user.value == null
                         ? const Icon(CupertinoIcons.person)
                         : CircleAvatar(
-                      backgroundImage: Image.network(
-                          authController.user.value?.photoUrl ?? '')
-                          .image,
-                      radius: 30,
-                    ),
+                            backgroundColor: Colors.blueGrey,
+                            backgroundImage: Image.network(
+                                    authController.user.value?.photoUrl ?? '')
+                                .image,
+                            radius: 30,
+                            child: Text(
+                              authController.user.value!.name[0].toUpperCase(),
+                              style: const TextStyle(fontSize: 30),
+                            ),
+                          ),
                     onPressed: () => controller.showAuthDialog());
               }),
             ),
           ),
           Obx(
             () => AnimatedPositioned(
-              top: controller.isLoading.value ? 10 : -MediaQuery.of(context).size.height,
+              top: controller.isLoading.value
+                  ? 10
+                  : -MediaQuery.of(context).size.height,
               left: 5,
               curve: Curves.easeOutExpo,
               duration: const Duration(milliseconds: 500),
@@ -122,8 +130,7 @@ class HomeView extends GetView<HomeController> {
               ),
             ),
           ),
-          Obx(() =>
-              AnimatedPositioned(
+          Obx(() => AnimatedPositioned(
                 top: controller.shouldShowDialog.value
                     ? 0
                     : -MediaQuery.of(context).size.height,

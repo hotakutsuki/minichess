@@ -158,7 +158,7 @@ class MatchController extends GetxController {
     int rndName = getRandomInt(UsefullData.mixedNames.length - 1);
     var name = UsefullData.mixedNames[rndName];
     return User('fake', name, 'unknown', imageUrl, rndScore, 'unknown',
-        'unknown', 'city');
+        'unknown', 'city', 'pass');
   }
 
   void setTimersAndPlayers() {

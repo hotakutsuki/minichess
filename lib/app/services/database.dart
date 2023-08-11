@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
@@ -12,6 +14,7 @@ import '../data/userDom.dart';
 import '../modules/auth/controllers/auth_controller.dart';
 import '../modules/match/controllers/match_controller.dart';
 import '../utils/gameObjects/tile.dart';
+
 
 class DatabaseController extends GetxController {
   late final AuthController authController;
@@ -43,7 +46,7 @@ class DatabaseController extends GetxController {
       matchController.gameId.value,
       gameState.open,
       tiles,
-      authController.googleAccount.value!.id.toString(),
+      authController.user.value!.id.toString(),
     ).toMap();
     return docRef.set(newMatch).then((value) {
       return true;
@@ -52,6 +55,12 @@ class DatabaseController extends GetxController {
       errorsController.showGenericError(error.toString());
       return false;
     });
+  }
+
+  getNewUserDocReference(){
+    return _firestore
+        .collection(collections.matches.name)
+        .doc(matchController.gameId.value);
   }
 
   void closeMatch() {
@@ -99,7 +108,7 @@ class DatabaseController extends GetxController {
         .collection(collections.matches.name)
         .doc(matchController.gameId.value)
         .update({
-      MatchDom.INVITEDPLAYERID: authController.googleAccount.value!.id,
+      MatchDom.INVITEDPLAYERID: authController.user.value!.id,
       MatchDom.STATE: gameState.playing.name,
     }).then((value) {
       return true;
@@ -125,6 +134,35 @@ class DatabaseController extends GetxController {
     });
   }
 
+  Future<bool> createNewUserByUserName(String userName) async {
+    Map<String, dynamic> ipJson = <String, dynamic>{};
+    try {
+      var response = await http.get(Uri.parse('http://ip-api.com/json'));
+      ipJson = jsonDecode(response.body);
+    } catch (e) {
+      print(e);
+    }
+
+    try {
+      var docRef = _firestore.collection(collections.users.name).doc();
+      await docRef.set({
+        User.ID: docRef.id,
+        User.NAME: userName,
+        User.EMAIL: null,
+        User.PHOTOURL: null,
+        User.SCORE: 5000,
+        User.COUNTRY: ipJson.containsKey(User.COUNTRY) ? ipJson[User.COUNTRY] : '',
+        User.COUNTRYCODE: ipJson.containsKey(User.COUNTRYCODE) ? ipJson[User.COUNTRYCODE] : '',
+        User.CITY: ipJson.containsKey(User.CITY) ? ipJson[User.CITY] : '',
+        User.PASSWORD: null,
+      });
+      return true;
+    } catch (e) {
+      print(e);
+      return false;
+    }
+  }
+
   Future<bool> createNewUser(User user) async {
     try {
       await _firestore.collection(collections.users.name).doc().set({
@@ -136,6 +174,7 @@ class DatabaseController extends GetxController {
         User.COUNTRY: user.country,
         User.COUNTRYCODE: user.countryCode,
         User.CITY: user.city,
+        User.PASSWORD: user.password,
       });
       return true;
     } catch (e) {
@@ -149,7 +188,7 @@ class DatabaseController extends GetxController {
       DocumentSnapshot doc =
           await _firestore.collection("users").doc(uid).get();
       if (doc.data() != null) {
-        return User.fromDocStanpshot(doc.data() as Map<String, dynamic>);
+        return User.fromDocStanpshot(doc.data() as Map<String, dynamic>, doc.id);
       }
       return null;
     } catch (e) {
@@ -165,7 +204,7 @@ class DatabaseController extends GetxController {
           .where(User.ID, isEqualTo: uid)
           .get();
       if (docs.docs.isNotEmpty) {
-        return User.fromDocStanpshot(docs.docs[0].data());
+        return User.fromDocStanpshot(docs.docs[0].data(), docs.docs[0].id);
       } else {
         return null;
       }
@@ -183,6 +222,23 @@ class DatabaseController extends GetxController {
           .get();
       if (docs.docs.isNotEmpty) {
         return docs.docs[0].id;
+      } else {
+        return null;
+      }
+    } catch (e) {
+      print(e);
+      rethrow;
+    }
+  }
+
+  Future<User?> getUserByUserName (String userName) async {
+    try {
+      var docs = await _firestore
+          .collection(collections.users.name)
+          .where(User.NAME, isEqualTo: userName)
+          .get();
+      if (docs.docs.isNotEmpty) {
+        return User.fromDocStanpshot(docs.docs[0].data(), docs.docs[0].id);
       } else {
         return null;
       }
