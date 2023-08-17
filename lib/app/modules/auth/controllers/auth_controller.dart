@@ -1,3 +1,7 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart' show Uint8List, kIsWeb;
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../data/userDom.dart';
@@ -23,10 +27,13 @@ class AuthController extends GetxController {
   TextEditingController passTextController = TextEditingController();
   Rxn<String> passError = Rxn<String>(null);
   final RxBool loading = false.obs;
+  final RxBool uploading = false.obs;
+
+  Rxn<PlatformFile> pickedFile = Rxn<PlatformFile>(null);
 
   login(User userToLogin) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString(sharedPrefs.userName.name , userToLogin.name);
+    await prefs.setString(sharedPrefs.userName.name, userToLogin.name);
 
     user.value = userToLogin;
     userName.value = null;
@@ -49,7 +56,7 @@ class AuthController extends GetxController {
     print('userName: $userName');
     if (userName != null) {
       tempUser = await dbController.getUserByUserName(userName);
-      if (tempUser != null){
+      if (tempUser != null) {
         user.value = tempUser;
       }
     }
@@ -72,9 +79,6 @@ class AuthController extends GetxController {
     loading.value = true;
     tempUser =
         await dbController.getUserByUserName(userNameTextController.text);
-    // await Future.delayed(const Duration(milliseconds: 500));
-    // User tempUser = User('id', 'name', 'email', 'photurl', 123, 'country',
-    //     'countrycode', 'city', null);
     if (tempUser == null) {
       try {
         await dbController.createNewUserByUserName(userNameTextController.text);
@@ -108,6 +112,41 @@ class AuthController extends GetxController {
       user.value = tempUser;
     }
     loading.value = false;
+  }
+
+  clearUserName() {
+    userName.value = null;
+  }
+
+  selectFile() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['jpg', 'jpeg', 'png'],
+    );
+    pickedFile.value = result?.files.first;
+    if (pickedFile.value != null) {
+      uploading.value = true;
+      await uploadFile();
+      uploading.value = false;
+    }
+  }
+
+  uploadFile() async {
+    final path = 'file/${user.value!.name}.${pickedFile.value!.extension}';
+    UploadTask uploadTask;
+    if (kIsWeb) {
+      Uint8List fileBytes = pickedFile.value!.bytes!;
+      final ref = FirebaseStorage.instance.ref().child(path);
+      uploadTask = ref.putData(fileBytes);
+    } else {
+      final file = File(pickedFile.value!.path!);
+      final ref = FirebaseStorage.instance.ref().child(path);
+      uploadTask = ref.putFile(file);
+    }
+    final snapshot = await uploadTask.whenComplete(() {});
+    final downloadURL = await snapshot.ref.getDownloadURL();
+    await dbController.updateInfo(downloadURL, user.value?.country,
+        user.value?.countryCode, user.value?.city);
   }
 
   // googleSetUserInfoInBD() async {
@@ -204,8 +243,11 @@ class AuthController extends GetxController {
   void onReady() async {
     dbController = Get.find<DatabaseController>();
     super.onReady();
-    if(user.value == null){
-      trySilentLogin();
+    if (user.value == null) {
+      loading.value = true;
+      await Future.delayed(const Duration(milliseconds: 1000));
+      await trySilentLogin();
+      loading.value = false;
     }
     // _googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) {
     //   print('current user changed... $account');

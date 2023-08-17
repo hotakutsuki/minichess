@@ -91,18 +91,19 @@ class HomeView extends GetView<HomeController> {
               child: Obx(() {
                 return FloatingActionButton(
                     heroTag: 'person',
-                    child: authController.user.value == null
+                    child: authController.loading.value ? const CircularProgressIndicator(color: Colors.white,) : authController.user.value == null
                         ? const Icon(CupertinoIcons.person)
                         : CircleAvatar(
                             backgroundColor: Colors.blueGrey,
-                            backgroundImage: Image.network(
-                                    authController.user.value?.photoUrl ?? '')
-                                .image,
+                            backgroundImage:
+                                authController.user.value?.photoUrl == null
+                                    ? null
+                                    : Image.network(authController.user.value!.photoUrl!).image,
                             radius: 30,
-                            child: Text(
+                            child: authController.user.value?.photoUrl == null ? Text(
                               authController.user.value!.name[0].toUpperCase(),
                               style: const TextStyle(fontSize: 30),
-                            ),
+                            ) : null,
                           ),
                     onPressed: () => controller.showAuthDialog());
               }),

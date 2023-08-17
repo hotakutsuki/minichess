@@ -4,15 +4,16 @@ publish_to: none
 description: "A mini board game"
 environment: 
   sdk: '>=2.18.1 <3.0.0'
+  #sdk: '>=3.0.0 <4.0.0'
 
 dependencies: 
   cupertino_icons: ^1.0.2
   flutter_launcher_icons: ^0.12.0
   http: ^0.13.5
   connectivity_plus: ^3.0.2
-  firebase_core: ^2.4.1
+  firebase_core: ^2.15.1
   firebase_analytics: ^10.1.0
-  firebase_auth: ^4.2.5
+  firebase_auth: ^4.7.3
   firebase_crashlytics: ^3.0.9
   google_sign_in: ^6.0.2
   google_sign_in_web: ^0.11.0+2
@@ -24,6 +25,8 @@ dependencies:
   flutter_local_notifications: ^12.0.2
   firebase_notifications_handler: ^1.1.0
   shared_preferences: ^2.2.0
+  file_picker: ^5.3.1
+  firebase_storage: ^11.2.6
 
 dev_dependencies: 
   flutter_lints: ^2.0.0

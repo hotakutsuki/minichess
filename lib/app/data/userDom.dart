@@ -38,6 +38,29 @@ class User {
           snapshot.containsKey(PASSWORD) ? snapshot[PASSWORD] : '',
         );
 
+  getProperty(String fieldName){
+    switch (fieldName){
+      case ID:
+        return id;
+      case NAME:
+        return name;
+      case EMAIL:
+        return email;
+      case PHOTOURL:
+        return photoUrl;
+      case SCORE:
+        return score;
+      case COUNTRY:
+        return country;
+      case COUNTRYCODE:
+        return countryCode;
+      case CITY:
+        return city;
+      case PASSWORD:
+        return password;
+    }
+  }
+
   @override
   String toString() {
     return '$name $id $score';

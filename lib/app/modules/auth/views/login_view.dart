@@ -8,11 +8,23 @@ import '../controllers/auth_controller.dart';
 class LoginView extends GetView<AuthController> {
   LoginView({Key? key}) : super(key: key);
 
+  googleButton(){
+    return FloatingActionButton.extended(
+      icon: Image.asset(
+        'assets/images/glogo.png',
+        height: 25,
+      ),
+      backgroundColor: Colors.white,
+      foregroundColor: Colors.black,
+      label: const Text('Login with google'),
+      onPressed: () {},
+    );
+  }
+
   // HomeController homeController = Get.find<HomeController>();
   @override
   Widget build(BuildContext context) {
     return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
@@ -32,18 +44,9 @@ class LoginView extends GetView<AuthController> {
           ],
         ),
         const Text("Login or Create Account", style: TextStyle(fontSize: 20)),
+        const Divider(color: Colors.transparent),
         const Text('We need you to login in order to establish your score'),
-        // Text(controller.contactText.value),
-        // FloatingActionButton.extended(
-        //   icon: Image.asset(
-        //     'assets/images/glogo.png',
-        //     height: 25,
-        //   ),
-        //   backgroundColor: Colors.white,
-        //   foregroundColor: Colors.black,
-        //   label: const Text('Login with google'),
-        //   onPressed: () => controller.login(),
-        // ),
+        const Divider(color: Colors.transparent),
         Obx(() {
           return TextField(
             controller: controller.userNameTextController,
@@ -61,6 +64,13 @@ class LoginView extends GetView<AuthController> {
             ),
           );
         }),
+        const Text(
+          '(You wont be able to change your user name in the future)',
+          style: TextStyle(fontSize: 12, color: Colors.grey),
+        ),
+        const Divider(
+          color: Colors.transparent,
+        ),
         Row(
           children: [
             const Spacer(),
@@ -81,9 +91,6 @@ class LoginView extends GetView<AuthController> {
                           : const Text('Login or Create Account')));
             }),
           ],
-        ),
-        const Divider(
-          color: Colors.transparent,
         ),
       ],
     );

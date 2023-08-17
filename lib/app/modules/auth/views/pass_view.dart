@@ -30,7 +30,24 @@ class PassView extends GetView<AuthController> {
                 icon: const Icon(Icons.close))
           ],
         ),
+        Row(
+          children: [
+            SizedBox(
+              child: IconButton(
+                onPressed: controller.clearUserName,
+                icon: const Icon(Icons.arrow_back),
+              ),
+            ),
+            Text(controller.userName.value ?? ''),
+          ],
+        ),
+        const Divider(
+          color: Colors.transparent,
+        ),
         const Text("Enter Password", style: TextStyle(fontSize: 20)),
+        const Divider(
+          color: Colors.transparent,
+        ),
         Obx(() {
           return TextField(
             controller: controller.passTextController,
@@ -44,37 +61,34 @@ class PassView extends GetView<AuthController> {
             ),
           );
         }),
+        const Divider(
+          color: Colors.transparent,
+        ),
+        const Text(
+            'Forgot your password? contact us for support'),
+        const Divider(
+          color: Colors.transparent,
+        ),
         Row(
           children: [
-            TextButton(
-                onPressed: () => {controller.userName.value = null},
-                child: controller.loading.value
-                    ? const CircularProgressIndicator()
-                    : Container(
-                        height: 40,
-                        alignment: Alignment.center,
-                        child: const Text('Cancel'))),
             const Spacer(),
             Obx(() {
               return ElevatedButton(
                   onPressed: controller.handlePassword,
                   child: Container(
-                          height: 40,
-                          width: 80,
-                          alignment: Alignment.center,
-                          child: controller.loading.value
-                              ? const SizedBox(
-                                  width: 30,
-                                  height: 30,
-                                  child: CircularProgressIndicator(
-                                    color: Colors.white,
-                                  ))
-                              : const Text('Accept')));
+                      height: 40,
+                      width: 80,
+                      alignment: Alignment.center,
+                      child: controller.loading.value
+                          ? const SizedBox(
+                              width: 30,
+                              height: 30,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                              ))
+                          : const Text('Login')));
             }),
           ],
-        ),
-        const Divider(
-          color: Colors.transparent,
         ),
       ],
     );

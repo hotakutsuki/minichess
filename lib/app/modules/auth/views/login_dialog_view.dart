@@ -10,19 +10,57 @@ import 'login_view.dart';
 class LoginDialogView extends GetView<AuthController> {
   const LoginDialogView({Key? key}) : super(key: key);
 
+  getChild(){
+    if (controller.user.value != null) {
+      return const ProfileView();
+    } else if (controller.userName.value != null) {
+      return PassView();
+    } else {
+      return LoginView();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
       content: SizedBox(
         height: 400,
+        width: 420,
         child: Obx(() {
-          if (controller.user.value != null) {
-            return const ProfileView();
-          } else if (controller.userName.value != null) {
-            return PassView();
-          } else {
-            return LoginView();
-          }
+          return SingleChildScrollView(
+            child: getChild(),
+            // child: Column(
+            //   children: [
+            //     Text('asd'),
+            //     Text('asd'),
+            //     Text('asd'),
+            //     Text('asd'),
+            //     Text('asd'),
+            //     Text('asd'),
+            //     Text('asd'),
+            //     Text('asd'),
+            //     Text('asd'),
+            //     Text('asd'),
+            //     Text('asd'),
+            //     Text('asd'),
+            //     Text('asd'),
+            //     Text('asd'),
+            //     Text('asd'),
+            //     Text('asd'),
+            //     Text('asd'),
+            //     Text('asd'),
+            //     Text('asd'),
+            //     Text('asd'),
+            //     Text('asd'),
+            //     Text('asd'),
+            //     Text('asd'),
+            //     Text('asd'),
+            //     Text('asd'),
+            //     Text('asd'),
+            //     Text('asd'),
+            //   ],
+            // )
+          );
         }),
       ),
     );
