@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'dart:math';
+import 'package:crypto/crypto.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -39,11 +41,18 @@ createNewBoard() {
   return matrix;
 }
 
+RegExp emailRegExp = RegExp(r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$");
+
 double getScale(BuildContext context){
   double h = MediaQuery.of(context).size.height / 700;
   double w = MediaQuery.of(context).size.width / 396;
   double minimun = min(h,w);
   return min(minimun,1);
+}
+
+String getMD5(String text){
+  var bytes = utf8.encode(text);
+  return md5.convert(bytes).toString();
 }
 
 Widget getImage(chrt char, player owner) {

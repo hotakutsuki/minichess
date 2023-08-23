@@ -29,13 +29,13 @@ class User {
       : this(
           id,
           snapshot[NAME],
-          snapshot.containsKey(EMAIL) ? snapshot[EMAIL] : '',
-          snapshot.containsKey(PHOTOURL) ? snapshot[PHOTOURL] : '',
+          snapshot.containsKey(EMAIL) ? snapshot[EMAIL] : null,
+          snapshot.containsKey(PHOTOURL) ? snapshot[PHOTOURL] : null,
           snapshot[SCORE],
-          snapshot.containsKey(COUNTRY) ? snapshot[COUNTRY] : '',
-          snapshot.containsKey(COUNTRYCODE) ? snapshot[COUNTRYCODE] : '',
-          snapshot.containsKey(CITY) ? snapshot[CITY] : '',
-          snapshot.containsKey(PASSWORD) ? snapshot[PASSWORD] : '',
+          snapshot.containsKey(COUNTRY) ? snapshot[COUNTRY] : null,
+          snapshot.containsKey(COUNTRYCODE) ? snapshot[COUNTRYCODE] : null,
+          snapshot.containsKey(CITY) ? snapshot[CITY] : null,
+          snapshot.containsKey(PASSWORD) ? snapshot[PASSWORD] : null,
         );
 
   getProperty(String fieldName){

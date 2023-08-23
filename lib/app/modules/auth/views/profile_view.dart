@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-
 import 'package:get/get.dart';
-
 import '../../../data/userDom.dart';
 import '../controllers/auth_controller.dart';
+import 'edit_email_dialog_view.dart';
+import 'new_password_dialog_view.dart';
 
 class ProfileView extends GetView<AuthController> {
   const ProfileView({Key? key}) : super(key: key);
@@ -23,6 +23,21 @@ class ProfileView extends GetView<AuthController> {
         Text(controller.user.value?.getProperty(field) ?? 'not defined'),
         TextButton(onPressed: action, child: const Icon(Icons.edit))
       ],
+    );
+  }
+
+  Widget editPassword() {
+    return SingleChildScrollView(
+      child: TextField(
+        controller: controller.passTextController,
+        onSubmitted: (e) => controller.handleLoginOrCreate(),
+        autofocus: true,
+        decoration: InputDecoration(
+          border: const OutlineInputBorder(),
+          label: const Text('User Name'),
+          errorText: controller.userNameError.value,
+        ),
+      ),
     );
   }
 
@@ -57,15 +72,40 @@ class ProfileView extends GetView<AuthController> {
               ),
             ],
           ),
-          Text('@${controller.user.value?.name ?? ''}',
+          Text(
+              '@${controller.user.value?.name ?? ''} / ${controller.user.value?.countryCode ?? 'unk'}',
               style: const TextStyle(fontSize: 28)),
           Text('${controller.user.value?.score ?? 'loading...'}',
               style: const TextStyle(fontSize: 28)),
-          editableElement(User.EMAIL, () => {}),
-          editableElement(User.COUNTRY, () => {}),
-          editableElement(User.CITY, () => {}),
-          editableElement(User.PASSWORD, () => {}),
+          Row(
+            children: [
+              const Text('Email:'),
+              const Spacer(),
+              Text(controller.user.value?.email ?? 'not defined'),
+              IconButton(
+                  onPressed: () {
+                    Get.dialog(EditEmailDialogView(), barrierDismissible: true);
+                  },
+                  icon: const Icon(Icons.edit))
+            ],
+          ),
+          Row(
+            children: [
+              const Text('Password:'),
+              const Spacer(),
+              Text(controller.user.value?.password != null
+                  ? "••••••••"
+                  : 'not defined'),
+              IconButton(
+                  onPressed: () {
+                    Get.dialog(NewPasswordDialogView(),
+                        barrierDismissible: true);
+                  },
+                  icon: const Icon(Icons.edit)),
+            ],
+          ),
           const Divider(
+            height: 30,
             color: Colors.transparent,
           ),
           OutlinedButton(

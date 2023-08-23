@@ -7,14 +7,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:minichess/app/data/enums.dart';
 import 'package:minichess/app/modules/errors/controllers/errors_controller.dart';
-import 'package:minichess/app/modules/match/controllers/match_making_controller.dart';
 
 import '../data/matchDom.dart';
 import '../data/userDom.dart';
 import '../modules/auth/controllers/auth_controller.dart';
 import '../modules/match/controllers/match_controller.dart';
 import '../utils/gameObjects/tile.dart';
-
 
 class DatabaseController extends GetxController {
   late final AuthController authController;
@@ -57,7 +55,7 @@ class DatabaseController extends GetxController {
     });
   }
 
-  getNewUserDocReference(){
+  getNewUserDocReference() {
     return _firestore
         .collection(collections.matches.name)
         .doc(matchController.gameId.value);
@@ -66,7 +64,8 @@ class DatabaseController extends GetxController {
   void closeMatch() {
     listener.cancel();
     documentStream = null;
-    if (matchController != null && matchController!.gamemode == gameMode.online){
+    if (matchController != null &&
+        matchController!.gamemode == gameMode.online) {
       var docRef = _firestore
           .collection(collections.matches.name)
           .doc(matchController.gameId.value);
@@ -134,7 +133,7 @@ class DatabaseController extends GetxController {
     });
   }
 
-  Future<bool> createNewUserByUserName(String userName) async {
+  Future<Map<String, dynamic>> getCountry() async {
     Map<String, dynamic> ipJson = <String, dynamic>{};
     try {
       var response = await http.get(Uri.parse('http://ip-api.com/json'));
@@ -142,7 +141,11 @@ class DatabaseController extends GetxController {
     } catch (e) {
       print(e);
     }
+    return ipJson;
+  }
 
+  Future<bool> createNewUserByUserName(String userName) async {
+    Map<String, dynamic> countryData = await getCountry();
     try {
       var docRef = _firestore.collection(collections.users.name).doc();
       await docRef.set({
@@ -151,9 +154,14 @@ class DatabaseController extends GetxController {
         User.EMAIL: null,
         User.PHOTOURL: null,
         User.SCORE: 5000,
-        User.COUNTRY: ipJson.containsKey(User.COUNTRY) ? ipJson[User.COUNTRY] : '',
-        User.COUNTRYCODE: ipJson.containsKey(User.COUNTRYCODE) ? ipJson[User.COUNTRYCODE] : '',
-        User.CITY: ipJson.containsKey(User.CITY) ? ipJson[User.CITY] : '',
+        User.COUNTRY: countryData.containsKey(User.COUNTRY)
+            ? countryData[User.COUNTRY]
+            : null,
+        User.COUNTRYCODE: countryData.containsKey(User.COUNTRYCODE)
+            ? countryData[User.COUNTRYCODE]
+            : null,
+        User.CITY:
+            countryData.containsKey(User.CITY) ? countryData[User.CITY] : null,
         User.PASSWORD: null,
       });
       return true;
@@ -188,7 +196,8 @@ class DatabaseController extends GetxController {
       DocumentSnapshot doc =
           await _firestore.collection("users").doc(uid).get();
       if (doc.data() != null) {
-        return User.fromDocStanpshot(doc.data() as Map<String, dynamic>, doc.id);
+        return User.fromDocStanpshot(
+            doc.data() as Map<String, dynamic>, doc.id);
       }
       return null;
     } catch (e) {
@@ -231,7 +240,7 @@ class DatabaseController extends GetxController {
     }
   }
 
-  Future<User?> getUserByUserName (String userName) async {
+  Future<User?> getUserByUserName(String userName) async {
     try {
       var docs = await _firestore
           .collection(collections.users.name)
@@ -257,20 +266,35 @@ class DatabaseController extends GetxController {
     }
   }
 
-  updateInfo(photoUrl, country, countryCode, city) async {
+  updateInfo(photoUrl, email, country, countryCode, city, password) async {
+    Map<String, dynamic> countryData = await getCountry();
+
     String? docId = await getUserDocIByUserId(authController.user.value!.id);
     if (docId != null) {
       var docRef = _firestore.collection(collections.users.name).doc(docId);
       await docRef.update({
         User.PHOTOURL: photoUrl,
-        User.COUNTRY: country,
-        User.COUNTRYCODE: countryCode,
-        User.CITY: city,
+        User.EMAIL: email,
+        User.COUNTRY: countryData.containsKey(User.COUNTRY)
+            ? countryData[User.COUNTRY]
+            : country,
+        User.COUNTRYCODE: countryData.containsKey(User.COUNTRYCODE)
+            ? countryData[User.COUNTRYCODE]
+            : countryCode,
+        User.CITY:
+            countryData.containsKey(User.CITY) ? countryData[User.CITY] : city,
+        User.PASSWORD: password,
       });
-      authController.user.value!.photoUrl = photoUrl;
-      authController.user.value!.country = country;
-      authController.user.value!.countryCode = countryCode;
-      authController.user.value!.city = city;
+      authController.user.value = User(
+          authController.user.value!.id,
+          authController.user.value!.name,
+          email,
+          photoUrl,
+          authController.user.value!.score,
+          country,
+          countryCode,
+          city,
+          password);
     }
   }
 
@@ -287,7 +311,7 @@ class DatabaseController extends GetxController {
 
   recordToken(String? token) async {
     print('trying to record new token');
-    if (token == null){
+    if (token == null) {
       return;
     }
     try {
@@ -298,10 +322,8 @@ class DatabaseController extends GetxController {
       print('token founds: ${docs.docs}');
       if (docs.docs.isEmpty) {
         print('adding new token: $token');
-        var docref = _firestore
-            .collection(collections.tokens.name)
-            .doc();
-        Map<String, String> data =  HashMap();
+        var docref = _firestore.collection(collections.tokens.name).doc();
+        Map<String, String> data = HashMap();
         data["token"] = token;
         await docref.set(data);
       }

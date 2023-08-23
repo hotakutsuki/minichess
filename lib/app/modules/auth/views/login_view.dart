@@ -8,7 +8,7 @@ import '../controllers/auth_controller.dart';
 class LoginView extends GetView<AuthController> {
   LoginView({Key? key}) : super(key: key);
 
-  googleButton(){
+  googleButton() {
     return FloatingActionButton.extended(
       icon: Image.asset(
         'assets/images/glogo.png',
@@ -25,6 +25,7 @@ class LoginView extends GetView<AuthController> {
   @override
   Widget build(BuildContext context) {
     return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
@@ -44,16 +45,16 @@ class LoginView extends GetView<AuthController> {
           ],
         ),
         const Text("Login or Create Account", style: TextStyle(fontSize: 20)),
-        const Divider(color: Colors.transparent),
+        const Divider(height: 30, color: Colors.transparent),
         const Text('We need you to login in order to establish your score'),
-        const Divider(color: Colors.transparent),
+        const Divider(height: 30, color: Colors.transparent),
         Obx(() {
           return TextField(
             controller: controller.userNameTextController,
             onSubmitted: (e) => controller.handleLoginOrCreate(),
             onChanged: (value) {
               controller.userNameTextController.value = TextEditingValue(
-                  text: value.toLowerCase(),
+                  text: value.removeAllWhitespace.toLowerCase(),
                   selection: controller.userNameTextController.selection);
             },
             autofocus: true,
@@ -68,9 +69,7 @@ class LoginView extends GetView<AuthController> {
           '(You wont be able to change your user name in the future)',
           style: TextStyle(fontSize: 12, color: Colors.grey),
         ),
-        const Divider(
-          color: Colors.transparent,
-        ),
+        const Divider(height: 30, color: Colors.transparent),
         Row(
           children: [
             const Spacer(),

@@ -8,7 +8,7 @@ import '../../../data/userDom.dart';
 import '../../../services/database.dart';
 import 'package:minichess/app/data/enums.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import '../../../utils/utils.dart';
 // import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthController extends GetxController {
@@ -30,6 +30,17 @@ class AuthController extends GetxController {
   final RxBool uploading = false.obs;
 
   Rxn<PlatformFile> pickedFile = Rxn<PlatformFile>(null);
+
+  TextEditingController oldPasswordTextController = TextEditingController();
+  TextEditingController newPasswordTextController = TextEditingController();
+  TextEditingController repeatNewPasswordTextController =
+      TextEditingController();
+  Rxn<String> oldPasswordError = Rxn<String>(null);
+  Rxn<String> newPasswordError = Rxn<String>(null);
+  Rxn<String> repeatNewPasswordError = Rxn<String>(null);
+
+  TextEditingController newEmailTextController = TextEditingController();
+  Rxn<String> newEmailError = Rxn<String>(null);
 
   login(User userToLogin) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -66,22 +77,27 @@ class AuthController extends GetxController {
     user.value = null;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove(sharedPrefs.userName.name);
+    cleanPasswords();
+    clearFields();
+    clearUserName();
+    newEmailTextController.clear();
+
     Get.back(closeOverlays: true);
   }
 
   handleLoginOrCreate() async {
     userNameError.value = null;
-    if (userNameTextController.text.length < 4) {
+    if (userNameTextController.text.trim().length < 4) {
       userNameError.value = "Invalid User Name";
       return;
     }
 
     loading.value = true;
     tempUser =
-        await dbController.getUserByUserName(userNameTextController.text);
+        await dbController.getUserByUserName(userNameTextController.text.trim());
     if (tempUser == null) {
       try {
-        await dbController.createNewUserByUserName(userNameTextController.text);
+        await dbController.createNewUserByUserName(userNameTextController.text.trim());
         handleLoginOrCreate();
       } catch (e) {
         return;
@@ -103,10 +119,15 @@ class AuthController extends GetxController {
   handlePassword() async {
     passError.value = null;
     loading.value = true;
-    // await Future.delayed(const Duration(milliseconds: 500));
-    // User tempUser = User('id', 'name', 'email', 'photurl', 123, 'country',
-    //     'countrycode', 'city', 'password');
-    if (tempUser!.password != passTextController.text) {
+    String remoteHash = tempUser!.password!;
+    String localHash = getMD5(passTextController.text);
+
+    if (passTextController.text.isEmpty){
+      passError.value = "Invalid Field";
+      return;
+    }
+
+    if (remoteHash != localHash) {
       passError.value = 'Invalid Password';
     } else {
       user.value = tempUser;
@@ -145,8 +166,76 @@ class AuthController extends GetxController {
     }
     final snapshot = await uploadTask.whenComplete(() {});
     final downloadURL = await snapshot.ref.getDownloadURL();
-    await dbController.updateInfo(downloadURL, user.value?.country,
-        user.value?.countryCode, user.value?.city);
+    await dbController.updateInfo(
+        downloadURL,
+        user.value?.email,
+        user.value?.country,
+        user.value?.countryCode,
+        user.value?.city,
+        user.value?.password);
+  }
+
+  handleChangePassword() async {
+    repeatNewPasswordError.value = null;
+    newPasswordError.value = null;
+    oldPasswordError.value = null;
+    bool incompleteForm = false;
+    if(user.value!.password != null && oldPasswordTextController.text.isEmpty){
+      oldPasswordError.value = "Invalid Field";
+      incompleteForm = true;
+    }
+    if(newPasswordTextController.text.isEmpty){
+      newPasswordError.value = "Invalid Field";
+      incompleteForm = true;
+    }
+    if(repeatNewPasswordTextController.text.isEmpty){
+      repeatNewPasswordError.value = "Invalid Field";
+      incompleteForm = true;
+    }
+    if (incompleteForm){
+      return;
+    }
+
+    if (user.value?.password != null) {
+      String hash = getMD5(oldPasswordTextController.text);
+      if (hash != user.value!.password!) {
+        oldPasswordError.value = "This is not your password";
+        return;
+      }
+    }
+    if (newPasswordTextController.text !=
+        repeatNewPasswordTextController.text) {
+      repeatNewPasswordError.value = "Oops, the fields does not match";
+      return;
+    }
+    loading.value = true;
+    String hash = getMD5(newPasswordTextController.text);
+    await dbController.updateInfo(user.value?.photoUrl, user.value?.email,
+        user.value?.country, user.value?.countryCode, user.value?.city, hash);
+    cleanPasswords();
+    loading.value = false;
+    Get.back();
+  }
+
+  cleanPasswords() {
+    oldPasswordTextController.clear();
+    newPasswordTextController.clear();
+    repeatNewPasswordTextController.clear();
+  }
+
+  handleEditEmail() async {
+    newEmailError.value = null;
+    if (!emailRegExp.hasMatch(newEmailTextController.text.trim())) {
+      newEmailError.value = "Invalid Email";
+      return;
+    }
+
+    loading.value = true;
+    await dbController.updateInfo(user.value?.photoUrl, newEmailTextController.text,
+        user.value?.country, user.value?.countryCode, user.value?.city, user.value?.password);
+    newEmailTextController.clear();
+    loading.value = false;
+    Get.back();
   }
 
   // googleSetUserInfoInBD() async {

@@ -29,37 +29,6 @@ class LoginDialogView extends GetView<AuthController> {
         child: Obx(() {
           return SingleChildScrollView(
             child: getChild(),
-            // child: Column(
-            //   children: [
-            //     Text('asd'),
-            //     Text('asd'),
-            //     Text('asd'),
-            //     Text('asd'),
-            //     Text('asd'),
-            //     Text('asd'),
-            //     Text('asd'),
-            //     Text('asd'),
-            //     Text('asd'),
-            //     Text('asd'),
-            //     Text('asd'),
-            //     Text('asd'),
-            //     Text('asd'),
-            //     Text('asd'),
-            //     Text('asd'),
-            //     Text('asd'),
-            //     Text('asd'),
-            //     Text('asd'),
-            //     Text('asd'),
-            //     Text('asd'),
-            //     Text('asd'),
-            //     Text('asd'),
-            //     Text('asd'),
-            //     Text('asd'),
-            //     Text('asd'),
-            //     Text('asd'),
-            //     Text('asd'),
-            //   ],
-            // )
           );
         }),
       ),
