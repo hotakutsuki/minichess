@@ -9,6 +9,7 @@ import '../../../services/database.dart';
 import 'package:minichess/app/data/enums.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../utils/utils.dart';
+import '../../home/controllers/home_controller.dart';
 // import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthController extends GetxController {
@@ -22,12 +23,14 @@ class AuthController extends GetxController {
   Rxn<String> userName = Rxn<String>(null);
   Rxn<String> userNameError = Rxn<String>(null);
   late final DatabaseController dbController;
+  late final HomeController homeController;
   final RxString contactText = ''.obs;
   TextEditingController userNameTextController = TextEditingController();
   TextEditingController passTextController = TextEditingController();
   Rxn<String> passError = Rxn<String>(null);
   final RxBool loading = false.obs;
   final RxBool uploading = false.obs;
+  bool tryStartMultuplayer = false;
 
   Rxn<PlatformFile> pickedFile = Rxn<PlatformFile>(null);
 
@@ -107,6 +110,10 @@ class AuthController extends GetxController {
     } else {
       await login(tempUser!);
       clearFields();
+      if (tryStartMultuplayer){
+        Get.back(closeOverlays: true);
+        homeController.setMode(gameMode.online);
+      }
     }
     loading.value = false;
   }
@@ -128,9 +135,13 @@ class AuthController extends GetxController {
     }
 
     if (remoteHash != localHash) {
-      passError.value = 'Invalid Password';
+      passError.value = 'Wrong Password';
     } else {
       user.value = tempUser;
+      if (tryStartMultuplayer){
+        Get.back(closeOverlays: true);
+        homeController.setMode(gameMode.online);
+      }
     }
     loading.value = false;
   }
@@ -238,6 +249,11 @@ class AuthController extends GetxController {
     Get.back();
   }
 
+  createAndStartMultiplayer() async {
+    await handleLoginOrCreate();
+    homeController.setMode(gameMode.online);
+  }
+
   // googleSetUserInfoInBD() async {
   //   print('googleAccount: ${googleAccount.value}');
   //   if (googleAccount.value != null) {
@@ -331,6 +347,7 @@ class AuthController extends GetxController {
   @override
   void onReady() async {
     dbController = Get.find<DatabaseController>();
+    homeController = Get.find<HomeController>();
     super.onReady();
     if (user.value == null) {
       loading.value = true;

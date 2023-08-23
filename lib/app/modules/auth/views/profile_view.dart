@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../data/userDom.dart';
 import '../controllers/auth_controller.dart';
 import 'edit_email_dialog_view.dart';
 import 'new_password_dialog_view.dart';
@@ -45,8 +44,23 @@ class ProfileView extends GetView<AuthController> {
   Widget build(BuildContext context) {
     return Obx(() {
       return Column(
-        // mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          Row(
+            children: [
+              Expanded(
+                  child: Row(
+                    children: [
+                      SizedBox(
+                          width: 30, child: Image.asset('assets/images/icon.png')),
+                      const Text('Your Account', style: TextStyle(fontSize: 20),),
+                    ],
+                  )),
+              IconButton(
+                  onPressed: () => Get.back(closeOverlays: true),
+                  icon: const Icon(Icons.close))
+            ],
+          ),
+          const Divider(height: 20,),
           Stack(
             children: [
               CircleAvatar(
@@ -104,13 +118,9 @@ class ProfileView extends GetView<AuthController> {
                   icon: const Icon(Icons.edit)),
             ],
           ),
-          const Divider(
-            height: 30,
-            color: Colors.transparent,
-          ),
           OutlinedButton(
               onPressed: () => controller.logout(),
-              child: const Text("logout")),
+              child: const Text("logout", style: TextStyle(color: Colors.redAccent),),),
         ],
       );
     });

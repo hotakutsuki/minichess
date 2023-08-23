@@ -64,7 +64,10 @@ class HomeView extends GetView<HomeController> {
                           width: 150,
                           child: ElevatedButton(
                             onPressed: controller.isOnline.value
-                                ? () => controller.checkLogin()
+                                ? () {
+                                    authController.tryStartMultuplayer = true;
+                                    controller.tryMultiplayer();
+                                  }
                                 : null,
                             child: const Text(
                               'Multiplayer online',
@@ -91,21 +94,34 @@ class HomeView extends GetView<HomeController> {
               child: Obx(() {
                 return FloatingActionButton(
                     heroTag: 'person',
-                    child: authController.loading.value ? const CircularProgressIndicator(color: Colors.white,) : authController.user.value == null
-                        ? const Icon(CupertinoIcons.person)
-                        : CircleAvatar(
-                            backgroundColor: Colors.blueGrey,
-                            backgroundImage:
-                                authController.user.value?.photoUrl == null
-                                    ? null
-                                    : Image.network(authController.user.value!.photoUrl!).image,
-                            radius: 30,
-                            child: authController.user.value?.photoUrl == null ? Text(
-                              authController.user.value!.name[0].toUpperCase(),
-                              style: const TextStyle(fontSize: 30),
-                            ) : null,
-                          ),
-                    onPressed: () => controller.showAuthDialog());
+                    child: authController.loading.value
+                        ? const CircularProgressIndicator(
+                            color: Colors.white,
+                          )
+                        : authController.user.value == null
+                            ? const Icon(CupertinoIcons.person)
+                            : CircleAvatar(
+                                backgroundColor: Colors.blueGrey,
+                                backgroundImage:
+                                    authController.user.value?.photoUrl == null
+                                        ? null
+                                        : Image.network(authController
+                                                .user.value!.photoUrl!)
+                                            .image,
+                                radius: 30,
+                                child: authController.user.value?.photoUrl ==
+                                        null
+                                    ? Text(
+                                        authController.user.value!.name[0]
+                                            .toUpperCase(),
+                                        style: const TextStyle(fontSize: 30),
+                                      )
+                                    : null,
+                              ),
+                    onPressed: () {
+                      authController.tryStartMultuplayer = false;
+                      controller.showAuthDialog();
+                    });
               }),
             ),
           ),

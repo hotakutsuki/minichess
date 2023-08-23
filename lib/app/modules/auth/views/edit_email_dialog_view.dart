@@ -43,7 +43,7 @@ class EditEmailDialogView extends GetView<AuthController> {
                   const Spacer(),
                   Obx(() {
                     return ElevatedButton(
-                        onPressed: controller.handleChangePassword,
+                        onPressed: controller.handleEditEmail,
                         child: Container(
                             height: 40,
                             width: 140,

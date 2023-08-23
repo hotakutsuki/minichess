@@ -23,18 +23,15 @@ class HomeController extends GetxController {
     isLoading.value = false;
   }
 
-  void checkLogin() {
+  void tryMultiplayer() {
     if (authController.user.value == null) {
       showAuthDialog();
     } else {
       setMode(gameMode.online);
-      // matchMakingController = Get.find<MatchMakingController>();
-      // matchMakingController.startMatch();
     }
   }
 
   void showAuthDialog() {
-    // shouldShowDialog.value = true;
     Get.dialog(const LoginDialogView(), barrierDismissible: true);
   }
 

@@ -86,7 +86,7 @@ class PassView extends GetView<AuthController> {
                               child: CircularProgressIndicator(
                                 color: Colors.white,
                               ))
-                          : const Text('Login')));
+                          : Text(controller.tryStartMultuplayer ? 'Play Online' : 'Login')));
             }),
           ],
         ),

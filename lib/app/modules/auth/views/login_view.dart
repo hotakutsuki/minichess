@@ -21,7 +21,6 @@ class LoginView extends GetView<AuthController> {
     );
   }
 
-  // HomeController homeController = Get.find<HomeController>();
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -44,7 +43,7 @@ class LoginView extends GetView<AuthController> {
                 icon: const Icon(Icons.close))
           ],
         ),
-        const Text("Login or Create Account", style: TextStyle(fontSize: 20)),
+        const Text("What's gonna be your username?", style: TextStyle(fontSize: 20)),
         const Divider(height: 30, color: Colors.transparent),
         const Text('We need you to login in order to establish your score'),
         const Divider(height: 30, color: Colors.transparent),
@@ -87,7 +86,7 @@ class LoginView extends GetView<AuthController> {
                               child: CircularProgressIndicator(
                                 color: Colors.white,
                               ))
-                          : const Text('Login or Create Account')));
+                          : Text(controller.tryStartMultuplayer ? 'Play Online' : 'Login or Create Account')));
             }),
           ],
         ),
