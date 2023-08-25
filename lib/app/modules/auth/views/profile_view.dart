@@ -50,25 +50,32 @@ class ProfileView extends GetView<AuthController> {
             children: [
               Expanded(
                   child: Row(
-                    children: [
-                      SizedBox(
-                          width: 30, child: Image.asset('assets/images/icon.png')),
-                      const Text('Your Account', style: TextStyle(fontSize: 20),),
-                    ],
-                  )),
+                children: [
+                  SizedBox(
+                      width: 30, child: Image.asset('assets/images/icon.png')),
+                  const Text(
+                    'Your Account',
+                    style: TextStyle(fontSize: 20),
+                  ),
+                ],
+              )),
               IconButton(
                   onPressed: () => Get.back(closeOverlays: true),
                   icon: const Icon(Icons.close))
             ],
           ),
-          const Divider(height: 20,),
+          const Divider(
+            height: 20,
+          ),
           Stack(
             children: [
               CircleAvatar(
                 backgroundColor: brackgroundColor,
-                backgroundImage: controller.user.value?.photoUrl == null
-                    ? Image.asset('assets/icon/icon.png').image
-                    : Image.network(controller.user.value!.photoUrl!).image,
+                backgroundImage: controller.uploading.value
+                    ? null
+                    : controller.user.value?.photoUrl == null
+                        ? Image.asset('assets/images/icon.png').image
+                        : Image.network(controller.user.value!.photoUrl!).image,
                 radius: 75,
                 child: controller.uploading.value
                     ? const CircularProgressIndicator()
@@ -120,8 +127,12 @@ class ProfileView extends GetView<AuthController> {
             ],
           ),
           OutlinedButton(
-              onPressed: () => controller.logout(),
-              child: const Text("logout", style: TextStyle(color: Colors.redAccent),),),
+            onPressed: () => controller.logout(),
+            child: const Text(
+              "logout",
+              style: TextStyle(color: Colors.redAccent),
+            ),
+          ),
         ],
       );
     });
