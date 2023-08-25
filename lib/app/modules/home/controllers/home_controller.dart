@@ -1,5 +1,6 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:get/get.dart';
 import 'package:minichess/app/modules/auth/controllers/auth_controller.dart';
 import 'package:flutter/foundation.dart';
@@ -21,6 +22,13 @@ class HomeController extends GetxController {
     await Future.delayed(const Duration(milliseconds: 500));
     Get.toNamed(Routes.MATCH, arguments: mode);
     isLoading.value = false;
+  }
+
+  Future<void> goToUrl(String url) async {
+    final Uri _url = Uri.parse(url);
+    if (!await launchUrl(_url)) {
+      throw Exception('Could not launch $_url');
+    }
   }
 
   void tryMultiplayer() {
