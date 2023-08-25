@@ -17,7 +17,7 @@ class TutorialPageView extends GetView {
           ),
           height: 300,
           padding: const EdgeInsets.all(16.0),
-          child: Image.asset('assets/images/$image.png'),
+          child: Image.asset('assets/images/tutorial/$image.png'),
         ),
         Padding(
           padding: const EdgeInsets.all(16.0),

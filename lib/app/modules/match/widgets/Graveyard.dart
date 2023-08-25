@@ -6,7 +6,6 @@ import 'package:minichess/app/modules/match/controllers/match_controller.dart';
 import 'package:minichess/app/modules/match/widgets/GraveyardTile.dart';
 
 import '../../../data/enums.dart';
-import '../../../utils/gameObjects/tile.dart';
 import '../controllers/GraveyardController.dart';
 
 class Graveyard extends GetView {
@@ -25,7 +24,8 @@ class Graveyard extends GetView {
         quarterTurns: p == player.white ? 0 : 2,
         child: Container(
           decoration: BoxDecoration(
-            border: Border.all(color: Colors.blueGrey, width: 2.0),
+            border: Border.all(color: brackgroundColorLight, width: 1.0),
+            color: brackgroundColor,
             borderRadius: const BorderRadius.all(Radius.circular(8.0)),
           ),
           child: ListView(
@@ -42,17 +42,21 @@ class Graveyard extends GetView {
       ),
       builder: (BuildContext context, Widget? child) {
         return SizedBox(
-          width: 360,
-          height: 60,
+          width: graveyardHeight,
+          height: graveyardTileWide,
           child: Stack(
             children: [
               child!,
-              Transform.scale(
-                scaleY: gyController.animationController.value,
-                child: Container(
-                  decoration: const BoxDecoration(
-                    borderRadius: BorderRadius.all(Radius.circular(8.0)),
-                    color: Colors.blueGrey,
+              Center(
+                child: Transform.scale(
+                  scaleY: gyController.animationController.value,
+                  child: Container(
+                    width: graveyardHeight - 4,
+                    height: graveyardTileWide - 4,
+                    decoration: BoxDecoration(
+                      borderRadius: const BorderRadius.all(Radius.circular(8.0)),
+                      color: brackgroundColorSolid,
+                    ),
                   ),
                 ),
               ),

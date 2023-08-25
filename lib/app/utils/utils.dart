@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 
 import '../data/enums.dart';
 import '../modules/match/controllers/ai_controller.dart';
-import '../modules/match/controllers/tile_controller.dart';
 import 'gameObjects/GameState.dart';
 import 'gameObjects/move.dart';
 import 'gameObjects/tile.dart';
@@ -55,43 +54,97 @@ String getMD5(String text){
   return md5.convert(bytes).toString();
 }
 
+Widget? getBase(player owner, bool isSelected){
+  switch (owner) {
+    case player.white:
+      return Image.asset(isSelected ? 'assets/images/pieces/ws.png' : 'assets/images/pieces/wd.png');
+    case player.black:
+      return Image.asset(isSelected ? 'assets/images/pieces/bs.png' : 'assets/images/pieces/bd.png');
+    case player.none:
+      return null;
+  }
+}
+
+Widget getCharAsset(chrt char, player owner, bool isSelected) {
+  switch (char) {
+    case chrt.pawn:
+      return Image.asset(
+        owner == player.white
+            ? isSelected ? 'assets/images/pieces/wps.png' : 'assets/images/pieces/wpd.png'
+            : isSelected ? 'assets/images/pieces/bps.png' : 'assets/images/pieces/bpd.png',
+      );
+    case chrt.knight:
+      return Image.asset(
+        owner == player.white
+            ? isSelected ? 'assets/images/pieces/wks.png' : 'assets/images/pieces/wkd.png'
+            : isSelected ? 'assets/images/pieces/bks.png' : 'assets/images/pieces/bkd.png',
+      );
+    case chrt.king:
+      return Image.asset(
+        owner == player.white
+            ? isSelected ? 'assets/images/pieces/wkings.png' : 'assets/images/pieces/wkingd.png'
+            : isSelected ? 'assets/images/pieces/bkings.png' : 'assets/images/pieces/bkingd.png',
+      );
+    case chrt.bishop:
+      return Image.asset(
+        owner == player.white
+            ? isSelected ? 'assets/images/pieces/wbs.png' : 'assets/images/pieces/wbd.png'
+            : isSelected ? 'assets/images/pieces/bbs.png' : 'assets/images/pieces/bbd.png',
+      );
+    case chrt.rock:
+      return Image.asset(
+        owner == player.white
+            ? isSelected ? 'assets/images/pieces/wrs.png' : 'assets/images/pieces/wrd.png'
+            : isSelected ? 'assets/images/pieces/brs.png' : 'assets/images/pieces/brd.png',
+      );
+    case chrt.queen:
+      return Image.asset(
+        owner == player.white
+            ? isSelected ? 'assets/images/pieces/wkings.png' : 'assets/images/pieces/wkingd.png'
+            : isSelected ? 'assets/images/pieces/bkings.png' : 'assets/images/pieces/bkingd.png',
+      );
+    case chrt.empty:
+      return const SizedBox.expand();
+  }
+}
+
 Widget getImage(chrt char, player owner) {
   switch (char) {
     case chrt.pawn:
       return Image.asset(
         owner == player.white
-            ? 'assets/images/pawnW.png'
-            : 'assets/images/pawnB.png',
+            ? 'assets/images/old/pawnW.png'
+            : 'assets/images/old/pawnB.png',
       );
     case chrt.knight:
       return Image.asset(
         owner == player.white
-            ? 'assets/images/knightW.png'
-            : 'assets/images/knightB.png',
+            ? 'assets/images/old/knightW.png'
+            : 'assets/images/old/knightB.png',
       );
     case chrt.king:
       return Image.asset(
         owner == player.white
-            ? 'assets/images/kingW.png'
-            : 'assets/images/kingB.png',
+            ? 'assets/images/old/kingW.png'
+            : 'assets/images/old/kingB.png',
       );
     case chrt.bishop:
       return Image.asset(
         owner == player.white
-            ? 'assets/images/bishopW.png'
-            : 'assets/images/bishopB.png',
+            ? 'assets/images/old/bishopW.png'
+            : 'assets/images/old/bishopB.png',
       );
     case chrt.rock:
       return Image.asset(
         owner == player.white
-            ? 'assets/images/rockW.png'
-            : 'assets/images/rockB.png',
+            ? 'assets/images/old/rockW.png'
+            : 'assets/images/old/rockB.png',
       );
     case chrt.queen:
       return Image.asset(
         owner == player.white
-            ? 'assets/images/queenW.png'
-            : 'assets/images/queenB.png',
+            ? 'assets/images/old/queenW.png'
+            : 'assets/images/old/queenB.png',
       );
     case chrt.empty:
       return const SizedBox.expand();

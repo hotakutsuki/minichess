@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
 
+import '../../../data/enums.dart';
 import '../controllers/splash_controller.dart';
 
 class SplashView extends GetView<SplashController> {
@@ -13,13 +14,13 @@ class SplashView extends GetView<SplashController> {
         child: SizedBox(
           height: 100,
           child: Column(
-            children: const [
+            children: [
               Text(
-                'MiniChess',
-                style: TextStyle(fontSize: 20),
+                gameName,
+                style: const TextStyle(fontSize: 20),
               ),
-              Divider(color: Colors.transparent,),
-              CircularProgressIndicator(),
+              const Divider(color: Colors.transparent,),
+              const CircularProgressIndicator(),
             ],
           ),
         ),

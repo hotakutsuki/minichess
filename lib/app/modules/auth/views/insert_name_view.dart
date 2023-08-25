@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:minichess/app/modules/home/controllers/home_controller.dart';
 
+import '../../../data/enums.dart';
 import '../controllers/auth_controller.dart';
 
 class InsertNameView extends GetView<AuthController> {
@@ -27,7 +28,7 @@ class InsertNameView extends GetView<AuthController> {
                           SizedBox(
                               width: 30,
                               child: Image.asset('assets/images/icon.png')),
-                          const Text('Minichess'),
+                          Text(gameName, style: const TextStyle(fontSize: 20),),
                         ],
                       )),
                   IconButton(

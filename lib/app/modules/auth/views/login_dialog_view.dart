@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:minichess/app/modules/auth/views/pass_view.dart';
 import 'package:minichess/app/modules/auth/views/profile_view.dart';
 
+import '../../../data/enums.dart';
 import '../controllers/auth_controller.dart';
 import 'login_view.dart';
 
@@ -23,6 +24,7 @@ class LoginDialogView extends GetView<AuthController> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      backgroundColor: const Color.fromRGBO(255, 255, 255, .80),
       content: SizedBox(
         height: 400,
         width: 420,

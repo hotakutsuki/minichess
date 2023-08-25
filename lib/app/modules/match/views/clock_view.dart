@@ -19,7 +19,7 @@ class ClockView extends GetView {
         style: TextStyle(
             fontWeight: FontWeight.w600,
             color: clockController.myDuration.inSeconds > 20
-                ? Colors.black87
+                ? Colors.white70
                 : Colors.redAccent,
             fontSize: 24),
       );

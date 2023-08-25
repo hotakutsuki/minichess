@@ -38,5 +38,9 @@ flutter:
   assets: 
     - assets/images/
     - assets/icon/
+    - assets/images/tutorial/
+    - assets/images/old/
+    - assets/images/pieces/
+    - assets/images/backgrounds/
   uses-material-design: true
 

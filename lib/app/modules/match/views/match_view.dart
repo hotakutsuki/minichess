@@ -14,10 +14,9 @@ class MatchView extends GetView<MatchController> {
   MatchView({Key? key}) : super(key: key);
 
   Widget searchingWidget() {
-    return Container(
+    return SizedBox(
       width: double.infinity,
       height: double.infinity,
-      color: Colors.white,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -77,19 +76,35 @@ class MatchView extends GetView<MatchController> {
   }
 
   Widget board() {
-    return SizedBox(
-      width: 300,
-      height: 400,
-      child: Stack(
-        children: [
-          Image.asset('assets/images/board.png'),
-          RotatedBox(
-              quarterTurns: controller.playersTurn == player.white ? 0 : 2,
-              child: ChessBoard(
-                  matrix: controller.gs.value!.board,
-                  playersTurn: controller.playersTurn)),
-        ],
-      ),
+    return Stack(
+      children: [
+        Center(
+          child: SizedBox(
+            width: 300,
+            height: 400,
+            child: Stack(
+              children: [
+                Image.asset('assets/images/board.png'),
+                RotatedBox(
+                    quarterTurns:
+                        controller.playersTurn == player.white ? 0 : 2,
+                    child: ChessBoard(
+                        matrix: controller.gs.value!.board,
+                        playersTurn: controller.playersTurn)),
+              ],
+            ),
+          ),
+        ),
+        IgnorePointer(
+          child: Center(
+            child: SizedBox(
+              width: 330,
+              height: 450,
+              child: Image.asset('assets/images/border.png'),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -98,6 +113,12 @@ class MatchView extends GetView<MatchController> {
     return Scaffold(
       body: Stack(
         children: [
+          SizedBox.expand(
+            child: Image.asset(
+              'assets/images/backgrounds/bg2.png',
+              fit: BoxFit.cover,
+            ),
+          ),
           Transform.scale(
             scale: getScale(context),
             child: Stack(children: [
@@ -111,7 +132,7 @@ class MatchView extends GetView<MatchController> {
                                 ? 2
                                 : 0,
                         child: SizedBox(
-                          height: 650,
+                          height: 640,
                           width: 360,
                           child: Stack(
                             alignment: Alignment.center,
@@ -153,23 +174,23 @@ class MatchView extends GetView<MatchController> {
                 right: 8,
                 child: FloatingActionButton(
                   heroTag: 'close',
-                  backgroundColor: Colors.white,
+                  backgroundColor: brackgroundColor,
                   mini: true,
                   onPressed: controller.closeTheGame,
-                  child: const Icon(Icons.close, color: Colors.black87),
+                  child: const Icon(Icons.close, color: Colors.white),
                 ),
               ),
               if (controller.gamemode != gameMode.online)
                 Positioned(
-                  bottom: 8,
-                  right: 8,
+                  bottom: 40,
+                  left: 8,
                   child: FloatingActionButton(
                     heroTag: 'restart',
-                    backgroundColor: Colors.white,
+                    backgroundColor: brackgroundColor,
                     mini: true,
                     onPressed: controller.restartGame,
-                    child: const Icon(CupertinoIcons.refresh,
-                        color: Colors.black87),
+                    child:
+                        const Icon(CupertinoIcons.refresh, color: Colors.white),
                   ),
                 ),
             ]),
@@ -185,14 +206,14 @@ class MatchView extends GetView<MatchController> {
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16.0),
-                  color: Colors.blueGrey,
+                  color: brackgroundColorSolid,
                 ),
                 width: MediaQuery.of(context).size.width - 10,
                 height: MediaQuery.of(context).size.height - 20,
                 child: Center(
                     child: SizedBox(
                         height: 25,
-                        child: Image.asset('assets/images/icon.png'))),
+                        child: Image.asset('assets/images/pieces/wkings.png'))),
               ),
             ),
           )

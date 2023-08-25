@@ -7,11 +7,7 @@ import '../controllers/match_controller.dart';
 import 'ChessTile.dart';
 
 class ChessBoard extends GetView {
-  ChessBoard(
-      {Key? key,
-        required this.matrix,
-        // required this.onTapTile,
-        this.playersTurn})
+  ChessBoard({Key? key, required this.matrix, this.playersTurn})
       : super(key: key);
 
   final List<List<Tile>> matrix;
@@ -23,12 +19,12 @@ class ChessBoard extends GetView {
       int i = row.key;
       return TableRow(
           children: row.value.asMap().entries.map<Widget>((v) {
-            int j = v.key;
-            return ChessTile(
-              tile: matrix.reversed.toList()[i][j],
-              playersTurn: playersTurn,
-            );
-          }).toList());
+        int j = v.key;
+        return ChessTile(
+          tile: matrix.reversed.toList()[i][j],
+          playersTurn: playersTurn,
+        );
+      }).toList());
     }).toList();
     return table;
   }
@@ -36,7 +32,7 @@ class ChessBoard extends GetView {
   @override
   Widget build(BuildContext context) {
     return Table(
-      border: TableBorder.all(color: Colors.black12),
+      // border: TableBorder.all(color: Colors.black12),
       children: getTable(),
     );
   }

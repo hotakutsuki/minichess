@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:minichess/app/modules/home/controllers/home_controller.dart';
 
+import '../../../data/enums.dart';
 import '../controllers/auth_controller.dart';
 
 class LoginView extends GetView<AuthController> {
@@ -34,7 +35,7 @@ class LoginView extends GetView<AuthController> {
               children: [
                 SizedBox(
                     width: 30, child: Image.asset('assets/images/icon.png')),
-                const Text('Minichess'),
+                Text(gameName, style: const TextStyle(fontSize: 20),),
               ],
             )),
             IconButton(
@@ -43,8 +44,10 @@ class LoginView extends GetView<AuthController> {
                 icon: const Icon(Icons.close))
           ],
         ),
+        const Divider(),
+        const Divider(height: 10, color: Colors.transparent,),
         const Text("What's gonna be your username?", style: TextStyle(fontSize: 20)),
-        const Divider(height: 30, color: Colors.transparent),
+        const Divider(height: 20, color: Colors.transparent),
         const Text('We need you to login in order to establish your score'),
         const Divider(height: 30, color: Colors.transparent),
         Obx(() {

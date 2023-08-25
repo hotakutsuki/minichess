@@ -35,7 +35,7 @@ class GameoverView extends GetView<MatchController> {
           SizedBox(
               width: 250,
               height: 250,
-              child: getImage(chrt.queen, controller.winner)),
+              child: getCharAsset(chrt.queen, controller.winner, false)),
           if (controller.gamemode == gameMode.solo || controller.gamemode == gameMode.vs)
             Text(
               'W   B\n${controller.wScore} - ${controller.bScore}',

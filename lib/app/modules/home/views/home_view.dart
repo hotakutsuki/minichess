@@ -19,19 +19,26 @@ class HomeView extends GetView<HomeController> {
         width: double.infinity,
         height: double.infinity,
         child: Stack(alignment: Alignment.center, children: [
+          SizedBox.expand(
+            child: Image.asset(
+              'assets/images/backgrounds/bg2.png',
+              fit: BoxFit.cover,
+            ),
+          ),
           Transform.scale(
             scale: getScale(context),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text('Minichess',
-                    style:
-                        TextStyle(fontSize: 48, fontWeight: FontWeight.bold)),
-                Container(
-                    height: 50,
-                    child: SizedBox(
-                        height: 25,
-                        child: Image.asset('assets/images/icon.png'))),
+                const Text('Inti: The Inka\nChess Game',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: 36,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white30)),
+                SizedBox(
+                    height: 100,
+                    child: Image.asset('assets/images/pieces/wkings.png')),
                 Obx(() {
                   return SizedBox(
                     height: 250,
@@ -74,10 +81,14 @@ class HomeView extends GetView<HomeController> {
                             ),
                           ),
                         ),
-                        if (authController.user.value != null)
-                          Text('score: ${authController.user.value?.score}',
-                              style: const TextStyle(
-                                  fontSize: 20, fontWeight: FontWeight.bold))
+                        Text(
+                            authController.user.value != null
+                                ? 'score: ${authController.user.value?.score}'
+                                : '',
+                            style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white60))
                       ],
                     ),
                   );
@@ -101,7 +112,7 @@ class HomeView extends GetView<HomeController> {
                         : authController.user.value == null
                             ? const Icon(CupertinoIcons.person)
                             : CircleAvatar(
-                                backgroundColor: Colors.blueGrey,
+                                backgroundColor: brackgroundColor,
                                 backgroundImage:
                                     authController.user.value?.photoUrl == null
                                         ? null
@@ -136,14 +147,14 @@ class HomeView extends GetView<HomeController> {
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16.0),
-                  color: Colors.blueGrey,
+                  color: brackgroundColorSolid,
                 ),
                 width: MediaQuery.of(context).size.width - 10,
                 height: MediaQuery.of(context).size.height - 20,
                 child: Center(
                     child: SizedBox(
                         height: 25,
-                        child: Image.asset('assets/images/icon.png'))),
+                        child: Image.asset('assets/images/pieces/wkingd.png'))),
               ),
             ),
           ),

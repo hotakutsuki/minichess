@@ -4,6 +4,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_notifications_handler/firebase_notifications_handler.dart';
+import 'app/data/enums.dart';
 import 'app/modules/auth/controllers/auth_controller.dart';
 import 'app/modules/errors/controllers/errors_controller.dart';
 import 'app/routes/app_pages.dart';
@@ -70,14 +71,16 @@ Future<void> main() async {
         return GetMaterialApp(
           defaultTransition: Transition.noTransition,
           debugShowCheckedModeBanner: false,
-          title: "Inti: The Sun Game",
+          title: gameName,
           initialRoute: AppPages.INITIAL,
           getPages: AppPages.routes,
           theme: ThemeData(
-            colorScheme: ColorScheme.fromSwatch(
-              accentColor: Colors.blueGrey,
-              primarySwatch: Colors.blueGrey
+            colorScheme: ColorScheme.fromSwatch().copyWith(
+                primary: brackgroundColor,
+                secondary: brackgroundColor,
             )
+              // accentColor: brackgroundColor,
+              // primarySwatch: brackgroundColor
           ),
         );
         // if (snapshot.hasError){

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:minichess/app/routes/app_pages.dart';
 
+import '../../../data/enums.dart';
 import '../../../utils/utils.dart';
 import '../controllers/tutorial_controller.dart';
 
@@ -47,7 +48,7 @@ class TutorialView extends GetView<TutorialController> {
                 return FloatingActionButton(
                     backgroundColor: controller.diablePrev.value
                         ? Colors.grey
-                        : Colors.blueGrey,
+                        : brackgroundColor,
                     heroTag: 'back',
                     mini: true,
                     child: const Icon(Icons.arrow_left),
@@ -64,7 +65,7 @@ class TutorialView extends GetView<TutorialController> {
                 return FloatingActionButton(
                     backgroundColor: controller.disableNext.value
                         ? Colors.grey
-                        : Colors.blueGrey,
+                        : brackgroundColor,
                     heroTag: 'forward',
                     mini: true,
                     child: const Icon(Icons.arrow_right),

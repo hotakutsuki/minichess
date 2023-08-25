@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../data/enums.dart';
 import '../controllers/auth_controller.dart';
 import 'edit_email_dialog_view.dart';
 import 'new_password_dialog_view.dart';
@@ -9,7 +10,7 @@ class ProfileView extends GetView<AuthController> {
 
   ImageProvider<Object> getAvatar() {
     if (controller.user.value?.photoUrl == null) {
-      return Image.asset('assets/images/pawnW.png').image;
+      return Image.asset('assets/images/pieces/wkingd.png').image;
     }
     return Image.network(controller.user.value?.photoUrl ?? '').image;
   }
@@ -64,7 +65,7 @@ class ProfileView extends GetView<AuthController> {
           Stack(
             children: [
               CircleAvatar(
-                backgroundColor: Colors.blueGrey,
+                backgroundColor: brackgroundColor,
                 backgroundImage: controller.user.value?.photoUrl == null
                     ? Image.asset('assets/icon/icon.png').image
                     : Image.network(controller.user.value!.photoUrl!).image,
