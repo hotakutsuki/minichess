@@ -17,10 +17,9 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print("Handling a background message: ${message.messageId}");
 }
 
-Future<void> main() async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  final Future<FirebaseApp> fbApp = Firebase.initializeApp(
+  await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
@@ -64,39 +63,21 @@ Future<void> main() async {
     }
   });
 
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown,]);
+
   runApp(
-    FutureBuilder(
-      future: fbApp,
-      builder: (context, snapshot) {
-        SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown,]);
-        return GetMaterialApp(
-          defaultTransition: Transition.noTransition,
-          debugShowCheckedModeBanner: false,
-          title: "Inti: The Sun Game",
-          initialRoute: AppPages.INITIAL,
-          getPages: AppPages.routes,
-          theme: ThemeData(
+      GetMaterialApp(
+        defaultTransition: Transition.noTransition,
+        debugShowCheckedModeBanner: false,
+        title: "Inti: The Sun Game",
+        initialRoute: AppPages.INITIAL,
+        getPages: AppPages.routes,
+        theme: ThemeData(
             colorScheme: ColorScheme.fromSwatch(
-              accentColor: Colors.blueGrey,
-              primarySwatch: Colors.blueGrey
+                accentColor: Colors.blueGrey,
+                primarySwatch: Colors.blueGrey
             )
-          ),
-        );
-        // if (snapshot.hasError){
-        //   return const Text("There was an error. try again later");
-        // } else if (snapshot.hasData) {
-        //   return FirebaseNotificationsHandler(
-        //     child: GetMaterialApp(
-        //       debugShowCheckedModeBanner: false,
-        //       title: "Inti: The Sun Game",
-        //       initialRoute: AppPages.INITIAL,
-        //       getPages: AppPages.routes,
-        //     ),
-        //   );
-        // } else {
-        //   return const Center(child: CircularProgressIndicator());
-        // }
-      },
-    ),
+        ),
+      )
   );
 }

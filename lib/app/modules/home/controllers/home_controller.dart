@@ -1,5 +1,4 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:get/get.dart';
 import 'package:minichess/app/modules/auth/controllers/auth_controller.dart';
@@ -50,6 +49,7 @@ class HomeController extends GetxController {
 
   @override
   void onReady() async {
+    print('home controller ready');
     isOnline.value = await isConnected();
     if (isOnline.value) {
       messaging = FirebaseMessaging.instance;
@@ -63,16 +63,16 @@ class HomeController extends GetxController {
       provisional: false,
       sound: true,
     );
-    // print('User granted permission: ${settings.authorizationStatus}');
+    print('User granted permission: ${settings.authorizationStatus}');
     if(settings.authorizationStatus == AuthorizationStatus.authorized){
       String? token = await messaging.getToken(
         vapidKey: "BMnLhmaBDEW0nIVy5544WoLoHt4UFgCZsi2RBKGOSy_8dJbyW0UVXwxpXvWcpCfzPRStgLOHvALVu34ZDb6CcmM",
       );
       DatabaseController dbController = Get.find<DatabaseController>();
-      if (defaultTargetPlatform == TargetPlatform.android || defaultTargetPlatform == TargetPlatform.iOS){
-        messaging.subscribeToTopic("newMatches");
-      } else {
+      if (kIsWeb){
         dbController.recordToken(token);
+      } else {
+        messaging.subscribeToTopic("newMatches");
       }
     }
 
