@@ -76,6 +76,13 @@ class HomeController extends GetxController {
       }
     }
 
+    if (authController.user.value == null) {
+      authController.loading.value = true;
+      await Future.delayed(const Duration(milliseconds: 1000));
+      await authController.trySilentLogin();
+      authController.loading.value = false;
+    }
+
     super.onReady();
   }
 

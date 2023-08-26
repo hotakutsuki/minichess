@@ -1,5 +1,5 @@
 name: "minichess"
-version: 1.0.0+9
+version: 1.0.0+10
 publish_to: none
 description: "A mini board game"
 environment: 

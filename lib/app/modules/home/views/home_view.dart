@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:minichess/app/modules/auth/controllers/auth_controller.dart';
@@ -85,10 +86,11 @@ class HomeView extends GetView<HomeController> {
               ],
             ),
           ),
+          if (kIsWeb)
           Obx(
             () => AnimatedPositioned(
               bottom: 30,
-              left: controller.isOnline.value ? 10 : -60,
+              left: (controller.isOnline.value) ? 10 : -60,
               duration: const Duration(milliseconds: 500),
               curve: Curves.easeInOutExpo,
               child: Column(
@@ -180,19 +182,19 @@ class HomeView extends GetView<HomeController> {
               ),
             ),
           ),
-          Obx(() => AnimatedPositioned(
-                top: controller.shouldShowDialog.value
-                    ? 0
-                    : -MediaQuery.of(context).size.height,
-                curve: Curves.easeOutExpo,
-                duration: const Duration(milliseconds: 500),
-                child: Container(
-                  color: Colors.black54,
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height,
-                  child: const LoginDialogView(),
-                ),
-              )),
+          // Obx(() => AnimatedPositioned(
+          //       top: controller.shouldShowDialog.value
+          //           ? 0
+          //           : -MediaQuery.of(context).size.height,
+          //       curve: Curves.easeOutExpo,
+          //       duration: const Duration(milliseconds: 500),
+          //       child: Container(
+          //         color: Colors.black54,
+          //         width: MediaQuery.of(context).size.width,
+          //         height: MediaQuery.of(context).size.height,
+          //         child: const LoginDialogView(),
+          //       ),
+          //     )),
         ]),
       ),
       floatingActionButton: Stack(children: [
