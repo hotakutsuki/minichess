@@ -1,10 +1,9 @@
 name: "minichess"
-version: 1.0.0+10
+version: 1.0.0+11
 publish_to: none
 description: "A mini board game"
 environment: 
   sdk: '>=2.18.1 <3.0.0'
-  #sdk: '>=3.0.0 <4.0.0'
 
 dependencies: 
   cupertino_icons: ^1.0.2
