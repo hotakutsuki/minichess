@@ -69,15 +69,14 @@ class AuthController extends GetxController {
     final String? userName = prefs.getString(sharedPrefs.userName.name);
     print('userName: $userName');
     if (userName != null) {
-      tempUser = await dbController.getUserByUserName(userName);
-      if (tempUser != null) {
-        user.value = tempUser;
+      User? loginUser = await dbController.getUserByUserName(userName);
+      if (loginUser != null) {
+        login(loginUser);
       }
     }
   }
 
   logout() async {
-    user.value = null;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove(sharedPrefs.userName.name);
     cleanPasswords();
@@ -86,6 +85,7 @@ class AuthController extends GetxController {
     newEmailTextController.clear();
 
     Get.back(closeOverlays: true);
+    user.value = null;
   }
 
   handleLoginOrCreate() async {
@@ -137,7 +137,7 @@ class AuthController extends GetxController {
     if (remoteHash != localHash) {
       passError.value = 'Wrong Password';
     } else {
-      user.value = tempUser;
+      await login(tempUser!);
       if (tryStartMultuplayer){
         Get.back(closeOverlays: true);
         homeController.setMode(gameMode.online);
@@ -349,12 +349,6 @@ class AuthController extends GetxController {
     dbController = Get.find<DatabaseController>();
     homeController = Get.find<HomeController>();
     super.onReady();
-    if (user.value == null) {
-      loading.value = true;
-      await Future.delayed(const Duration(milliseconds: 1000));
-      await trySilentLogin();
-      loading.value = false;
-    }
     // _googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) {
     //   print('current user changed... $account');
     //   if (account != null) {
