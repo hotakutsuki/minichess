@@ -64,6 +64,7 @@ class MatchController extends GetxController {
   Function eq = const ListEquality().equals;
 
   var isLoading = true.obs;
+  var isAnimating = false;
 
   var audioPlayer = AudioPlayer();
   var moveAudioPLayer = AudioPlayer();
@@ -279,6 +280,7 @@ class MatchController extends GetxController {
   }
 
   animateTiles(Move move) async {
+    isAnimating = true;
     if (gs.value!.board[move.finalTile.j!][move.finalTile.i!].char != chrt.empty){
       GraveyardController gyController = Get.find<GraveyardController>(tag: playersTurn.name);
       int length = gyController.getGraveyard(playersTurn).length;
@@ -296,6 +298,7 @@ class MatchController extends GetxController {
       TileController tileController = Get.find<TileController>(tag: move.initialTile.toString());
       await tileController.animateTile(move.initialTile.i!, move.initialTile.j!, move.finalTile.i, move.finalTile.j);
     }
+    isAnimating = false;
   }
 
   onTapTile(Tile tile) async {
@@ -335,11 +338,11 @@ class MatchController extends GetxController {
     }
 
     if (gamemode == gameMode.online) {
-      bool imWinner = (p == player.black) ^ isHost.value!;
+      bool imWinner = (p == player.black) ^ isHost.value;
       int myScore =
-          isHost.value! ? hostUser.value!.score : invitedUser.value!.score;
+          isHost.value ? hostUser.value!.score : invitedUser.value!.score;
       int oponentScore =
-          isHost.value! ? invitedUser.value!.score : hostUser.value!.score;
+          isHost.value ? invitedUser.value!.score : hostUser.value!.score;
       updateScore(imWinner, myScore, oponentScore);
     }
 
@@ -355,6 +358,9 @@ class MatchController extends GetxController {
   }
 
   void restartGame() async {
+    if (isAnimating){
+      return;
+    }
     isLoading.value = true;
 
     selectedTile.value = null;

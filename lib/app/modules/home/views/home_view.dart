@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../data/enums.dart';
@@ -103,6 +104,32 @@ class HomeView extends GetView<HomeController> {
               ],
             ),
           ),
+          if (kIsWeb)
+          Obx(
+            () => AnimatedPositioned(
+              bottom: 30,
+              left: (controller.isOnline.value) ? 10 : -60,
+              duration: const Duration(milliseconds: 500),
+              curve: Curves.easeInOutExpo,
+              child: Column(
+                children: [
+                  FloatingActionButton(
+                    heroTag: 'gplay',
+                    onPressed: () {
+                      controller.goToUrl(
+                          'https://play.google.com/store/apps/details?id=com.hotakutsuki.minichess');
+                    },
+                    backgroundColor: Colors.white,
+                    child: SizedBox(
+                        width: 25,
+                        height: 25,
+                        child: Image.asset('assets/images/gplay.png')),
+                  ),
+                  const Text('Senpai notice me'),
+                ],
+              ),
+            ),
+          ),
           Obx(
             () => AnimatedPositioned(
               top: 40,
@@ -110,36 +137,44 @@ class HomeView extends GetView<HomeController> {
               duration: const Duration(milliseconds: 500),
               curve: Curves.easeInOutExpo,
               child: Obx(() {
-                return FloatingActionButton(
-                    heroTag: 'person',
-                    child: authController.loading.value
-                        ? const CircularProgressIndicator(
-                            color: Colors.white,
-                          )
-                        : authController.user.value == null
-                            ? const Icon(CupertinoIcons.person)
-                            : CircleAvatar(
-                                backgroundColor: brackgroundColor,
-                                backgroundImage:
-                                    authController.user.value?.photoUrl == null
-                                        ? null
-                                        : Image.network(authController
-                                                .user.value!.photoUrl!)
-                                            .image,
-                                radius: 30,
-                                child: authController.user.value?.photoUrl ==
-                                        null
-                                    ? Text(
-                                        authController.user.value!.name[0]
-                                            .toUpperCase(),
-                                        style: const TextStyle(fontSize: 30),
-                                      )
-                                    : null,
-                              ),
-                    onPressed: () {
-                      authController.tryStartMultuplayer = false;
-                      controller.showAuthDialog();
-                    });
+                return Column(
+                  children: [
+                    FloatingActionButton(
+                        heroTag: 'person',
+                        child: authController.loading.value
+                            ? const CircularProgressIndicator(
+                                color: Colors.white,
+                              )
+                            : authController.user.value == null
+                                ? const Icon(CupertinoIcons.person)
+                                : CircleAvatar(
+                                    backgroundColor: brackgroundColor,
+                                    backgroundImage:
+                                        authController.user.value?.photoUrl ==
+                                                null
+                                            ? null
+                                            : Image.network(authController
+                                                    .user.value!.photoUrl!)
+                                                .image,
+                                    radius: 30,
+                                    child: authController
+                                                .user.value?.photoUrl ==
+                                            null
+                                        ? Text(
+                                            authController.user.value!.name[0]
+                                                .toUpperCase(),
+                                            style:
+                                                const TextStyle(fontSize: 30),
+                                          )
+                                        : null,
+                                  ),
+                        onPressed: () {
+                          authController.tryStartMultuplayer = false;
+                          controller.showAuthDialog();
+                        }),
+                    Text(authController.user.value?.name ?? 'Account'),
+                  ],
+                );
               }),
             ),
           ),
@@ -165,19 +200,19 @@ class HomeView extends GetView<HomeController> {
               ),
             ),
           ),
-          Obx(() => AnimatedPositioned(
-                top: controller.shouldShowDialog.value
-                    ? 0
-                    : -MediaQuery.of(context).size.height,
-                curve: Curves.easeOutExpo,
-                duration: const Duration(milliseconds: 500),
-                child: Container(
-                  color: Colors.black54,
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height,
-                  child: const LoginDialogView(),
-                ),
-              )),
+          // Obx(() => AnimatedPositioned(
+          //       top: controller.shouldShowDialog.value
+          //           ? 0
+          //           : -MediaQuery.of(context).size.height,
+          //       curve: Curves.easeOutExpo,
+          //       duration: const Duration(milliseconds: 500),
+          //       child: Container(
+          //         color: Colors.black54,
+          //         width: MediaQuery.of(context).size.width,
+          //         height: MediaQuery.of(context).size.height,
+          //         child: const LoginDialogView(),
+          //       ),
+          //     )),
         ]),
       ),
       floatingActionButton: Stack(children: [
@@ -192,12 +227,17 @@ class HomeView extends GetView<HomeController> {
               child: Column(
                 children: [
                   if (controller.isOnline.value)
-                    FloatingActionButton(
-                        heroTag: 'records',
-                        child: const Icon(Icons.stacked_bar_chart),
-                        onPressed: () {
-                          Get.toNamed(Routes.HALL_OF_FAME);
-                        }),
+                    Column(
+                      children: [
+                        FloatingActionButton(
+                            heroTag: 'records',
+                            child: const Icon(Icons.stacked_bar_chart),
+                            onPressed: () {
+                              Get.toNamed(Routes.HALL_OF_FAME);
+                            }),
+                        const Text('Fame'),
+                      ],
+                    ),
                   const SizedBox(
                     height: 12,
                   ),

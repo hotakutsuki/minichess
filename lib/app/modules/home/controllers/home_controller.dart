@@ -1,5 +1,6 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:get/get.dart';
 import 'package:flutter/foundation.dart';
 import '../../../data/enums.dart';
@@ -22,6 +23,13 @@ class HomeController extends GetxController {
     await Future.delayed(const Duration(milliseconds: 500));
     Get.toNamed(Routes.MATCH, arguments: mode);
     // isLoading.value = false;
+  }
+
+  Future<void> goToUrl(String url) async {
+    final Uri _url = Uri.parse(url);
+    if (!await launchUrl(_url)) {
+      throw Exception('Could not launch $_url');
+    }
   }
 
   void tryMultiplayer() {
@@ -47,7 +55,6 @@ class HomeController extends GetxController {
 
   @override
   void onInit() async {
-    print('home controller on init');
     super.onInit();
   }
 
@@ -58,7 +65,6 @@ class HomeController extends GetxController {
 
   @override
   void onReady() async {
-    print('home controller ready');
     isOnline.value = await isConnected();
     if (isOnline.value) {
       messaging = FirebaseMessaging.instance;
@@ -78,11 +84,18 @@ class HomeController extends GetxController {
         vapidKey: "BMnLhmaBDEW0nIVy5544WoLoHt4UFgCZsi2RBKGOSy_8dJbyW0UVXwxpXvWcpCfzPRStgLOHvALVu34ZDb6CcmM",
       );
       DatabaseController dbController = Get.find<DatabaseController>();
-      if (defaultTargetPlatform == TargetPlatform.android || defaultTargetPlatform == TargetPlatform.iOS){
-        messaging.subscribeToTopic("newMatches");
-      } else {
+      if (kIsWeb){
         dbController.recordToken(token);
+      } else {
+        messaging.subscribeToTopic("newMatches");
       }
+    }
+
+    if (authController.user.value == null) {
+      authController.loading.value = true;
+      await Future.delayed(const Duration(milliseconds: 1000));
+      await authController.trySilentLogin();
+      authController.loading.value = false;
     }
 
     super.onReady();
@@ -90,7 +103,6 @@ class HomeController extends GetxController {
 
   @override
   void onClose() {
-    print('closgin home controller');
     super.onClose();
   }
 }

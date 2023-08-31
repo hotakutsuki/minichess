@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_notifications_handler/firebase_notifications_handler.dart';
 import 'app/data/enums.dart';
+import 'package:minichess/app/modules/home/controllers/home_controller.dart';
 import 'app/modules/auth/controllers/auth_controller.dart';
 import 'app/modules/errors/controllers/errors_controller.dart';
 import 'app/routes/app_pages.dart';
@@ -17,10 +18,9 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print("Handling a background message: ${message.messageId}");
 }
 
-Future<void> main() async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  final Future<FirebaseApp> fbApp = Firebase.initializeApp(
+  await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
@@ -29,6 +29,7 @@ Future<void> main() async {
   Get.put(AuthController(), permanent: true);
   Get.put(ErrorsController(), permanent: true);
   Get.put(DatabaseController(), permanent: true);
+  Get.put(HomeController(), permanent: true);
 
   const AndroidNotificationChannel channel = AndroidNotificationChannel(
     'mini_chess_channel', // id
@@ -63,41 +64,21 @@ Future<void> main() async {
     }
   });
 
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown,]);
+
   runApp(
-    FutureBuilder(
-      future: fbApp,
-      builder: (context, snapshot) {
-        SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown,]);
-        return GetMaterialApp(
-          defaultTransition: Transition.noTransition,
-          debugShowCheckedModeBanner: false,
-          title: gameName,
-          initialRoute: AppPages.INITIAL,
-          getPages: AppPages.routes,
-          theme: ThemeData(
+      GetMaterialApp(
+        defaultTransition: Transition.noTransition,
+        debugShowCheckedModeBanner: false,
+        title: gameName,
+        initialRoute: AppPages.INITIAL,
+        getPages: AppPages.routes,
+        theme: ThemeData(
             colorScheme: ColorScheme.fromSwatch().copyWith(
-                primary: brackgroundColor,
-                secondary: brackgroundColor,
+              primary: brackgroundColor,
+              secondary: brackgroundColor,
             )
-              // accentColor: brackgroundColor,
-              // primarySwatch: brackgroundColor
-          ),
-        );
-        // if (snapshot.hasError){
-        //   return const Text("There was an error. try again later");
-        // } else if (snapshot.hasData) {
-        //   return FirebaseNotificationsHandler(
-        //     child: GetMaterialApp(
-        //       debugShowCheckedModeBanner: false,
-        //       title: "Inti: The Sun Game",
-        //       initialRoute: AppPages.INITIAL,
-        //       getPages: AppPages.routes,
-        //     ),
-        //   );
-        // } else {
-        //   return const Center(child: CircularProgressIndicator());
-        // }
-      },
-    ),
+        ),
+      )
   );
 }

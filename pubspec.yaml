@@ -14,18 +14,18 @@ dependencies:
   firebase_analytics: ^10.1.0
   firebase_auth: ^4.7.3
   firebase_crashlytics: ^3.0.9
-  google_sign_in: ^6.0.2
-  google_sign_in_web: ^0.11.0+2
-  cloud_firestore: ^4.3.1
-  get: 4.6.5
-  flutter: 
-    sdk: flutter
   firebase_messaging: ^14.3.0
   flutter_local_notifications: ^12.0.2
   firebase_notifications_handler: ^1.1.0
+  firebase_storage: ^11.2.6
+  cloud_firestore: ^4.3.1
+  #google_sign_in: ^6.0.2
+  #google_sign_in_web: ^0.11.0+2
+  get: 4.6.5
+  flutter: 
+    sdk: flutter
   shared_preferences: ^2.2.0
   file_picker: ^5.3.1
-  firebase_storage: ^11.2.6
   crypto: ^3.0.3
   url_launcher: ^6.1.11
   audioplayers: ^4.1.0
