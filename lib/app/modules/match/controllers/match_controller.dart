@@ -1,11 +1,10 @@
 import 'dart:async';
+import 'dart:math';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
-import 'package:minichess/app/modules/match/controllers/GraveyardController.dart';
-import 'package:minichess/app/modules/match/controllers/ai_controller.dart';
-import 'package:minichess/app/modules/match/controllers/clock_controller.dart';
-import 'package:minichess/app/modules/match/controllers/tile_controller.dart';
+import 'package:inti_the_inka_chess_game/app/modules/match/controllers/tile_controller.dart';
 
 import '../../../data/enums.dart';
 import '../../../data/matchDom.dart';
@@ -18,6 +17,9 @@ import '../../../utils/gameObjects/move.dart';
 import '../../../utils/gameObjects/tile.dart';
 import '../../../utils/utils.dart';
 import '../../home/controllers/home_controller.dart';
+import 'GraveyardController.dart';
+import 'ai_controller.dart';
+import 'clock_controller.dart';
 
 class MatchController extends GetxController {
   Rxn<GameState> gs = Rxn<GameState>();
@@ -63,6 +65,9 @@ class MatchController extends GetxController {
 
   var isLoading = true.obs;
 
+  var audioPlayer = AudioPlayer();
+  var moveAudioPLayer = AudioPlayer();
+
   Future<bool> startOnlineMatch() async {
     List<MatchDom> openMatches = await dbController.getOpenMatches();
     if (openMatches.isEmpty) {
@@ -81,6 +86,35 @@ class MatchController extends GetxController {
       //   homeController.setMode(gameMode.online);
       // }
     }
+  }
+
+  void fade( double to, double from, AudioPlayer player, int len ) {
+    double vol = from;
+    double diff = to - from;
+    double steps = (diff / 0.01).abs();
+    int stepLen = max(4, (steps > 0) ? len ~/ steps : len);
+    int lastTick = DateTime.now().millisecondsSinceEpoch ;
+
+    Timer.periodic(Duration(milliseconds: stepLen), ( Timer? t ) {
+      var now = DateTime.now().millisecondsSinceEpoch;
+      var tick = (now - lastTick) / len;
+      lastTick = now;
+      vol += diff * tick;
+
+      vol = max(0, vol);
+      vol = min(1, vol);
+      vol = (vol * 100).round() / 100;
+
+      player.setVolume(vol); // change this
+
+      if ( (to < from && vol <= to) || (to > from && vol >= to) ) {
+        if (t != null) {
+          t.cancel() ;
+          t = null;
+        }
+        player.setVolume(vol); // change this
+      }
+    });
   }
 
   void updateScore(bool imWinner, myScore, oponentScore) {
@@ -224,10 +258,11 @@ class MatchController extends GetxController {
         recordHistory(tile);
         setTimersAndPlayers();
         Move move = Move(selectedTile.value!, tile);
+        moveAudioPLayer.play(AssetSource('sounds/wind.mp3'), volume: 0.5);
+        await animateTiles(move);
         if (checkIfWin(move)) {
           gameOver(playersTurn);
         }
-        await animateTiles(move);
         gs.update((val) => val!.changeGameState(move));
         gs.value!.rotate();
         togglePlayersTurn();
@@ -248,7 +283,7 @@ class MatchController extends GetxController {
       GraveyardController gyController = Get.find<GraveyardController>(tag: playersTurn.name);
       int length = gyController.getGraveyard(playersTurn).length;
       TileController takenTileController = Get.find<TileController>(tag: move.finalTile.toString());
-      takenTileController.animateTile(move.finalTile.i!, - 1 - move.finalTile.j!, null, null, length);
+      takenTileController.animateTile(move.finalTile.i!, (- 1 - move.finalTile.j!) as int?, null, null, length);
       gyController.animateGraveyard();
     }
     if (isFromGraveyard(move.initialTile)){
@@ -336,7 +371,9 @@ class MatchController extends GetxController {
     isLoading.value = false;
   }
 
-  void closeTheGame() {
+  void closeTheGame() async {
+    isLoading.value=true;
+    await Future.delayed(const Duration(milliseconds: 500));
     restartGame();
     if (gamemode == gameMode.online) {
       dbController.closeMatch();
@@ -381,6 +418,19 @@ class MatchController extends GetxController {
     dbController.setMatchAsFake();
   }
 
+  playAudio(){
+    audioPlayer = AudioPlayer();
+    audioPlayer.stop();
+    audioPlayer.play(AssetSource('sounds/battle.mp3'));
+    audioPlayer.setReleaseMode(ReleaseMode.loop);
+  }
+
+  stopAudio(){
+    fade(0, 1, audioPlayer, 800);
+    // audioPlayer.stop();
+    // audioPlayer.dispose();
+  }
+
   @override
   void onInit() {
     super.onInit();
@@ -393,7 +443,8 @@ class MatchController extends GetxController {
 
   @override
   void onReady() async {
-    print('match controller ready');
+    fade(0, 1, homeController.player, 800);
+
     whiteClockState = Get.find<ClockController>(tag: player.white.toString());
     blackClockState = Get.find<ClockController>(tag: player.black.toString());
     aiController = Get.put(AiController());
@@ -408,6 +459,7 @@ class MatchController extends GetxController {
     if (!isGameOver.value && gamemode == gameMode.training) {
       playAsPc();
     }
+    await playAudio();
     await Future.delayed(const Duration(milliseconds: 1000));
     isLoading.value = false;
     super.onReady();
@@ -416,6 +468,8 @@ class MatchController extends GetxController {
   @override
   void onClose() {
     print('closing match controller');
+    stopAudio();
+    fade(1, 0, homeController.player, 800);
     super.onClose();
   }
 }

@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
-import 'package:minichess/app/modules/auth/views/pass_view.dart';
-import 'package:minichess/app/modules/auth/views/profile_view.dart';
-
-import '../../../data/enums.dart';
+import 'package:inti_the_inka_chess_game/app/modules/auth/views/pass_view.dart';
+import 'package:inti_the_inka_chess_game/app/modules/auth/views/profile_view.dart';
 import '../controllers/auth_controller.dart';
 import 'login_view.dart';
 

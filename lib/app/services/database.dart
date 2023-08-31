@@ -2,15 +2,14 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-
+import '../data/enums.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
-import 'package:minichess/app/data/enums.dart';
-import 'package:minichess/app/modules/errors/controllers/errors_controller.dart';
 
 import '../data/matchDom.dart';
 import '../data/userDom.dart';
 import '../modules/auth/controllers/auth_controller.dart';
+import '../modules/errors/controllers/errors_controller.dart';
 import '../modules/match/controllers/match_controller.dart';
 import '../utils/gameObjects/tile.dart';
 

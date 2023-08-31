@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
-import 'package:minichess/app/routes/app_pages.dart';
 
 import '../../../data/enums.dart';
+import '../../../routes/app_pages.dart';
 import '../../../utils/utils.dart';
 import '../controllers/tutorial_controller.dart';
 

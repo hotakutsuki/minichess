@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
-import 'package:minichess/app/modules/home/controllers/home_controller.dart';
 
+import '../../../utils/utils.dart';
 import '../../../data/enums.dart';
 import '../controllers/auth_controller.dart';
 
@@ -77,7 +77,7 @@ class LoginView extends GetView<AuthController> {
             const Spacer(),
             Obx(() {
               return ElevatedButton(
-                  onPressed: controller.handleLoginOrCreate,
+                  onPressed: (){playButtonSound();controller.handleLoginOrCreate();},
                   child: Container(
                       height: 40,
                       width: 200,

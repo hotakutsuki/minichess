@@ -1,10 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:minichess/app/modules/auth/controllers/auth_controller.dart';
-import 'package:minichess/app/routes/app_pages.dart';
 import '../../../data/enums.dart';
+import '../../../routes/app_pages.dart';
 import '../../../utils/utils.dart';
+import '../../auth/controllers/auth_controller.dart';
 import '../../auth/views/login_dialog_view.dart';
 import '../controllers/home_controller.dart';
 
@@ -14,6 +14,8 @@ class HomeView extends GetView<HomeController> {
 
   @override
   Widget build(BuildContext context) {
+    controller.playTitleSong();
+    controller.removeLatcher();
     return Scaffold(
       body: SizedBox(
         width: double.infinity,
@@ -50,7 +52,10 @@ class HomeView extends GetView<HomeController> {
                           height: 40,
                           width: 150,
                           child: ElevatedButton(
-                            onPressed: () => controller.setMode(gameMode.solo),
+                            onPressed: () {
+                              controller.setMode(gameMode.solo);
+                              playButtonSound();
+                              },
                             child: const Text(
                               'Vs PC',
                             ),
@@ -60,7 +65,8 @@ class HomeView extends GetView<HomeController> {
                           height: 40,
                           width: 150,
                           child: ElevatedButton(
-                            onPressed: () => controller.setMode(gameMode.vs),
+                            onPressed: () {playButtonSound();
+                            controller.setMode(gameMode.vs);},
                             child: const Text(
                               '2 players',
                             ),
@@ -73,6 +79,7 @@ class HomeView extends GetView<HomeController> {
                             onPressed: controller.isOnline.value
                                 ? () {
                                     authController.tryStartMultuplayer = true;
+                                    playButtonSound();
                                     controller.tryMultiplayer();
                                   }
                                 : null,

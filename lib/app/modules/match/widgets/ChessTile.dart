@@ -87,19 +87,19 @@ class ChessTile extends GetView {
                   transform: Matrix4.compose(
                     tileController.translation *
                         tileController.animationController
-                            .drive(CurveTween(curve: Curves.easeOutExpo))
+                            .drive(CurveTween(curve: Curves.easeInOutQuint))
                             .value,
                     math.Quaternion.euler(
                         0,
                         0,
                         tileController.rotation *
                             tileController.animationController
-                                .drive(CurveTween(curve: Curves.easeOutExpo))
+                                .drive(CurveTween(curve: Curves.easeInOutQuint))
                                 .value),
                     math.Vector3.all(tileController.iScale +
                         (tileController.fScale - tileController.iScale) *
                             tileController.animationController
-                                .drive(CurveTween(curve: Curves.easeOutExpo))
+                                .drive(CurveTween(curve: Curves.easeInOutQuint))
                                 .value),
                   ),
                   child: child,

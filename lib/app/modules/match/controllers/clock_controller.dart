@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:get/get.dart';
-import 'package:minichess/app/modules/match/controllers/match_controller.dart';
 
 import '../../../data/enums.dart';
+import 'match_controller.dart';
 
 class ClockController extends GetxController {
   late MatchController matchController;

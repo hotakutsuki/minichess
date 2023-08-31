@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:math';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:crypto/crypto.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
@@ -40,26 +41,31 @@ createNewBoard() {
   return matrix;
 }
 
-RegExp emailRegExp = RegExp(r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$");
+RegExp emailRegExp = RegExp(
+    r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$");
 
-double getScale(BuildContext context){
+double getScale(BuildContext context) {
   double h = MediaQuery.of(context).size.height / 700;
   double w = MediaQuery.of(context).size.width / 396;
-  double minimun = min(h,w);
-  return min(minimun,1);
+  double minimun = min(h, w);
+  return min(minimun, 1);
 }
 
-String getMD5(String text){
+String getMD5(String text) {
   var bytes = utf8.encode(text);
   return md5.convert(bytes).toString();
 }
 
-Widget? getBase(player owner, bool isSelected){
+Widget? getBase(player owner, bool isSelected) {
   switch (owner) {
     case player.white:
-      return Image.asset(isSelected ? 'assets/images/pieces/ws.png' : 'assets/images/pieces/wd.png');
+      return Image.asset(isSelected
+          ? 'assets/images/pieces/ws.png'
+          : 'assets/images/pieces/wd.png');
     case player.black:
-      return Image.asset(isSelected ? 'assets/images/pieces/bs.png' : 'assets/images/pieces/bd.png');
+      return Image.asset(isSelected
+          ? 'assets/images/pieces/bs.png'
+          : 'assets/images/pieces/bd.png');
     case player.none:
       return null;
   }
@@ -70,42 +76,71 @@ Widget getCharAsset(chrt char, player owner, bool isSelected) {
     case chrt.pawn:
       return Image.asset(
         owner == player.white
-            ? isSelected ? 'assets/images/pieces/wps.png' : 'assets/images/pieces/wpd.png'
-            : isSelected ? 'assets/images/pieces/bps.png' : 'assets/images/pieces/bpd.png',
+            ? isSelected
+                ? 'assets/images/pieces/wps.png'
+                : 'assets/images/pieces/wpd.png'
+            : isSelected
+                ? 'assets/images/pieces/bps.png'
+                : 'assets/images/pieces/bpd.png',
       );
     case chrt.knight:
       return Image.asset(
         owner == player.white
-            ? isSelected ? 'assets/images/pieces/wks.png' : 'assets/images/pieces/wkd.png'
-            : isSelected ? 'assets/images/pieces/bks.png' : 'assets/images/pieces/bkd.png',
+            ? isSelected
+                ? 'assets/images/pieces/wks.png'
+                : 'assets/images/pieces/wkd.png'
+            : isSelected
+                ? 'assets/images/pieces/bks.png'
+                : 'assets/images/pieces/bkd.png',
       );
     case chrt.king:
       return Image.asset(
         owner == player.white
-            ? isSelected ? 'assets/images/pieces/wkings.png' : 'assets/images/pieces/wkingd.png'
-            : isSelected ? 'assets/images/pieces/bkings.png' : 'assets/images/pieces/bkingd.png',
+            ? isSelected
+                ? 'assets/images/pieces/wkings.png'
+                : 'assets/images/pieces/wkingd.png'
+            : isSelected
+                ? 'assets/images/pieces/bkings.png'
+                : 'assets/images/pieces/bkingd.png',
       );
     case chrt.bishop:
       return Image.asset(
         owner == player.white
-            ? isSelected ? 'assets/images/pieces/wbs.png' : 'assets/images/pieces/wbd.png'
-            : isSelected ? 'assets/images/pieces/bbs.png' : 'assets/images/pieces/bbd.png',
+            ? isSelected
+                ? 'assets/images/pieces/wbs.png'
+                : 'assets/images/pieces/wbd.png'
+            : isSelected
+                ? 'assets/images/pieces/bbs.png'
+                : 'assets/images/pieces/bbd.png',
       );
     case chrt.rock:
       return Image.asset(
         owner == player.white
-            ? isSelected ? 'assets/images/pieces/wrs.png' : 'assets/images/pieces/wrd.png'
-            : isSelected ? 'assets/images/pieces/brs.png' : 'assets/images/pieces/brd.png',
+            ? isSelected
+                ? 'assets/images/pieces/wrs.png'
+                : 'assets/images/pieces/wrd.png'
+            : isSelected
+                ? 'assets/images/pieces/brs.png'
+                : 'assets/images/pieces/brd.png',
       );
     case chrt.queen:
       return Image.asset(
         owner == player.white
-            ? isSelected ? 'assets/images/pieces/wkings.png' : 'assets/images/pieces/wkingd.png'
-            : isSelected ? 'assets/images/pieces/bkings.png' : 'assets/images/pieces/bkingd.png',
+            ? isSelected
+                ? 'assets/images/pieces/wkings.png'
+                : 'assets/images/pieces/wkingd.png'
+            : isSelected
+                ? 'assets/images/pieces/bkings.png'
+                : 'assets/images/pieces/bkingd.png',
       );
     case chrt.empty:
       return const SizedBox.expand();
   }
+}
+
+final audioPlayer = AudioPlayer();
+void playButtonSound() {
+  audioPlayer.play(AssetSource('sounds/button.mp3'));
 }
 
 Widget getImage(chrt char, player owner) {
@@ -189,7 +224,7 @@ int getNumberOfIsland(var matrix) {
 
   var booleanMatrix = List.generate(
     matrix.length,
-        (i) => List.generate(matrix.length, (i) => 0),
+    (i) => List.generate(matrix.length, (i) => 0),
   );
   for (int j = 0; j < matrix.length; j++) {
     for (int i = 0; i < matrix[j].length; i++) {
@@ -254,7 +289,7 @@ bool checkIfValidMove(Move m, GameState gs, [bool hard = false]) {
     } else {
       switch (m.initialTile.char) {
         case chrt.pawn:
-        // print(selectedTile);
+          // print(selectedTile);
           if (m.initialTile.owner == possession.mine) {
             return m.initialTile.i! == m.finalTile.i &&
                 m.initialTile.j == (m.finalTile.j! - 1);
@@ -264,8 +299,8 @@ bool checkIfValidMove(Move m, GameState gs, [bool hard = false]) {
           }
         case chrt.king:
           return (m.initialTile.i! + 1 == m.finalTile.i &&
-              m.initialTile.j! + 1 == m.finalTile.j &&
-              hardSearchMove(m, gs, hard)) ||
+                  m.initialTile.j! + 1 == m.finalTile.j &&
+                  hardSearchMove(m, gs, hard)) ||
               (m.initialTile.i! + 1 == m.finalTile.i &&
                   m.initialTile.j == m.finalTile.j &&
                   hardSearchMove(m, gs, hard)) ||
@@ -289,7 +324,7 @@ bool checkIfValidMove(Move m, GameState gs, [bool hard = false]) {
                   hardSearchMove(m, gs, hard));
         case chrt.bishop:
           return (m.initialTile.i! + 1 == m.finalTile.i &&
-              m.initialTile.j! + 1 == m.finalTile.j) ||
+                  m.initialTile.j! + 1 == m.finalTile.j) ||
               (m.initialTile.i! + 1 == m.finalTile.i &&
                   m.initialTile.j! - 1 == m.finalTile.j) ||
               (m.initialTile.i! - 1 == m.finalTile.i &&
@@ -298,7 +333,7 @@ bool checkIfValidMove(Move m, GameState gs, [bool hard = false]) {
                   m.initialTile.j! - 1 == m.finalTile.j);
         case chrt.rock:
           return (m.initialTile.i! + 1 == m.finalTile.i &&
-              m.initialTile.j == m.finalTile.j) ||
+                  m.initialTile.j == m.finalTile.j) ||
               (m.initialTile.i == m.finalTile.i &&
                   m.initialTile.j! + 1 == m.finalTile.j) ||
               (m.initialTile.i == m.finalTile.i &&
@@ -308,7 +343,7 @@ bool checkIfValidMove(Move m, GameState gs, [bool hard = false]) {
         case chrt.knight:
           if (m.initialTile.owner == player.white) {
             return (m.initialTile.j! + 1 == m.finalTile.j &&
-                m.initialTile.i == m.finalTile.i) ||
+                    m.initialTile.i == m.finalTile.i) ||
                 (m.initialTile.j == m.finalTile.j &&
                     m.initialTile.i! + 1 == m.finalTile.i) ||
                 (m.initialTile.j == m.finalTile.j &&
@@ -321,7 +356,7 @@ bool checkIfValidMove(Move m, GameState gs, [bool hard = false]) {
                     m.initialTile.i! - 1 == m.finalTile.i);
           } else {
             return (m.initialTile.j! + 1 == m.finalTile.j &&
-                m.initialTile.i == m.finalTile.i) ||
+                    m.initialTile.i == m.finalTile.i) ||
                 (m.initialTile.j == m.finalTile.j &&
                     m.initialTile.i! + 1 == m.finalTile.i) ||
                 (m.initialTile.j == m.finalTile.j &&

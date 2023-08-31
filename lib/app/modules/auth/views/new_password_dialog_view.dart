@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../utils/utils.dart';
 import '../controllers/auth_controller.dart';
 
 class NewPasswordDialogView extends GetView<AuthController> {
@@ -67,7 +68,10 @@ class NewPasswordDialogView extends GetView<AuthController> {
                   const Spacer(),
                   Obx(() {
                     return ElevatedButton(
-                        onPressed: controller.handleChangePassword,
+                        onPressed: (){
+                          playButtonSound();
+                          controller.handleChangePassword();
+                        },
                         child: Container(
                             height: 40,
                             width: 140,

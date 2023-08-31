@@ -30,7 +30,7 @@ class MatchView extends GetView<MatchController> {
             height: 20,
           ),
           ElevatedButton(
-              onPressed: () => controller.closeTheGame(),
+              onPressed: () {playButtonSound();controller.closeTheGame();},
               child: const Text('cancel')),
         ],
       ),

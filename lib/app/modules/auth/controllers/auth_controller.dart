@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../data/userDom.dart';
 import '../../../services/database.dart';
-import 'package:minichess/app/data/enums.dart';
+import '../../../data/enums.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../utils/utils.dart';
 import '../../home/controllers/home_controller.dart';

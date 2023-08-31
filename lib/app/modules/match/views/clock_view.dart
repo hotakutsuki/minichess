@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
-import 'package:minichess/app/modules/match/controllers/clock_controller.dart';
+import '../controllers/clock_controller.dart';
 
 class ClockView extends GetView {
   ClockView(this.player, {Key? key}) : super(key: key);

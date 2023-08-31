@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
-import 'package:minichess/app/modules/match/controllers/match_controller.dart';
-import 'package:minichess/app/modules/match/widgets/GraveyardTile.dart';
 
 import '../../../data/enums.dart';
 import '../controllers/GraveyardController.dart';
+import '../controllers/match_controller.dart';
+import 'GraveyardTile.dart';
 
 class Graveyard extends GetView {
   Graveyard({Key? key, required this.p}) : super(key: key);

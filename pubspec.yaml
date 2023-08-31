@@ -1,5 +1,5 @@
-name: "minichess"
-version: 1.0.0+9
+name: "inti_the_inka_chess_game"
+version: 1.0.0+11
 publish_to: none
 description: "A mini board game"
 environment: 
@@ -27,6 +27,8 @@ dependencies:
   file_picker: ^5.3.1
   firebase_storage: ^11.2.6
   crypto: ^3.0.3
+  url_launcher: ^6.1.11
+  audioplayers: ^4.1.0
 
 dev_dependencies: 
   flutter_lints: ^2.0.0
@@ -41,5 +43,6 @@ flutter:
     - assets/images/old/
     - assets/images/pieces/
     - assets/images/backgrounds/
+    - assets/sounds/
   uses-material-design: true
 

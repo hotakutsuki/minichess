@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../utils/utils.dart';
 import '../../../data/enums.dart';
 import '../controllers/auth_controller.dart';
 import 'edit_email_dialog_view.dart';
@@ -127,7 +128,10 @@ class ProfileView extends GetView<AuthController> {
             ],
           ),
           OutlinedButton(
-            onPressed: () => controller.logout(),
+            onPressed: () {
+              playButtonSound();
+              controller.logout();
+            },
             child: const Text(
               "logout",
               style: TextStyle(color: Colors.redAccent),
