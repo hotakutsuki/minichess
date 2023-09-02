@@ -132,16 +132,16 @@ class MatchView extends GetView<MatchController> {
                                 ? 2
                                 : 0,
                         child: SizedBox(
-                          height: 640,
+                          height: 680,
                           width: 360,
                           child: Stack(
                             alignment: Alignment.center,
                             children: [
                               board(),
                               Positioned(
-                                  top: 50, child: Graveyard(p: player.black)),
+                                  top: 70, child: Graveyard(p: player.black)),
                               Positioned(
-                                  bottom: 50,
+                                  bottom: 70,
                                   child: Graveyard(p: player.white)),
                               Positioned(
                                   top: 0,

@@ -2,11 +2,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:lottie/lottie.dart';
 import '../../../data/enums.dart';
 import '../../../routes/app_pages.dart';
 import '../../../utils/utils.dart';
 import '../../auth/controllers/auth_controller.dart';
-import '../../auth/views/login_dialog_view.dart';
 import '../controllers/home_controller.dart';
 
 class HomeView extends GetView<HomeController> {
@@ -15,7 +15,6 @@ class HomeView extends GetView<HomeController> {
 
   @override
   Widget build(BuildContext context) {
-    controller.playTitleSong();
     controller.removeLatcher();
     return Scaffold(
       body: SizedBox(
@@ -119,7 +118,7 @@ class HomeView extends GetView<HomeController> {
                       controller.goToUrl(
                           'https://play.google.com/store/apps/details?id=com.hotakutsuki.minichess');
                     },
-                    backgroundColor: Colors.white,
+                    backgroundColor: Colors.black87,
                     child: SizedBox(
                         width: 25,
                         height: 25,
@@ -200,32 +199,32 @@ class HomeView extends GetView<HomeController> {
               ),
             ),
           ),
-          // Obx(() => AnimatedPositioned(
-          //       top: controller.shouldShowDialog.value
-          //           ? 0
-          //           : -MediaQuery.of(context).size.height,
-          //       curve: Curves.easeOutExpo,
-          //       duration: const Duration(milliseconds: 500),
-          //       child: Container(
-          //         color: Colors.black54,
-          //         width: MediaQuery.of(context).size.width,
-          //         height: MediaQuery.of(context).size.height,
-          //         child: const LoginDialogView(),
-          //       ),
-          //     )),
         ]),
       ),
       floatingActionButton: Stack(children: [
         Obx(
           () => AnimatedPositioned(
-            right: !controller.isLoading.value ? 0 : -60,
+            right: !controller.isLoading.value ? 0 : -100,
             bottom: 0,
             curve: Curves.easeOutExpo,
             duration: const Duration(milliseconds: 500),
             child: SizedBox(
-              height: 180,
+              height: 280,
               child: Column(
                 children: [
+                  Column(
+                    children: [
+                      FloatingActionButton(
+                          heroTag: 'sound',
+                          onPressed: controller.toggleSound,
+                          child: controller.withSound.value ?  const Icon(Icons.volume_up) : const Icon(CupertinoIcons.volume_off)
+                      ),
+                      const Text('Sound'),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 16,
+                  ),
                   if (controller.isOnline.value)
                     Column(
                       children: [
@@ -239,15 +238,19 @@ class HomeView extends GetView<HomeController> {
                       ],
                     ),
                   const SizedBox(
-                    height: 12,
+                    height: 16,
                   ),
-                  FloatingActionButton(
-                      heroTag: 'tutorial',
-                      child: const Icon(CupertinoIcons.question),
-                      onPressed: () {
-                        Get.toNamed(Routes.TUTORIAL);
-                      }),
-                  const Text('Tutorial'),
+                  Column(
+                    children: [
+                      FloatingActionButton(
+                          heroTag: 'tutorial',
+                          child: const Icon(CupertinoIcons.question),
+                          onPressed: () {
+                            Get.toNamed(Routes.TUTORIAL);
+                          }),
+                      const Text('Tutorial'),
+                    ],
+                  ),
                 ],
               ),
             ),

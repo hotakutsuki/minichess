@@ -44,7 +44,6 @@ class TileController extends GetxController
 
   @override
   void onInit() {
-    print('Initing tile controller');
     super.onInit();
     animationController = AnimationController(
       vsync: this,

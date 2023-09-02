@@ -24,7 +24,7 @@ class Graveyard extends GetView {
         quarterTurns: p == player.white ? 0 : 2,
         child: Container(
           decoration: BoxDecoration(
-            border: Border.all(color: brackgroundColorLight, width: 1.0),
+            border: Border.all(color: brackgroundColor, width: 1.0),
             color: brackgroundColor,
             borderRadius: const BorderRadius.all(Radius.circular(8.0)),
           ),
@@ -42,8 +42,8 @@ class Graveyard extends GetView {
       ),
       builder: (BuildContext context, Widget? child) {
         return SizedBox(
-          width: graveyardHeight,
-          height: graveyardTileWide,
+          width: graveyardTileWide,
+          height: graveyardHeight,
           child: Stack(
             children: [
               child!,
@@ -51,8 +51,8 @@ class Graveyard extends GetView {
                 child: Transform.scale(
                   scaleY: gyController.animationController.value,
                   child: Container(
-                    width: graveyardHeight - 4,
-                    height: graveyardTileWide - 4,
+                    width: graveyardTileWide - 4,
+                    height: graveyardHeight - 4,
                     decoration: BoxDecoration(
                       borderRadius: const BorderRadius.all(Radius.circular(8.0)),
                       color: brackgroundColorSolid,

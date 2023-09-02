@@ -64,7 +64,7 @@ class DatabaseController extends GetxController {
     listener.cancel();
     documentStream = null;
     if (matchController != null &&
-        matchController!.gamemode == gameMode.online) {
+        matchController.gamemode == gameMode.online) {
       var docRef = _firestore
           .collection(collections.matches.name)
           .doc(matchController.gameId.value);

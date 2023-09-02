@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 import 'package:audioplayers/audioplayers.dart';
@@ -186,6 +187,35 @@ Widget getImage(chrt char, player owner) {
   }
 }
 
+void fadeSound(double to, double from, AudioPlayer player, int len ) {
+  double vol = from;
+  double diff = to - from;
+  double steps = (diff / 0.01).abs();
+  int stepLen = max(4, (steps > 0) ? len ~/ steps : len);
+  int lastTick = DateTime.now().millisecondsSinceEpoch ;
+
+  Timer.periodic(Duration(milliseconds: stepLen), ( Timer? t ) {
+    var now = DateTime.now().millisecondsSinceEpoch;
+    var tick = (now - lastTick) / len;
+    lastTick = now;
+    vol += diff * tick;
+
+    vol = max(0, vol);
+    vol = min(1, vol);
+    vol = (vol * 100).round() / 100;
+
+    player.setVolume(vol); // change this
+
+    if ( (to < from && vol <= to) || (to > from && vol >= to) ) {
+      if (t != null) {
+        t.cancel() ;
+        t = null;
+      }
+      player.setVolume(vol); // change this
+    }
+  });
+}
+
 Color geChartColor(player owner) {
   return owner == player.white ? Colors.white : Colors.black;
 }
@@ -281,6 +311,7 @@ bool hardSearchMove(Move move, GameState gs, bool hard) {
 }
 
 bool checkIfValidMove(Move m, GameState gs, [bool hard = false]) {
+  //TODO: Enhace: check if is players turn, and check of move have initial and final tile
   if (isFromGraveyard(m.initialTile)) {
     return m.finalTile.char == chrt.empty;
   } else {

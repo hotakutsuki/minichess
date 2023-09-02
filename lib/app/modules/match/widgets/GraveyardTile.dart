@@ -28,7 +28,7 @@ class GraveyardTile extends GetView {
     return InkWell(
       onTap: () => matchController.onTapTile(tile),
       child: Container(
-          width: graveyardTileWide,
+          width: graveyardHeight,
           decoration: BoxDecoration(
             image: tile.isOption
                 ? const DecorationImage(
@@ -43,10 +43,10 @@ class GraveyardTile extends GetView {
             builder: (context, child) {
               return Center(
                 child: SizedBox(
-                  width: 50,
-                  height: 50,
+                  width: graveyardHeight,
+                  height: graveyardHeight,
                   child: Transform(
-                    origin: const Offset(25, 25),
+                    origin: Offset(graveyardHeight/2, graveyardHeight/2),
                     transform: Matrix4.compose(
                       tileController.translation * tileController.animationController
                           .drive(CurveTween(curve: Curves.easeInOutQuint))

@@ -29,6 +29,7 @@ dependencies:
   crypto: ^3.0.3
   url_launcher: ^6.1.11
   audioplayers: ^4.1.0
+  lottie: ^2.3.2
 
 dev_dependencies: 
   flutter_lints: ^2.0.0
@@ -44,5 +45,6 @@ flutter:
     - assets/images/pieces/
     - assets/images/backgrounds/
     - assets/sounds/
+    - assets/animations/
   uses-material-design: true
 

@@ -16,6 +16,7 @@ class HomeController extends GetxController {
   var isLoading = true.obs;
   var shouldShowDialog = false.obs;
   final AuthController authController = Get.find<AuthController>();
+  var withSound = false.obs;
   final player = AudioPlayer();
 
   void setMode(gameMode mode) async {
@@ -41,12 +42,20 @@ class HomeController extends GetxController {
   }
 
   void playTitleSong() async {
+    if (!withSound.value) {
+      return;
+    }
     var position = await player.getCurrentPosition();
     if (position == null || position.inSeconds == 0){
       print('playing...');
       player.play(AssetSource('sounds/titlescreen.mp3'));
       player.setReleaseMode(ReleaseMode.loop);
     }
+    fadeSound(1,0,player,800);
+  }
+
+  void stopTitleSong() {
+    fadeSound(0,1,player,800);
   }
 
   void showAuthDialog() {
@@ -56,6 +65,15 @@ class HomeController extends GetxController {
   @override
   void onInit() async {
     super.onInit();
+  }
+
+  toggleSound() {
+    withSound.value = !withSound.value;
+    if(withSound.value) {
+      playTitleSong();
+    } else {
+      stopTitleSong();
+    }
   }
 
   removeLatcher() async {
