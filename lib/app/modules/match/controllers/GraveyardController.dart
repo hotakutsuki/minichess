@@ -26,7 +26,7 @@ class GraveyardController extends GetxController
 
   animateGraveyard() async {
     await animationController.forward();
-    await Future.delayed(const Duration(milliseconds: 200));
+    await Future.delayed(const Duration(milliseconds: 400));
     await animationController.reverse();
     animationController.reset();
   }
@@ -36,7 +36,7 @@ class GraveyardController extends GetxController
     super.onInit();
     animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 200),
+      duration: const Duration(milliseconds: 400),
     );
   }
 
