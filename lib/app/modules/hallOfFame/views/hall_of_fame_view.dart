@@ -1,8 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-
 import 'package:get/get.dart';
-
 import '../../../data/userDom.dart';
 import '../../../routes/app_pages.dart';
 import '../controllers/hall_of_fame_controller.dart';
@@ -30,11 +28,15 @@ class HallOfFameView extends GetView<HallOfFameController> {
 
   ListView getListView(snapshot) {
     return ListView(
-      children: snapshot.data!.docs.asMap().entries.map<Widget>((entry) {
+
+      children: ListTile.divideTiles(
+        color: Colors.white38,
+          tiles: snapshot.data!.docs.asMap().entries.map<Widget>((entry) {
         int idx = entry.key + 1;
         DocumentSnapshot document = entry.value;
         Map<String, dynamic> data = document.data()! as Map<String, dynamic>;
         return ListTile(
+          tileColor: Colors.white10,
           leading: Stack(
             alignment: Alignment.center,
             children: [
@@ -52,56 +54,67 @@ class HallOfFameView extends GetView<HallOfFameController> {
               ),
             ],
           ),
-          title: Text(data[User.NAME]),
-          trailing: Text(data[User.SCORE].toString()),
+          title: Text(data[User.NAME], style: const TextStyle(color: Colors.white70)),
+          trailing: Text(data[User.SCORE].toString(), style: const TextStyle(color: Colors.white70)),
           subtitle: data[User.COUNTRYCODE] != null
-              ? Text(data[User.COUNTRYCODE])
+              ? Text(data[User.COUNTRYCODE], style: const TextStyle(color: Colors.white70))
               : null,
         );
-      }).toList() as List<Widget>,
+      }).toList() as List<Widget>).toList(),
     );
   }
-
-  // List<Widget> getPages(){
-  //   List<Widget> list = ;
-  //   // if (controller.localUsersStream.value != null){
-  //   //   list.add(stremBuilder(controller.localUsersStream.value));
-  //   // }
-  //   return list;
-  // }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Hall of Fame',
-          style: TextStyle(color: Colors.black54),
-        ),
-        backgroundColor: Colors.white,
-        centerTitle: true,
-        actions: [
-          FloatingActionButton(
-            elevation: 0,
-            heroTag: 'close',
-            backgroundColor: Colors.white,
-            mini: true,
-            onPressed: () => Get.offAndToNamed(Routes.HOME),
-            child: const Icon(Icons.close, color: Colors.black87),
-          )
+      // appBar:
+      body: Stack(
+        // alignment: Alignment.center,
+        children: [
+          SizedBox.expand(
+            child: Image.asset(
+              'assets/images/backgrounds/bg2.png',
+              fit: BoxFit.cover,
+            ),
+          ),
+          Column(
+            children: [
+              AppBar(
+                elevation: 0,
+                title: const Text(
+                  'Hall of Fame',
+                  style: TextStyle(color: Colors.white70),
+                ),
+                backgroundColor: Colors.white10,
+                centerTitle: true,
+                actions: [
+                  FloatingActionButton(
+                    elevation: 0,
+                    heroTag: 'close',
+                    mini: true,
+                    onPressed: () => Get.offAndToNamed(Routes.HOME),
+                    child: const Icon(Icons.close, color: Colors.white60),
+                  )
+                ],
+              ),
+              Expanded(
+                child: PageView(
+                    controller: controller.pageViewController,
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: [
+                      stremBuilder(controller.globalUsersStream),
+                      stremBuilder(controller.localUsersStream.value),
+                    ]),
+              ),
+            ],
+          ),
         ],
       ),
-      body: PageView(
-          controller: controller.pageViewController,
-          physics: const NeverScrollableScrollPhysics(),
-          children: [
-            stremBuilder(controller.globalUsersStream),
-            stremBuilder(controller.localUsersStream.value),
-          ]),
       bottomNavigationBar: controller.localUsersStream.value == null
           ? null
           : Obx(() {
               return BottomNavigationBar(
+                backgroundColor: Colors.white10,
                   currentIndex: controller.pageIdx.value,
                   onTap: controller.changePage,
                   items: [

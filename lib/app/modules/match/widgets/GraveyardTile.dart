@@ -46,7 +46,7 @@ class GraveyardTile extends GetView {
                   width: 50,
                   height: 50,
                   child: Transform(
-                    origin: Offset(25, 25),
+                    origin: const Offset(25, 25),
                     transform: Matrix4.compose(
                       tileController.translation * tileController.animationController
                           .drive(CurveTween(curve: Curves.easeInOutQuint))

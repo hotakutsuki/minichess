@@ -14,6 +14,32 @@ import 'gameObjects/GameState.dart';
 import 'gameObjects/move.dart';
 import 'gameObjects/tile.dart';
 
+// createNewBoard() {
+//   var matrix = [
+//     [
+//       Tile(chrt.empty, possession.none, 0, 0),
+//       Tile(chrt.empty, possession.none, 1, 0),
+//       Tile(chrt.empty, possession.none, 2, 0)
+//     ],
+//     [
+//       Tile(chrt.empty, possession.none, 0, 1),
+//       Tile(chrt.pawn, possession.mine, 1, 1),
+//       Tile(chrt.empty, possession.none, 2, 1)
+//     ],
+//     [
+//       Tile(chrt.empty, possession.none, 0, 2),
+//       Tile(chrt.empty, possession.none, 1, 2),
+//       Tile(chrt.empty, possession.none, 2, 2)
+//     ],
+//     [
+//       Tile(chrt.empty, possession.none, 0, 3),
+//       Tile(chrt.empty, possession.none, 1, 3),
+//       Tile(chrt.empty, possession.none, 2, 3)
+//     ],
+//   ];
+//   return matrix;
+// }
+
 createNewBoard() {
   var matrix = [
     [

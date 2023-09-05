@@ -32,7 +32,7 @@ class ChessBoard extends GetView {
   @override
   Widget build(BuildContext context) {
     return Table(
-      // border: TableBorder.all(color: Colors.black12),
+      // border: TableBorder.all(color: Colors.white),
       children: getTable(),
     );
   }

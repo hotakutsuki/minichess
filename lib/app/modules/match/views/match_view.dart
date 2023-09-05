@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -30,7 +31,10 @@ class MatchView extends GetView<MatchController> {
             height: 20,
           ),
           ElevatedButton(
-              onPressed: () {playButtonSound();controller.closeTheGame();},
+              onPressed: () {
+                playButtonSound();
+                controller.closeTheGame();
+              },
               child: const Text('cancel')),
         ],
       ),
@@ -79,12 +83,25 @@ class MatchView extends GetView<MatchController> {
     return Stack(
       children: [
         Center(
+          child: ClipRRect(
+            borderRadius: const BorderRadius.all(Radius.circular(32)),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+              child: const SizedBox(
+                width: 320,
+                height: 450,
+              ),
+            ),
+          ),
+        ),
+        Center(
           child: SizedBox(
             width: 300,
             height: 400,
             child: Stack(
               children: [
-                Image.asset('assets/images/board.png'),
+                Positioned.fill(
+                    top: 3, child: Image.asset('assets/images/board.png')),
                 RotatedBox(
                     quarterTurns:
                         controller.playersTurn == player.white ? 0 : 2,
