@@ -1,10 +1,9 @@
 import 'package:get/get.dart';
-import 'package:minichess/app/modules/match/controllers/GraveyardController.dart';
 
-import 'package:minichess/app/modules/match/controllers/ai_controller.dart';
-import 'package:minichess/app/modules/match/controllers/clock_controller.dart';
-import 'package:minichess/app/modules/match/controllers/gameover_controller.dart';
-
+import '../controllers/GraveyardController.dart';
+import '../controllers/ai_controller.dart';
+import '../controllers/clock_controller.dart';
+import '../controllers/gameover_controller.dart';
 import '../controllers/match_controller.dart';
 import '../controllers/tile_controller.dart';
 

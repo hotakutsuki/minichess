@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
-import 'package:minichess/app/data/enums.dart';
-import 'package:minichess/app/modules/match/controllers/match_making_controller.dart';
 
 import '../../../utils/utils.dart';
 import '../controllers/match_controller.dart';
+import '../../../data/enums.dart';
 
 class GameoverView extends GetView<MatchController> {
   GameoverView({Key? key}) : super(key: key);
+
   // var matchMakingController = Get.find<MatchController>();
 
   Color getTextColor() {
@@ -21,13 +21,13 @@ class GameoverView extends GetView<MatchController> {
       width: double.infinity,
       height: double.infinity,
       color: controller.winner == player.white
-          ? const Color.fromARGB(225, 255, 255, 255)
-          : const Color.fromARGB(225, 0, 0, 0),
+          ? Colors.white70
+          : Colors.black87,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-              'Winner: ${controller.winner == player.white ? 'White' : 'Black'}',
+              'Winner: ${controller.winner == player.white ? 'Sun' : 'Moon'}',
               style: TextStyle(
                   color: getTextColor(),
                   fontSize: 48,
@@ -36,7 +36,8 @@ class GameoverView extends GetView<MatchController> {
               width: 250,
               height: 250,
               child: getCharAsset(chrt.queen, controller.winner, false)),
-          if (controller.gamemode == gameMode.solo || controller.gamemode == gameMode.vs)
+          if (controller.gamemode == gameMode.solo ||
+              controller.gamemode == gameMode.vs)
             Text(
               'W   B\n${controller.wScore} - ${controller.bScore}',
               textAlign: TextAlign.center,
@@ -50,7 +51,10 @@ class GameoverView extends GetView<MatchController> {
               height: 40,
               width: 150,
               child: ElevatedButton(
-                onPressed: controller.restartGame,
+                onPressed: () {
+                  playButtonSound();
+                  controller.restartGame();
+                },
                 child: const Text(
                   'Restart',
                 ),

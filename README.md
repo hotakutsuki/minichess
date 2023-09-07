@@ -1,4 +1,4 @@
-# minichess
+# 'Inti: The Inka Chess Game'
 A minichess game in flutter
 
 deploy:

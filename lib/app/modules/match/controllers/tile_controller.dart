@@ -44,11 +44,10 @@ class TileController extends GetxController
 
   @override
   void onInit() {
-    print('Initing tile controller');
     super.onInit();
     animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 800),
     );
   }
 

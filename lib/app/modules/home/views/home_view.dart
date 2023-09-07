@@ -2,11 +2,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:minichess/app/modules/auth/controllers/auth_controller.dart';
-import 'package:minichess/app/routes/app_pages.dart';
+import 'package:lottie/lottie.dart';
 import '../../../data/enums.dart';
+import '../../../routes/app_pages.dart';
 import '../../../utils/utils.dart';
-import '../../auth/views/login_dialog_view.dart';
+import '../../auth/controllers/auth_controller.dart';
 import '../controllers/home_controller.dart';
 
 class HomeView extends GetView<HomeController> {
@@ -15,6 +15,7 @@ class HomeView extends GetView<HomeController> {
 
   @override
   Widget build(BuildContext context) {
+    controller.removeLatcher();
     return Scaffold(
       body: SizedBox(
         width: double.infinity,
@@ -51,7 +52,10 @@ class HomeView extends GetView<HomeController> {
                           height: 40,
                           width: 150,
                           child: ElevatedButton(
-                            onPressed: () => controller.setMode(gameMode.solo),
+                            onPressed: () {
+                              controller.setMode(gameMode.solo);
+                              playButtonSound();
+                              },
                             child: const Text(
                               'Vs PC',
                             ),
@@ -61,7 +65,8 @@ class HomeView extends GetView<HomeController> {
                           height: 40,
                           width: 150,
                           child: ElevatedButton(
-                            onPressed: () => controller.setMode(gameMode.vs),
+                            onPressed: () {playButtonSound();
+                            controller.setMode(gameMode.vs);},
                             child: const Text(
                               '2 players',
                             ),
@@ -74,6 +79,7 @@ class HomeView extends GetView<HomeController> {
                             onPressed: controller.isOnline.value
                                 ? () {
                                     authController.tryStartMultuplayer = true;
+                                    playButtonSound();
                                     controller.tryMultiplayer();
                                   }
                                 : null,
@@ -112,7 +118,7 @@ class HomeView extends GetView<HomeController> {
                       controller.goToUrl(
                           'https://play.google.com/store/apps/details?id=com.hotakutsuki.minichess');
                     },
-                    backgroundColor: Colors.white,
+                    backgroundColor: Colors.black87,
                     child: SizedBox(
                         width: 25,
                         height: 25,
@@ -141,7 +147,7 @@ class HomeView extends GetView<HomeController> {
                             : authController.user.value == null
                                 ? const Icon(CupertinoIcons.person)
                                 : CircleAvatar(
-                                    backgroundColor: Colors.blueGrey,
+                                    backgroundColor: brackgroundColor,
                                     backgroundImage:
                                         authController.user.value?.photoUrl ==
                                                 null
@@ -168,36 +174,6 @@ class HomeView extends GetView<HomeController> {
                     Text(authController.user.value?.name ?? 'Account'),
                   ],
                 );
-                return FloatingActionButton(
-                    heroTag: 'person',
-                    child: authController.loading.value
-                        ? const CircularProgressIndicator(
-                            color: Colors.white,
-                          )
-                        : authController.user.value == null
-                            ? const Icon(CupertinoIcons.person)
-                            : CircleAvatar(
-                                backgroundColor: brackgroundColor,
-                                backgroundImage:
-                                    authController.user.value?.photoUrl == null
-                                        ? null
-                                        : Image.network(authController
-                                                .user.value!.photoUrl!)
-                                            .image,
-                                radius: 30,
-                                child: authController.user.value?.photoUrl ==
-                                        null
-                                    ? Text(
-                                        authController.user.value!.name[0]
-                                            .toUpperCase(),
-                                        style: const TextStyle(fontSize: 30),
-                                      )
-                                    : null,
-                              ),
-                    onPressed: () {
-                      authController.tryStartMultuplayer = false;
-                      controller.showAuthDialog();
-                    });
               }),
             ),
           ),
@@ -223,32 +199,32 @@ class HomeView extends GetView<HomeController> {
               ),
             ),
           ),
-          // Obx(() => AnimatedPositioned(
-          //       top: controller.shouldShowDialog.value
-          //           ? 0
-          //           : -MediaQuery.of(context).size.height,
-          //       curve: Curves.easeOutExpo,
-          //       duration: const Duration(milliseconds: 500),
-          //       child: Container(
-          //         color: Colors.black54,
-          //         width: MediaQuery.of(context).size.width,
-          //         height: MediaQuery.of(context).size.height,
-          //         child: const LoginDialogView(),
-          //       ),
-          //     )),
         ]),
       ),
       floatingActionButton: Stack(children: [
         Obx(
           () => AnimatedPositioned(
-            right: !controller.isLoading.value ? 0 : -60,
+            right: !controller.isLoading.value ? 0 : -100,
             bottom: 0,
             curve: Curves.easeOutExpo,
             duration: const Duration(milliseconds: 500),
             child: SizedBox(
-              height: 180,
+              height: 280,
               child: Column(
                 children: [
+                  Column(
+                    children: [
+                      FloatingActionButton(
+                          heroTag: 'sound',
+                          onPressed: controller.toggleSound,
+                          child: controller.withSound.value ?  const Icon(Icons.volume_up) : const Icon(CupertinoIcons.volume_off)
+                      ),
+                      const Text('Sound'),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 16,
+                  ),
                   if (controller.isOnline.value)
                     Column(
                       children: [
@@ -262,15 +238,19 @@ class HomeView extends GetView<HomeController> {
                       ],
                     ),
                   const SizedBox(
-                    height: 12,
+                    height: 16,
                   ),
-                  FloatingActionButton(
-                      heroTag: 'tutorial',
-                      child: const Icon(CupertinoIcons.question),
-                      onPressed: () {
-                        Get.toNamed(Routes.TUTORIAL);
-                      }),
-                  const Text('Tutorial'),
+                  Column(
+                    children: [
+                      FloatingActionButton(
+                          heroTag: 'tutorial',
+                          child: const Icon(CupertinoIcons.question),
+                          onPressed: () {
+                            Get.toNamed(Routes.TUTORIAL);
+                          }),
+                      const Text('How to play'),
+                    ],
+                  ),
                 ],
               ),
             ),
