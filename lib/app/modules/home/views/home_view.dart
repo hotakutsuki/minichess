@@ -248,7 +248,7 @@ class HomeView extends GetView<HomeController> {
                           onPressed: () {
                             Get.toNamed(Routes.TUTORIAL);
                           }),
-                      const Text('Tutorial'),
+                      const Text('How to play'),
                     ],
                   ),
                 ],

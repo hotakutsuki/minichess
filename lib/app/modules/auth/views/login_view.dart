@@ -35,20 +35,19 @@ class LoginView extends GetView<AuthController> {
               children: [
                 SizedBox(
                     width: 30, child: Image.asset('assets/images/icon.png')),
-                Text(gameName, style: const TextStyle(fontSize: 20),),
+                const Text('Login/Sign Up', style: TextStyle(fontSize: 18), overflow: TextOverflow.fade),
               ],
             )),
             IconButton(
                 onPressed: () => Get.back(closeOverlays: true),
-                // onPressed: () => homeController.shouldShowDialog.value = false,
                 icon: const Icon(Icons.close))
           ],
         ),
         const Divider(),
         const Divider(height: 10, color: Colors.transparent,),
-        const Text("What's gonna be your username?", style: TextStyle(fontSize: 20)),
+        const Text("What's gonna be your username?", style: TextStyle(fontSize: 16)),
         const Divider(height: 20, color: Colors.transparent),
-        const Text('We need you to login in order to establish your score'),
+        const Text('We need you to login in order to establish your score', style: TextStyle(fontSize: 14),),
         const Divider(height: 30, color: Colors.transparent),
         Obx(() {
           return TextField(
