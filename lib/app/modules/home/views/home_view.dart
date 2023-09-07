@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:lottie/lottie.dart';
+import 'dart:math';
 import '../../../data/enums.dart';
 import '../../../routes/app_pages.dart';
 import '../../../utils/utils.dart';
@@ -38,9 +38,18 @@ class HomeView extends GetView<HomeController> {
                         fontSize: 36,
                         fontWeight: FontWeight.bold,
                         color: Colors.white30)),
-                SizedBox(
-                    height: 100,
-                    child: Image.asset('assets/images/pieces/wkings.png')),
+                AnimatedBuilder(
+                  animation: controller.logoController,
+                  builder: (_, child) {
+                    return Transform.rotate(
+                      angle: controller.logoController.value * 2 * pi / 8,
+                      child: child,
+                    );
+                  },
+                  child: SizedBox(
+                      height: 100,
+                      child: Image.asset('assets/images/pieces/wkings.png')),
+                ),
                 Obx(() {
                   return SizedBox(
                     height: 250,

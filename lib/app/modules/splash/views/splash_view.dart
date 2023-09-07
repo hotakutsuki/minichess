@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-
 import 'package:get/get.dart';
-
 import '../../../data/enums.dart';
 import '../controllers/splash_controller.dart';
 

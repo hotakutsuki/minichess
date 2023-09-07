@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../data/enums.dart';
 import 'package:get/get.dart';
-import '../controllers/tutorial_controller.dart';
 
 class TutorialPageView extends GetView {
   const TutorialPageView(this.image, this.text, {Key? key}) : super(key: key);

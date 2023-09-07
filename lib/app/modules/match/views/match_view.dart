@@ -181,11 +181,6 @@ class MatchView extends GetView<MatchController> {
                   );
                 }),
               ),
-              Obx(
-                () => !controller.isGameOver.value
-                    ? const SizedBox()
-                    : GameoverView(),
-              ),
               Positioned(
                 top: 40,
                 right: 8,
@@ -211,6 +206,11 @@ class MatchView extends GetView<MatchController> {
                   ),
                 ),
             ]),
+          ),
+          Obx(
+                () => !controller.isGameOver.value
+                ? const SizedBox()
+                : GameoverView(),
           ),
           Obx(
             () => AnimatedPositioned(

@@ -84,7 +84,8 @@ void main() async {
             colorScheme: ColorScheme.fromSwatch().copyWith(
               primary: brackgroundColor,
               secondary: brackgroundColor,
-            )
+            ),
+            scaffoldBackgroundColor: const Color(0xFFAAAAAA)
         ),
       )
   );

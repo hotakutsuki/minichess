@@ -1,5 +1,6 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/animation.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:get/get.dart';
 import 'package:flutter/foundation.dart';
@@ -10,7 +11,7 @@ import '../../auth/controllers/auth_controller.dart';
 import '../../auth/views/login_dialog_view.dart';
 import '../../../utils/utils.dart';
 
-class HomeController extends GetxController {
+class HomeController extends GetxController with GetSingleTickerProviderStateMixin {
   late FirebaseMessaging messaging;
   var isOnline = false.obs;
   var isLoading = true.obs;
@@ -18,6 +19,7 @@ class HomeController extends GetxController {
   final AuthController authController = Get.find<AuthController>();
   var withSound = false.obs;
   final player = AudioPlayer();
+  late final AnimationController logoController = AnimationController(vsync: this, duration: const Duration(seconds: 2))..repeat();
 
   void setMode(gameMode mode) async {
     isLoading.value = true;

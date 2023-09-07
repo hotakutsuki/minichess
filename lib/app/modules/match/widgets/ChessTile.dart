@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:inti_the_inka_chess_game/app/modules/match/views/match_view.dart';
 import '../../../utils/gameObjects/tile.dart';
 import '../../../utils/utils.dart';
 import '../../../data/enums.dart';
@@ -7,6 +8,7 @@ import '../controllers/match_controller.dart';
 import 'package:vector_math/vector_math_64.dart' as math;
 
 import '../controllers/tile_controller.dart';
+import '../views/clock_view.dart';
 
 class ChessTile extends GetView {
   ChessTile({Key? key, required this.tile, this.playersTurn}) : super(key: key);
@@ -32,6 +34,13 @@ class ChessTile extends GetView {
     } else {
       return !bool;
     }
+  }
+
+  player getPlayer() {
+    if (getbool(tile.owner == possession.mine)){
+      return player.white;
+    }
+    return player.black;
   }
 
   @override
@@ -71,12 +80,22 @@ class ChessTile extends GetView {
                     child: SizedBox(
                       width: 70,
                       height: 70,
-                      child: getCharAsset(
-                          tile.char,
-                          getbool(tile.owner == possession.mine)
-                              ? player.white
-                              : player.black,
-                          tile.isSelected),
+                      child: Stack(
+                        children: [
+                          getCharAsset(
+                              tile.char,
+                              getbool(tile.owner == possession.mine)
+                                  ? player.white
+                                  : player.black,
+                              tile.isSelected),
+                          // if (tile.char == chrt.king)
+                          Positioned.fill(
+                            top:8,
+                              child: Transform.scale(
+                                  scale: 0.6,
+                                  child: ClockView(getPlayer())))
+                        ],
+                      ),
                     ),
                   ),
                 ],
