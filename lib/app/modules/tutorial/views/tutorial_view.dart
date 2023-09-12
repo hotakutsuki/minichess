@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-
 import 'package:get/get.dart';
-
+import 'package:inti_the_inka_chess_game/app/modules/tutorial/views/tutorial_page_moon_view.dart';
 import '../../../data/enums.dart';
-import '../../../routes/app_pages.dart';
-import '../../../utils/utils.dart';
 import '../controllers/tutorial_controller.dart';
 
 class TutorialView extends GetView<TutorialController> {
@@ -37,7 +34,7 @@ class TutorialView extends GetView<TutorialController> {
                       elevation: 0,
                       heroTag: 'close',
                       mini: true,
-                      onPressed: () => Get.offAndToNamed(Routes.HOME),
+                      onPressed: () => Get.back(closeOverlays: true),
                       child: const Icon(Icons.close, color: Colors.white60),
                     )
                   ],
@@ -60,21 +57,23 @@ class TutorialView extends GetView<TutorialController> {
                   child: PageView(
                     controller: controller.pageController,
                     children: [
-                      controller.getPage('1select', 'Tap on a tile to select it.'),
+                      controller.getPage('1', 'Tap on a tile to select it.'),
                       controller.getPage(
-                          '2move', 'Tap on any of the highlighted tiles to move.'),
+                          '2', 'Tap on any of the highlighted tiles to move.'),
                       controller.getPage(
-                          '3takepng', 'Tap on an enemy tile to take it.'),
+                          '3', 'Tap on an enemy tile to take it.'),
                       controller.getPage(
-                          '4grave', 'When a piece is taken, it goes to you graveyard.'),
+                          '4', 'When a piece is taken, it goes to you "graveyard".'),
                       controller.getPage(
-                          '5revive', 'You can invoke pieces from your graveyard.'),
-                      controller.getPage('6knigthpng',
-                          'Reach to the top to transform a Pawn into a Knight.'),
-                      controller.getPage('7win', 'Take the king to win.'),
-                      controller.getPage('8clock',
-                          'But watch out your clock. If it gets to 0, you lose.'),
-                      controller.getPage('9moves', 'These are the valid moves.'),
+                          '5', 'You can invoke pieces from your "graveyard".'),
+                      controller.getPage('6',
+                          'Reach to the top to transform a Snake into a Cougar.'),
+                      controller.getPage('7', 'Take the Inti to win.'),
+                      TutorialPageMoonView(),
+                      controller.getPage('8', 'These are the moves of the Tower.'),
+                      controller.getPage('9', 'These are the moves of the Condor.'),
+                      controller.getPage('10', 'These are the moves of the Cougar.'),
+                      controller.getPage('11', 'These are the moves of the Inti.'),
                     ],
                   ),
                 ),
@@ -108,7 +107,7 @@ class TutorialView extends GetView<TutorialController> {
                             onPressed: () {
                               controller.pageController.nextPage(
                                   duration: const Duration(milliseconds: 200),
-                                  curve: Curves.bounceIn);
+                                  curve: Curves.easeOutExpo);
                             });
                       }),
                     ],

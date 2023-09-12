@@ -23,7 +23,7 @@ import 'gameObjects/tile.dart';
 //     ],
 //     [
 //       Tile(chrt.empty, possession.none, 0, 1),
-//       Tile(chrt.pawn, possession.mine, 1, 1),
+//       Tile(chrt.empty, possession.mine, 1, 1),
 //       Tile(chrt.empty, possession.none, 2, 1)
 //     ],
 //     [
@@ -75,6 +75,14 @@ double getScale(BuildContext context) {
   double h = MediaQuery.of(context).size.height / 700;
   double w = MediaQuery.of(context).size.width / 396;
   double minimun = min(h, w);
+  return min(minimun, 1);
+}
+
+double getFullScale(BuildContext context) {
+  double h = MediaQuery.of(context).size.height / 700;
+  double w = MediaQuery.of(context).size.width / 396;
+  double minimun = min(h, w);
+  print(minimun);
   return min(minimun, 1);
 }
 

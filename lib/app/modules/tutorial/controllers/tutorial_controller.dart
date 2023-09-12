@@ -3,13 +3,16 @@ import 'package:get/get.dart';
 
 import '../views/tutorial_page_view.dart';
 
-class TutorialController extends GetxController {
+class TutorialController extends GetxController
+    with GetSingleTickerProviderStateMixin {
   final pageController = PageController(
     initialPage: 0,
   );
 
   var diablePrev = true.obs;
   var disableNext = false.obs;
+
+  late final AnimationController animController;
 
   Widget getPage(String image, String text) {
     return TutorialPageView(image, text);
@@ -19,8 +22,13 @@ class TutorialController extends GetxController {
   void onInit() {
     pageController.addListener(() {
       diablePrev.value = pageController.page == 0;
-      disableNext.value = pageController.page == 8;
+      disableNext.value = pageController.page == 11;
     });
+
+    animController = AnimationController(vsync: this);
+    animController.duration = const Duration(seconds: 5);
+    animController.animateTo(0.5);
+    animController.repeat();
     super.onInit();
   }
 

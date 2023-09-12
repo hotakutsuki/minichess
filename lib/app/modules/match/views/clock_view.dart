@@ -17,23 +17,25 @@ class ClockView extends GetView {
     return blackPlayerColor;
   }
 
+  Widget timeText(){
+    return Obx(() {
+      return Text(
+        '${clockController.minutes}:${clockController.seconds}:${clockController.milliseconds}',
+        style: TextStyle(
+            fontWeight: FontWeight.w600,
+            color: clockController.myDuration.inSeconds > 20
+                ? Colors.white70
+                : Colors.redAccent,
+            fontSize: 24),
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     clockController.localPlayer = myPlayer;
     return Column(
       children: [
-        if (false)
-          Obx(() {
-            return Text(
-              '${clockController.minutes}:${clockController.seconds}:${clockController.milliseconds}',
-              style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: clockController.myDuration.inSeconds > 20
-                      ? Colors.white70
-                      : Colors.redAccent,
-                  fontSize: 24),
-            );
-          }),
         Stack(
           alignment: Alignment.center,
           children: [

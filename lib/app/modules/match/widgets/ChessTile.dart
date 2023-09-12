@@ -89,11 +89,11 @@ class ChessTile extends GetView {
                                   : player.black,
                               tile.isSelected),
                           // if (tile.char == chrt.king)
-                          Positioned.fill(
-                            top:8,
-                              child: Transform.scale(
-                                  scale: 0.6,
-                                  child: ClockView(getPlayer())))
+                          // Positioned.fill(
+                          //   top:8,
+                          //     child: Transform.scale(
+                          //         scale: 0.6,
+                          //         child: ClockView(getPlayer())))
                         ],
                       ),
                     ),

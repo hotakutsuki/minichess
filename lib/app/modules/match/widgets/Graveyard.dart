@@ -36,7 +36,7 @@ class Graveyard extends GetView {
               decoration: BoxDecoration(
                 border: Border.all(color: brackgroundColor, width: 1.0),
                 color: brackgroundColor,
-                borderRadius: const BorderRadius.all(Radius.circular(8.0)),
+                borderRadius: BorderRadius.circular(8),
               ),
               child: ListView(
                 scrollDirection: Axis.horizontal,
@@ -63,7 +63,7 @@ class Graveyard extends GetView {
                         width: graveyardTileWide - 4,
                         height: graveyardHeight - 4,
                         decoration: BoxDecoration(
-                          borderRadius: const BorderRadius.all(Radius.circular(8.0)),
+                          borderRadius: BorderRadius.circular(8),
                           color: brackgroundColorSolid,
                         ),
                       ),
