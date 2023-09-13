@@ -9,7 +9,7 @@ import '../../../utils/utils.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../controllers/home_controller.dart';
 
-class HomeView extends GetView<HomeController> {
+class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
   HomeView({Key? key}) : super(key: key);
   AuthController authController = Get.find<AuthController>();
 

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:inti_the_inka_chess_game/app/modules/match/controllers/tile_controller.dart';
 
@@ -20,13 +21,13 @@ import 'GraveyardController.dart';
 import 'ai_controller.dart';
 import 'clock_controller.dart';
 
-class MatchController extends GetxController {
+class MatchController extends GetxController with WidgetsBindingObserver{
   Rxn<GameState> gs = Rxn<GameState>();
   DatabaseController dbController = Get.find<DatabaseController>();
   final homeController = Get.find<HomeController>();
   final gameMode gamemode = Get.arguments ?? gameMode.vs;
 
-  int wScore = 0, bScore = 0;
+  Rx<int> wScore = 0.obs, bScore = 0.obs;
   final selectedTile = Rxn<Tile>();
 
   player playersTurn = player.white;
@@ -65,7 +66,7 @@ class MatchController extends GetxController {
   var isLoading = true.obs;
   var isAnimating = false.obs;
 
-  var audioPlayer = AudioPlayer();
+  // var audioPlayer = AudioPlayer();
   var moveAudioPLayer = AudioPlayer();
 
   Future<bool> startOnlineMatch() async {
@@ -231,7 +232,9 @@ class MatchController extends GetxController {
         recordHistory(tile);
         setTimersAndPlayers();
         Move move = Move(selectedTile.value!, tile);
-        moveAudioPLayer.play(AssetSource('sounds/wind.mp3'), volume: 0.5);
+        if (homeController.withSound.value){
+          moveAudioPLayer.play(AssetSource('sounds/wind.mp3'), volume: 0.5);
+        }
         await animateTiles(move);
         if (checkIfWin(move)) {
           gameOver(playersTurn);
@@ -307,9 +310,9 @@ class MatchController extends GetxController {
     blackClockState.stopTimer();
     whiteClockState.stopTimer();
     if (p == player.white) {
-      wScore++;
+      wScore.value++;
     } else {
-      bScore++;
+      bScore.value++;
     }
 
     if (gamemode == gameMode.online) {
@@ -402,20 +405,20 @@ class MatchController extends GetxController {
     dbController.setMatchAsFake();
   }
 
-  playAudio(){
-    if (!homeController.withSound.value){
-      return;
-    }
-    audioPlayer = AudioPlayer();
-    audioPlayer.stop();
-    audioPlayer.play(AssetSource('sounds/battle.mp3'));
-    audioPlayer.setReleaseMode(ReleaseMode.loop);
-    fadeSound(1, 0, audioPlayer, 800);
-  }
+  // playAudio(){
+  //   if (!homeController.withSound.value){
+  //     return;
+  //   }
+  //   audioPlayer = AudioPlayer();
+  //   audioPlayer.stop();
+  //   audioPlayer.play(AssetSource('sounds/battle.mp3'));
+  //   audioPlayer.setReleaseMode(ReleaseMode.loop);
+  //   fadeSound(1, 0, audioPlayer, 800);
+  // }
 
-  stopAudio(){
-    fadeSound(0, 1, audioPlayer, 800);
-  }
+  // stopAudio(){
+  //   fadeSound(0, 1, audioPlayer, 800);
+  // }
 
   @override
   void onInit() {
@@ -425,6 +428,7 @@ class MatchController extends GetxController {
     if (searching.value) {
       startTimer();
     }
+    WidgetsBinding.instance.addObserver(this);
   }
 
   @override
@@ -447,19 +451,23 @@ class MatchController extends GetxController {
     if (!isGameOver.value && gamemode == gameMode.training) {
       playAsPc();
     }
-    if (homeController.withSound.value){
-      await playAudio();
-    }
+
+    homeController.playBattleSong();
+
     await Future.delayed(const Duration(milliseconds: 1000));
     isLoading.value = false;
+
+    // hostUser.value ??= createFakeUser();
+    // invitedUser.value ??= createFakeUser();
+
     super.onReady();
   }
 
   @override
   void onClose() {
     print('closing match controller');
-    stopAudio();
     homeController.playTitleSong();
+    WidgetsBinding.instance.removeObserver(this);
     super.onClose();
   }
 }

@@ -39,7 +39,7 @@ class GameoverView extends GetView<MatchController> {
           if (controller.gamemode == gameMode.solo ||
               controller.gamemode == gameMode.vs)
             Text(
-              'W   B\n${controller.wScore} - ${controller.bScore}',
+              'W   B\n${controller.wScore.value} - ${controller.bScore.value}',
               textAlign: TextAlign.center,
               style: TextStyle(
                   color: getTextColor(),

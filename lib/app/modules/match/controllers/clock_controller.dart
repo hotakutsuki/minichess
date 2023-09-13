@@ -46,7 +46,6 @@ class ClockController extends GetxController
   setCountDown() {
     const reduceMillisecondsBy = 100;
     final mSeconds = myDuration.inMilliseconds - reduceMillisecondsBy;
-    print('counting down $mSeconds');
     if (mSeconds < 0 && countdownTimer!=null) {
       matchController.gameOver(localPlayer == player.white ? player.black : player.white);
       countdownTimer!.cancel();

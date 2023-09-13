@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:inti_the_inka_chess_game/app/modules/home/controllers/home_controller.dart';
 
 import '../data/enums.dart';
 import '../modules/match/controllers/ai_controller.dart';
@@ -79,10 +80,9 @@ double getScale(BuildContext context) {
 }
 
 double getFullScale(BuildContext context) {
-  double h = MediaQuery.of(context).size.height / 700;
+  double h = MediaQuery.of(context).size.height / 850;
   double w = MediaQuery.of(context).size.width / 396;
   double minimun = min(h, w);
-  print(minimun);
   return min(minimun, 1);
 }
 
@@ -174,8 +174,11 @@ Widget getCharAsset(chrt char, player owner, bool isSelected) {
 }
 
 final audioPlayer = AudioPlayer();
+final HomeController homeController = Get.find<HomeController>();
 void playButtonSound() {
-  audioPlayer.play(AssetSource('sounds/button.mp3'));
+  if (homeController.withSound.value){
+   audioPlayer.play(AssetSource('sounds/button.mp3'));
+  }
 }
 
 Widget getImage(chrt char, player owner) {

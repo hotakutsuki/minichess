@@ -1,6 +1,7 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/animation.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:get/get.dart';
 import 'package:flutter/foundation.dart';
@@ -11,7 +12,7 @@ import '../../auth/controllers/auth_controller.dart';
 import '../../auth/views/login_dialog_view.dart';
 import '../../../utils/utils.dart';
 
-class HomeController extends GetxController with GetSingleTickerProviderStateMixin {
+class HomeController extends GetxController with GetSingleTickerProviderStateMixin, WidgetsBindingObserver {
   late FirebaseMessaging messaging;
   var isOnline = false.obs;
   var isLoading = true.obs;
@@ -20,7 +21,7 @@ class HomeController extends GetxController with GetSingleTickerProviderStateMix
   var withSound = false.obs;
   final player = AudioPlayer();
   late final AnimationController logoController = AnimationController(vsync: this, duration: const Duration(seconds: 2))..repeat();
-
+  bool isVolumeZero = false;
   void setMode(gameMode mode) async {
     isLoading.value = true;
     await Future.delayed(const Duration(milliseconds: 500));
@@ -47,17 +48,34 @@ class HomeController extends GetxController with GetSingleTickerProviderStateMix
     if (!withSound.value) {
       return;
     }
-    var position = await player.getCurrentPosition();
-    if (position == null || position.inSeconds == 0){
-      print('playing...');
-      player.play(AssetSource('sounds/titlescreen.mp3'));
-      player.setReleaseMode(ReleaseMode.loop);
+    stopTitleSong();
+    await Future.delayed(const Duration(milliseconds: 800));
+    player.play(AssetSource('sounds/titlescreen.mp3'));
+    player.setReleaseMode(ReleaseMode.loop);
+    resumeSong();
+  }
+
+  void playBattleSong() async {
+    if (!withSound.value) {
+      return;
     }
+    stopTitleSong();
+    await Future.delayed(const Duration(milliseconds: 800));
+    player.play(AssetSource('sounds/battle.mp3'));
+    player.setReleaseMode(ReleaseMode.loop);
+    resumeSong();
+  }
+
+  void resumeSong() async {
     fadeSound(1,0,player,800);
+    isVolumeZero = false;
   }
 
   void stopTitleSong() {
-    fadeSound(0,1,player,800);
+    if (!isVolumeZero){
+      fadeSound(0,1,player,800);
+    }
+    isVolumeZero = true;
   }
 
   void showAuthDialog() {
@@ -67,6 +85,7 @@ class HomeController extends GetxController with GetSingleTickerProviderStateMix
   @override
   void onInit() async {
     super.onInit();
+    WidgetsBinding.instance.addObserver(this);
   }
 
   toggleSound() {
@@ -118,11 +137,25 @@ class HomeController extends GetxController with GetSingleTickerProviderStateMix
       authController.loading.value = false;
     }
 
+    withSound.value = !kIsWeb;
+
     super.onReady();
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.paused){
+      stopTitleSong();
+    }
+    if (state == AppLifecycleState.resumed && withSound.value){
+      resumeSong();
+    }
+  }
+
+  @override
   void onClose() {
+    WidgetsBinding.instance.removeObserver(this);
     super.onClose();
   }
 }

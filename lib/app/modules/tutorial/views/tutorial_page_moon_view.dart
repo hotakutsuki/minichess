@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 
 import '../../../data/enums.dart';
+import '../../../utils/utils.dart';
 import '../controllers/tutorial_controller.dart';
 
 class TutorialPageMoonView extends GetView {
@@ -25,22 +26,23 @@ class TutorialPageMoonView extends GetView {
           ),
         ),
         Container(
-          height: 500,
+          // height: 500,
           padding: const EdgeInsets.all(16.0),
           child: Stack(
+            alignment: Alignment.center,
             children: [
               Center(
                 child: Container(
-                    height: 420,
-                    width: 310,
-                    color: Colors.black54,
+                  height: getScale(context) * 380,
+                  width:  getScale(context) * 280,
+                  color: Colors.black54,
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
                         Center(
                           child: Container(
-                            width: 170,
-                            height: 170,
+                            width: getScale(context) * 150,
+                            height: getScale(context) * 150,
                             decoration: BoxDecoration(
                               color: Colors.black54,
                               shape: BoxShape.circle,
@@ -52,8 +54,8 @@ class TutorialPageMoonView extends GetView {
                           colorFilter: ColorFilter.mode(whitePlayerColor, BlendMode.modulate),
                           child: Lottie.asset(
                             'assets/animations/moon.json',
-                            width: 200,
-                            height: 200,
+                            width: getScale(context) * 180,
+                            height: getScale(context) * 180,
                             controller: tControler.animController,
                           ),
                         ),
@@ -61,7 +63,13 @@ class TutorialPageMoonView extends GetView {
                     ),
                 ),
               ),
-              Center(child: Image.asset('assets/images/border.png')),
+              Center(
+                  child: SizedBox(
+                      height: getScale(context) * 420,
+                      child: Image.asset(
+                        'assets/images/border.png',
+                        fit: BoxFit.fitHeight,
+                      ))),
             ],
           ),
         ),

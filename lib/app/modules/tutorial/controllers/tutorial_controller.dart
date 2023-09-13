@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
+import 'package:inti_the_inka_chess_game/app/utils/utils.dart';
 
 import '../views/tutorial_page_view.dart';
 
@@ -14,7 +15,7 @@ class TutorialController extends GetxController
 
   late final AnimationController animController;
 
-  Widget getPage(String image, String text) {
+  Widget getPage(String image, String text, context) {
     return TutorialPageView(image, text);
   }
 

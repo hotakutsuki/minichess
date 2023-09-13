@@ -44,22 +44,32 @@ class MatchView extends GetView<MatchController> {
 
   Widget? userAvatarMatch(User? user) {
     if (user != null) {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          CircleAvatar(
-            backgroundImage: Image.network(user.photoUrl ?? '').image,
-            radius: 12,
-          ),
-          const SizedBox(
-            width: 5,
-          ),
-          Text(user.name),
-          const SizedBox(
-            width: 5,
-          ),
-          Text('${user.score}'),
-        ],
+      return Container(
+        height: 30,
+        width: 280,
+        decoration: BoxDecoration(
+          color: brackgroundColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircleAvatar(
+              backgroundImage: Image
+                  .network(user.photoUrl ?? '')
+                  .image,
+              radius: 12,
+            ),
+            const SizedBox(
+              width: 5,
+            ),
+            Text(user.name),
+            const SizedBox(
+              width: 5,
+            ),
+            Text('${user.score}'),
+          ],
+        ),
       );
     }
     return null;
@@ -105,7 +115,7 @@ class MatchView extends GetView<MatchController> {
                     top: 3, child: Image.asset('assets/images/board.png')),
                 RotatedBox(
                     quarterTurns:
-                        controller.playersTurn == player.white ? 0 : 2,
+                    controller.playersTurn == player.white ? 0 : 2,
                     child: ChessBoard(
                         matrix: controller.gs.value!.board,
                         playersTurn: controller.playersTurn)),
@@ -137,76 +147,77 @@ class MatchView extends GetView<MatchController> {
 
   Widget gameOver() {
     return Obx(
-      () => !controller.isGameOver.value ? const SizedBox() : GameoverView(),
+          () =>
+      !controller.isGameOver.value
+          ? const SizedBox()
+          : GameoverView(),
     );
   }
 
   Widget transitionScreen(context) {
     return Obx(
-      () => AnimatedPositioned(
-        top: controller.isLoading.value
-            ? 10
-            : -MediaQuery.of(context).size.height,
-        left: 5,
-        curve: Curves.easeOutExpo,
-        duration: const Duration(milliseconds: 500),
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            color: brackgroundColorSolid,
+          () =>
+          AnimatedPositioned(
+            top: controller.isLoading.value
+                ? 10
+                : -MediaQuery
+                .of(context)
+                .size
+                .height,
+            left: 5,
+            curve: Curves.easeOutExpo,
+            duration: const Duration(milliseconds: 500),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                color: brackgroundColorSolid,
+              ),
+              width: MediaQuery
+                  .of(context)
+                  .size
+                  .width - 10,
+              height: MediaQuery
+                  .of(context)
+                  .size
+                  .height - 20,
+              child: Center(
+                  child: SizedBox(
+                      height: 25,
+                      child: Image.asset('assets/images/pieces/wkings.png'))),
+            ),
           ),
-          width: MediaQuery.of(context).size.width - 10,
-          height: MediaQuery.of(context).size.height - 20,
-          child: Center(
-              child: SizedBox(
-                  height: 25,
-                  child: Image.asset('assets/images/pieces/wkings.png'))),
-        ),
-      ),
     );
   }
 
   Widget closeButton() {
-    return Positioned(
-      top: 40,
-      right: 8,
-      child: FloatingActionButton(
-        heroTag: 'close',
-        backgroundColor: brackgroundColor,
-        mini: true,
-        onPressed: controller.closeTheGame,
-        child: const Icon(Icons.close, color: Colors.white),
-      ),
+    return FloatingActionButton(
+      heroTag: 'close',
+      backgroundColor: brackgroundColor,
+      mini: true,
+      onPressed: controller.closeTheGame,
+      child: const Icon(Icons.close, color: Colors.white),
     );
   }
 
   Widget tutorialButton() {
-    return Positioned(
-      top: 40,
-      right: 8,
-      child: FloatingActionButton(
-        heroTag: 'tutorial',
-        backgroundColor: brackgroundColor,
-        mini: true,
-        onPressed: () {
-          Get.toNamed(Routes.TUTORIAL);
-        },
-        child: const Icon(CupertinoIcons.question, color: Colors.white),
-      ),
+    return FloatingActionButton(
+      heroTag: 'tutorial',
+      backgroundColor: brackgroundColor,
+      mini: true,
+      onPressed: () {
+        Get.toNamed(Routes.TUTORIAL);
+      },
+      child: const Icon(CupertinoIcons.question, color: Colors.white),
     );
   }
 
   Widget restartButton() {
-    return Positioned(
-      bottom: 40,
-      left: 8,
-      child: FloatingActionButton(
-        heroTag: 'restart',
-        backgroundColor: brackgroundColor,
-        mini: true,
-        onPressed: controller.restartGame,
-        child: const Icon(CupertinoIcons.refresh, color: Colors.white),
-      ),
+    return FloatingActionButton(
+      heroTag: 'restart',
+      backgroundColor: brackgroundColor,
+      mini: true,
+      onPressed: controller.restartGame,
+      child: const Icon(CupertinoIcons.refresh, color: Colors.white),
     );
   }
 
@@ -217,7 +228,7 @@ class MatchView extends GetView<MatchController> {
           children: [
             RotatedBox(
               quarterTurns:
-                  isOnline() && controller.isHost.value == false ? 2 : 0,
+              isOnline() && controller.isHost.value == false ? 2 : 0,
               child: Container(
                 // color: Colors.yellow,
                 child: SizedBox(
@@ -229,8 +240,6 @@ class MatchView extends GetView<MatchController> {
                       board(),
                       Positioned(top: 0, child: Graveyard(p: player.black)),
                       Positioned(bottom: 0, child: Graveyard(p: player.white)),
-                      Positioned(top: 0, child: userInfo(controller.invitedUser)),
-                      Positioned(bottom: 0, child: userInfo(controller.hostUser)),
                       // Positioned(top: 20, child: clock(2, player.black)),
                       // Positioned(bottom: 20, child: clock(0, player.white)),
                     ],
@@ -265,13 +274,18 @@ class MatchView extends GetView<MatchController> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             SizedBox(height: 50, width: 50, child: ClockView(p)),
-            Text(
-              'V D\n${p == player.white ? controller.wScore : controller.bScore} ${p != player.white ? controller.wScore : controller.bScore}',
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 20,
-              ),
-            ),
+            Obx(() {
+              return Text(
+                'V D\n${p == player.white ? controller.wScore : controller
+                    .bScore} ${p != player.white
+                    ? controller.wScore
+                    : controller.bScore}',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 20,
+                ),
+              );
+            }),
             tutorialButton(),
             restartButton(),
             closeButton(),
@@ -292,26 +306,40 @@ class MatchView extends GetView<MatchController> {
           child: Stack(
             children: [
               background(),
-              Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(
-                      // color: Colors.red,
-                      height: getFullScale(context) * 60 ,
-                      child: buttonPannel(player.black),
-                    ),
-                    Container(
-                      // color: Colors.blue,
-                      // height: getFullScale(context) * 540,
-                      child: Transform.scale(
+              SizedBox.expand(
+                child: Stack(
+                  alignment: Alignment.center,
+                    children: [
+                      Positioned(
+                        top: 0,
+                        child: Column(
+                          children: [
+                            buttonPannel(player.black),
+                            Obx(() {
+                              return userInfo(controller.invitedUser);
+                            }),
+                          ],
+                        ),
+                      ),
+                      Transform.scale(
                           scale: getFullScale(context), child: gameZone()),
-                    ),
-                    Container(
-                      // color: Colors.green,
-                      height: getFullScale(context) * 60,
-                      child: buttonPannel(player.white),
-                    ),
-                  ]),
+                      Positioned(
+                        bottom: 0,
+                        child: Column(
+                          children: [
+                            Obx(() {
+                              return userInfo(controller.hostUser);
+                            }),
+                            Container(
+                              // color: Colors.green,
+                              // height: getFullScale(context) * 60,
+                              child: buttonPannel(player.white),
+                            ),
+                          ],
+                        ),
+                      )
+                    ]),
+              ),
               gameOver(),
               transitionScreen(context),
             ],
