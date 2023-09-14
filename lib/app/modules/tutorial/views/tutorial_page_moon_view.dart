@@ -19,8 +19,10 @@ class TutorialPageMoonView extends GetView {
         const Padding(
           padding: EdgeInsets.all(16.0),
           child: SizedBox(
-            height: 24,
+            height: 48,
             child: Text('But watch out. If the moon eclipses, you lose.',
+                overflow: TextOverflow.ellipsis,
+                maxLines: 2,
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
           ),
