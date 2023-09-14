@@ -1,13 +1,11 @@
-import 'dart:ui';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
-import 'package:minichess/app/data/enums.dart';
-import 'package:minichess/app/modules/auth/controllers/auth_controller.dart';
-import 'package:minichess/app/services/database.dart';
+import '../../../data/enums.dart';
 
 import '../../../data/userDom.dart';
+import '../../../services/database.dart';
+import '../../auth/controllers/auth_controller.dart';
 
 class HallOfFameController extends GetxController {
   var pageIdx = 0.obs;

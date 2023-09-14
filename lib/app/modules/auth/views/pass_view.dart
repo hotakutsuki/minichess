@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-
 import 'package:get/get.dart';
-import 'package:minichess/app/modules/home/controllers/home_controller.dart';
-
+import '../../../utils/utils.dart';
+import '../../../data/enums.dart';
 import '../controllers/auth_controller.dart';
 
 class PassView extends GetView<AuthController> {
@@ -21,19 +20,21 @@ class PassView extends GetView<AuthController> {
               children: [
                 SizedBox(
                     width: 30, child: Image.asset('assets/images/icon.png')),
-                const Text('Minichess'),
+                const Text('Login/Sign Up', style: TextStyle(fontSize: 18), overflow: TextOverflow.fade),
               ],
             )),
             IconButton(
                 onPressed: () => Get.back(closeOverlays: true),
-                // onPressed: () => homeController.shouldShowDialog.value = false,
                 icon: const Icon(Icons.close))
           ],
         ),
+        const Divider(),
         Row(
           children: [
             SizedBox(
+              width:30,
               child: IconButton(
+                padding: const EdgeInsetsDirectional.only(end: 10),
                 onPressed: controller.clearUserName,
                 icon: const Icon(Icons.arrow_back),
               ),
@@ -41,10 +42,7 @@ class PassView extends GetView<AuthController> {
             Text(controller.userName.value ?? ''),
           ],
         ),
-        const Divider(
-          color: Colors.transparent,
-        ),
-        const Text("Enter Password", style: TextStyle(fontSize: 20)),
+        const Text("Enter Password", style: TextStyle(fontSize: 14)),
         const Divider(
           color: Colors.transparent,
         ),
@@ -65,7 +63,7 @@ class PassView extends GetView<AuthController> {
           color: Colors.transparent,
         ),
         const Text(
-            'Forgot your password? contact us for support'),
+            'Forgot your password? contact us for support', style: TextStyle(fontSize: 12)),
         const Divider(
           color: Colors.transparent,
         ),
@@ -74,7 +72,7 @@ class PassView extends GetView<AuthController> {
             const Spacer(),
             Obx(() {
               return ElevatedButton(
-                  onPressed: controller.handlePassword,
+                  onPressed: (){playButtonSound();controller.handlePassword();},
                   child: Container(
                       height: 40,
                       width: 80,

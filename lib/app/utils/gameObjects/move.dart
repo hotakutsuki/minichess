@@ -1,4 +1,4 @@
-import 'package:minichess/app/utils/gameObjects/tile.dart';
+import 'package:inti_the_inka_chess_game/app/utils/gameObjects/tile.dart';
 
 import '../utils.dart';
 import '../../data/enums.dart';

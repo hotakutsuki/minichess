@@ -44,12 +44,12 @@ class AppPages {
     ),
     GetPage(
       name: _Paths.TUTORIAL,
-      page: () => const TutorialView(),
+      page: () => TutorialView(),
       binding: TutorialBinding(),
     ),
     GetPage(
       name: _Paths.HALL_OF_FAME,
-      page: () => const HallOfFameView(),
+      page: () => HallOfFameView(),
       binding: HallOfFameBinding(),
     ),
     GetPage(

@@ -8,8 +8,6 @@ import '../controllers/match_controller.dart';
 import '../../../utils/utils.dart';
 import '../controllers/tile_controller.dart';
 
-
-
 class GraveyardTile extends GetView {
   GraveyardTile(
       {Key? key,
@@ -30,12 +28,18 @@ class GraveyardTile extends GetView {
     return InkWell(
       onTap: () => matchController.onTapTile(tile),
       child: Container(
-          width: 60,
-          color: tile.isSelected ? Colors.blueGrey : Colors.transparent,
+          width: graveyardHeight,
+          decoration: BoxDecoration(
+            image: tile.isOption
+                ? const DecorationImage(
+              image: AssetImage('assets/images/selected.png'),
+            )
+                : null,
+          ),
           alignment: Alignment.center,
           child: AnimatedBuilder(
             animation: tileController.animationController,
-            child: getImage(tile.char, p),
+            child: getCharAsset(tile.char, p, tile.isSelected),
             builder: (context, child) {
               return Center(
                 child: SizedBox(
@@ -45,15 +49,15 @@ class GraveyardTile extends GetView {
                     origin: const Offset(25, 25),
                     transform: Matrix4.compose(
                       tileController.translation * tileController.animationController
-                          .drive(CurveTween(curve: Curves.easeOutExpo))
+                          .drive(CurveTween(curve: Curves.easeInOutQuint))
                           .value,
                       math.Quaternion.euler(0, 0,
                           tileController.rotation * tileController.animationController
-                              .drive(CurveTween(curve: Curves.easeOutExpo))
+                              .drive(CurveTween(curve: Curves.easeInOutQuint))
                               .value),
                       math.Vector3.all(tileController.iScale +
                           (tileController.fScale - tileController.iScale) * tileController.animationController
-                              .drive(CurveTween(curve: Curves.easeOutExpo))
+                              .drive(CurveTween(curve: Curves.easeInOutQuint))
                               .value
                       ),
                     ),

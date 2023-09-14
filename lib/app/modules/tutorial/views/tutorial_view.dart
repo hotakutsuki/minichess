@@ -1,90 +1,112 @@
 import 'package:flutter/material.dart';
-
 import 'package:get/get.dart';
-import 'package:minichess/app/routes/app_pages.dart';
-
+import 'package:inti_the_inka_chess_game/app/modules/tutorial/views/tutorial_page_moon_view.dart';
+import '../../../utils/gameObjects/BackgroundController.dart';
 import '../../../utils/utils.dart';
 import '../controllers/tutorial_controller.dart';
 
 class TutorialView extends GetView<TutorialController> {
-  const TutorialView({Key? key}) : super(key: key);
+  TutorialView({Key? key}) : super(key: key);
+  BackgroundController backgroundController = Get.find<BackgroundController>();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Transform.scale(
-        scale: getScale(context),
+      body: SafeArea(
         child: Stack(
-          alignment: Alignment.center,
           children: [
-            PageView(
-              controller: controller.pageController,
+            backgroundController.backGround(context),
+            Column(
               children: [
-                controller.getPage('1select', 'Tap on a tile to select it.'),
-                controller.getPage(
-                    '2move', 'Tap on any of the highlighted tiles to move.'),
-                controller.getPage(
-                    '3takepng', 'Tap on an enemy tile to take it.'),
-                controller.getPage(
-                    '4grave', 'When a piece is taken, it goes to you graveyard.'),
-                controller.getPage(
-                    '5revive', 'You can invoke pieces from your graveyard.'),
-                controller.getPage('6knigthpng',
-                    'Reach to the top to transform a Pawn into a Knight.'),
-                controller.getPage('7win', 'Take the king to win.'),
-                controller.getPage('8clock',
-                    'But watch out your clock. If it gets to 0, you lose.'),
-                controller.getPage('9moves', 'These are the valid moves.'),
+                AppBar(
+                  elevation: 0,
+                  title: const Text(
+                    'Tutorial',
+                    style: TextStyle(color: Colors.white70),
+                  ),
+                  backgroundColor: Colors.white10,
+                  centerTitle: true,
+                  actions: [
+                    FloatingActionButton(
+                      elevation: 0,
+                      heroTag: 'close',
+                      mini: true,
+                      onPressed: () => Get.back(closeOverlays: true),
+                      child: const Icon(Icons.close, color: Colors.white60),
+                    )
+                  ],
+                ),
+                Expanded(
+                  child: PageView(
+                    controller: controller.pageController,
+                    children: [
+                      controller.getPage(
+                          '1', 'Tap on a tile to select it.', context),
+                      controller.getPage(
+                          '2',
+                          'Tap on any of the highlighted tiles to move.',
+                          context),
+                      controller.getPage(
+                          '3', 'Tap on an enemy tile to take it.', context),
+                      controller.getPage(
+                          '4',
+                          'When a piece is taken, it goes to you "graveyard".',
+                          context),
+                      controller.getPage(
+                          '5',
+                          'You can invoke pieces from your "graveyard".',
+                          context),
+                      controller.getPage(
+                          '6',
+                          'Reach to the top to transform a Snake into a Cougar.',
+                          context),
+                      controller.getPage('7', 'Take the Inti to win.', context),
+                      TutorialPageMoonView(),
+                      controller.getPage(
+                          '8', 'These are the moves of the Tower.', context),
+                      controller.getPage(
+                          '9', 'These are the moves of the Condor.', context),
+                      controller.getPage(
+                          '10', 'These are the moves of the Cougar.', context),
+                      controller.getPage(
+                          '11', 'These are the moves of the Inti.', context),
+                    ],
+                  ),
+                ),
+                Container(
+                  height: 80,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                            onPressed: () {
+                              controller.pageController.previousPage(
+                                  duration: const Duration(milliseconds: 200),
+                                  curve: Curves.easeOutExpo);
+                            },
+                            child: const SizedBox(
+                                height: 100,
+                                child: Icon(
+                                  Icons.arrow_left,
+                                  size: 40,
+                                ))),
+                      ),
+                      Expanded(
+                        child: ElevatedButton(
+                            onPressed: () {
+                              controller.pageController.nextPage(
+                                  duration: const Duration(milliseconds: 200),
+                                  curve: Curves.easeOutExpo);
+                            },
+                            child: const SizedBox(
+                                height: 100,
+                                child: Icon(Icons.arrow_right, size: 40))),
+                      ),
+                    ],
+                  ),
+                ),
               ],
-            ),
-            const Positioned(
-                top: 40,
-                child: Text('Tutorial',
-                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.w500))),
-            Positioned(
-              left: 4,
-              child: Obx(() {
-                return FloatingActionButton(
-                    backgroundColor: controller.diablePrev.value
-                        ? Colors.grey
-                        : Colors.blueGrey,
-                    heroTag: 'back',
-                    mini: true,
-                    child: const Icon(Icons.arrow_left),
-                    onPressed: () {
-                      controller.pageController.previousPage(
-                          duration: const Duration(milliseconds: 200),
-                          curve: Curves.easeOutExpo);
-                    });
-              }),
-            ),
-            Positioned(
-              right: 4,
-              child: Obx(() {
-                return FloatingActionButton(
-                    backgroundColor: controller.disableNext.value
-                        ? Colors.grey
-                        : Colors.blueGrey,
-                    heroTag: 'forward',
-                    mini: true,
-                    child: const Icon(Icons.arrow_right),
-                    onPressed: () {
-                      controller.pageController.nextPage(
-                          duration: const Duration(milliseconds: 200),
-                          curve: Curves.bounceIn);
-                    });
-              }),
-            ),
-            Positioned(
-              top: 40,
-              right: 8,
-              child: FloatingActionButton(
-                heroTag: 'close',
-                backgroundColor: Colors.white,
-                mini: true,
-                onPressed: () => Get.offAllNamed(Routes.HOME),
-                child: const Icon(Icons.close, color: Colors.black87),
-              ),
             ),
           ],
         ),

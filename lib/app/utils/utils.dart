@@ -1,17 +1,45 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:crypto/crypto.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:inti_the_inka_chess_game/app/modules/home/controllers/home_controller.dart';
 
 import '../data/enums.dart';
 import '../modules/match/controllers/ai_controller.dart';
-import '../modules/match/controllers/tile_controller.dart';
 import 'gameObjects/GameState.dart';
 import 'gameObjects/move.dart';
 import 'gameObjects/tile.dart';
+
+// createNewBoard() {
+//   var matrix = [
+//     [
+//       Tile(chrt.empty, possession.none, 0, 0),
+//       Tile(chrt.empty, possession.none, 1, 0),
+//       Tile(chrt.empty, possession.none, 2, 0)
+//     ],
+//     [
+//       Tile(chrt.empty, possession.none, 0, 1),
+//       Tile(chrt.empty, possession.mine, 1, 1),
+//       Tile(chrt.empty, possession.none, 2, 1)
+//     ],
+//     [
+//       Tile(chrt.empty, possession.none, 0, 2),
+//       Tile(chrt.empty, possession.none, 1, 2),
+//       Tile(chrt.empty, possession.none, 2, 2)
+//     ],
+//     [
+//       Tile(chrt.empty, possession.none, 0, 3),
+//       Tile(chrt.empty, possession.none, 1, 3),
+//       Tile(chrt.empty, possession.none, 2, 3)
+//     ],
+//   ];
+//   return matrix;
+// }
 
 createNewBoard() {
   var matrix = [
@@ -41,18 +69,116 @@ createNewBoard() {
   return matrix;
 }
 
-RegExp emailRegExp = RegExp(r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$");
+RegExp emailRegExp = RegExp(
+    r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$");
 
-double getScale(BuildContext context){
+double getScale(BuildContext context) {
   double h = MediaQuery.of(context).size.height / 700;
   double w = MediaQuery.of(context).size.width / 396;
-  double minimun = min(h,w);
-  return min(minimun,1);
+  double minimun = min(h, w);
+  return min(minimun, 1);
 }
 
-String getMD5(String text){
+double getFullScale(BuildContext context) {
+  double h = MediaQuery.of(context).size.height / 850;
+  double w = MediaQuery.of(context).size.width / 396;
+  double minimun = min(h, w);
+  return min(minimun, 1);
+}
+
+String getMD5(String text) {
   var bytes = utf8.encode(text);
   return md5.convert(bytes).toString();
+}
+
+Widget? getBase(player owner, bool isSelected) {
+  switch (owner) {
+    case player.white:
+      return Image.asset(isSelected
+          ? 'assets/images/pieces/ws.png'
+          : 'assets/images/pieces/wd.png');
+    case player.black:
+      return Image.asset(isSelected
+          ? 'assets/images/pieces/bs.png'
+          : 'assets/images/pieces/bd.png');
+    case player.none:
+      return null;
+  }
+}
+
+Widget getCharAsset(chrt char, player owner, bool isSelected) {
+  switch (char) {
+    case chrt.pawn:
+      return Image.asset(
+        owner == player.white
+            ? isSelected
+                ? 'assets/images/pieces/wps.png'
+                : 'assets/images/pieces/wpd.png'
+            : isSelected
+                ? 'assets/images/pieces/bps.png'
+                : 'assets/images/pieces/bpd.png',
+      );
+    case chrt.knight:
+      return Image.asset(
+        owner == player.white
+            ? isSelected
+                ? 'assets/images/pieces/wks.png'
+                : 'assets/images/pieces/wkd.png'
+            : isSelected
+                ? 'assets/images/pieces/bks.png'
+                : 'assets/images/pieces/bkd.png',
+      );
+    case chrt.king:
+      return Image.asset(
+        owner == player.white
+            ? isSelected
+                ? 'assets/images/pieces/wkings.png'
+                : 'assets/images/pieces/wkingd.png'
+            : isSelected
+                ? 'assets/images/pieces/bkings.png'
+                : 'assets/images/pieces/bkingd.png',
+      );
+    case chrt.bishop:
+      return Image.asset(
+        owner == player.white
+            ? isSelected
+                ? 'assets/images/pieces/wbs.png'
+                : 'assets/images/pieces/wbd.png'
+            : isSelected
+                ? 'assets/images/pieces/bbs.png'
+                : 'assets/images/pieces/bbd.png',
+      );
+    case chrt.rock:
+      return Image.asset(
+        owner == player.white
+            ? isSelected
+                ? 'assets/images/pieces/wrs.png'
+                : 'assets/images/pieces/wrd.png'
+            : isSelected
+                ? 'assets/images/pieces/brs.png'
+                : 'assets/images/pieces/brd.png',
+      );
+    case chrt.queen:
+      return Image.asset(
+        owner == player.white
+            ? isSelected
+                ? 'assets/images/pieces/wkings.png'
+                : 'assets/images/pieces/wkingd.png'
+            : isSelected
+                ? 'assets/images/pieces/bkings.png'
+                : 'assets/images/pieces/bkingd.png',
+      );
+    case chrt.empty:
+      return const SizedBox.expand();
+  }
+}
+
+final audioPlayer = AudioPlayer();
+final HomeController homeController = Get.find<HomeController>();
+void playButtonSound() {
+  if (homeController.withSound.value){
+   audioPlayer.play(AssetSource('sounds/button.mp3'));
+  }
 }
 
 Widget getImage(chrt char, player owner) {
@@ -60,42 +186,71 @@ Widget getImage(chrt char, player owner) {
     case chrt.pawn:
       return Image.asset(
         owner == player.white
-            ? 'assets/images/pawnW.png'
-            : 'assets/images/pawnB.png',
+            ? 'assets/images/old/pawnW.png'
+            : 'assets/images/old/pawnB.png',
       );
     case chrt.knight:
       return Image.asset(
         owner == player.white
-            ? 'assets/images/knightW.png'
-            : 'assets/images/knightB.png',
+            ? 'assets/images/old/knightW.png'
+            : 'assets/images/old/knightB.png',
       );
     case chrt.king:
       return Image.asset(
         owner == player.white
-            ? 'assets/images/kingW.png'
-            : 'assets/images/kingB.png',
+            ? 'assets/images/old/kingW.png'
+            : 'assets/images/old/kingB.png',
       );
     case chrt.bishop:
       return Image.asset(
         owner == player.white
-            ? 'assets/images/bishopW.png'
-            : 'assets/images/bishopB.png',
+            ? 'assets/images/old/bishopW.png'
+            : 'assets/images/old/bishopB.png',
       );
     case chrt.rock:
       return Image.asset(
         owner == player.white
-            ? 'assets/images/rockW.png'
-            : 'assets/images/rockB.png',
+            ? 'assets/images/old/rockW.png'
+            : 'assets/images/old/rockB.png',
       );
     case chrt.queen:
       return Image.asset(
         owner == player.white
-            ? 'assets/images/queenW.png'
-            : 'assets/images/queenB.png',
+            ? 'assets/images/old/queenW.png'
+            : 'assets/images/old/queenB.png',
       );
     case chrt.empty:
       return const SizedBox.expand();
   }
+}
+
+void fadeSound(double to, double from, AudioPlayer player, int len ) {
+  double vol = from;
+  double diff = to - from;
+  double steps = (diff / 0.01).abs();
+  int stepLen = max(4, (steps > 0) ? len ~/ steps : len);
+  int lastTick = DateTime.now().millisecondsSinceEpoch ;
+
+  Timer.periodic(Duration(milliseconds: stepLen), ( Timer? t ) {
+    var now = DateTime.now().millisecondsSinceEpoch;
+    var tick = (now - lastTick) / len;
+    lastTick = now;
+    vol += diff * tick;
+
+    vol = max(0, vol);
+    vol = min(1, vol);
+    vol = (vol * 100).round() / 100;
+
+    player.setVolume(vol); // change this
+
+    if ( (to < from && vol <= to) || (to > from && vol >= to) ) {
+      if (t != null) {
+        t.cancel() ;
+        t = null;
+      }
+      player.setVolume(vol); // change this
+    }
+  });
 }
 
 Color geChartColor(player owner) {
@@ -136,7 +291,7 @@ int getNumberOfIsland(var matrix) {
 
   var booleanMatrix = List.generate(
     matrix.length,
-        (i) => List.generate(matrix.length, (i) => 0),
+    (i) => List.generate(matrix.length, (i) => 0),
   );
   for (int j = 0; j < matrix.length; j++) {
     for (int i = 0; i < matrix[j].length; i++) {
@@ -193,6 +348,7 @@ bool hardSearchMove(Move move, GameState gs, bool hard) {
 }
 
 bool checkIfValidMove(Move m, GameState gs, [bool hard = false]) {
+  //TODO: Enhace: check if is players turn, and check of move have initial and final tile
   if (isFromGraveyard(m.initialTile)) {
     return m.finalTile.char == chrt.empty;
   } else {
@@ -201,7 +357,7 @@ bool checkIfValidMove(Move m, GameState gs, [bool hard = false]) {
     } else {
       switch (m.initialTile.char) {
         case chrt.pawn:
-        // print(selectedTile);
+          // print(selectedTile);
           if (m.initialTile.owner == possession.mine) {
             return m.initialTile.i! == m.finalTile.i &&
                 m.initialTile.j == (m.finalTile.j! - 1);
@@ -211,8 +367,8 @@ bool checkIfValidMove(Move m, GameState gs, [bool hard = false]) {
           }
         case chrt.king:
           return (m.initialTile.i! + 1 == m.finalTile.i &&
-              m.initialTile.j! + 1 == m.finalTile.j &&
-              hardSearchMove(m, gs, hard)) ||
+                  m.initialTile.j! + 1 == m.finalTile.j &&
+                  hardSearchMove(m, gs, hard)) ||
               (m.initialTile.i! + 1 == m.finalTile.i &&
                   m.initialTile.j == m.finalTile.j &&
                   hardSearchMove(m, gs, hard)) ||
@@ -236,7 +392,7 @@ bool checkIfValidMove(Move m, GameState gs, [bool hard = false]) {
                   hardSearchMove(m, gs, hard));
         case chrt.bishop:
           return (m.initialTile.i! + 1 == m.finalTile.i &&
-              m.initialTile.j! + 1 == m.finalTile.j) ||
+                  m.initialTile.j! + 1 == m.finalTile.j) ||
               (m.initialTile.i! + 1 == m.finalTile.i &&
                   m.initialTile.j! - 1 == m.finalTile.j) ||
               (m.initialTile.i! - 1 == m.finalTile.i &&
@@ -245,7 +401,7 @@ bool checkIfValidMove(Move m, GameState gs, [bool hard = false]) {
                   m.initialTile.j! - 1 == m.finalTile.j);
         case chrt.rock:
           return (m.initialTile.i! + 1 == m.finalTile.i &&
-              m.initialTile.j == m.finalTile.j) ||
+                  m.initialTile.j == m.finalTile.j) ||
               (m.initialTile.i == m.finalTile.i &&
                   m.initialTile.j! + 1 == m.finalTile.j) ||
               (m.initialTile.i == m.finalTile.i &&
@@ -255,7 +411,7 @@ bool checkIfValidMove(Move m, GameState gs, [bool hard = false]) {
         case chrt.knight:
           if (m.initialTile.owner == player.white) {
             return (m.initialTile.j! + 1 == m.finalTile.j &&
-                m.initialTile.i == m.finalTile.i) ||
+                    m.initialTile.i == m.finalTile.i) ||
                 (m.initialTile.j == m.finalTile.j &&
                     m.initialTile.i! + 1 == m.finalTile.i) ||
                 (m.initialTile.j == m.finalTile.j &&
@@ -268,7 +424,7 @@ bool checkIfValidMove(Move m, GameState gs, [bool hard = false]) {
                     m.initialTile.i! - 1 == m.finalTile.i);
           } else {
             return (m.initialTile.j! + 1 == m.finalTile.j &&
-                m.initialTile.i == m.finalTile.i) ||
+                    m.initialTile.i == m.finalTile.i) ||
                 (m.initialTile.j == m.finalTile.j &&
                     m.initialTile.i! + 1 == m.finalTile.i) ||
                 (m.initialTile.j == m.finalTile.j &&

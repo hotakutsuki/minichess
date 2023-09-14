@@ -16,16 +16,16 @@ class TileController extends GetxController
   animateTile(int? ii, int? ij, [int? fi, int? fj, int? gyPosition]) async {
     if (ii == null && ij == null) {//from graveyard
       translation =
-          Vector3(48 + (-gyPosition! * 60) + fi! * 100, -95 - fj! * 100, 0);
+          Vector3(18 + (-gyPosition! * 47) + fi! * 100, -95 - fj! * 100, 0);
       iScale = 1;
-      fScale = 1.8;
+      fScale = 1.5;
     } else if (fi != null && fj != null) {//normal translation
       translation = Vector3((fi - ii!) * 100, (ij! - fj) * 100, 0);
     } else if (fi == null && fj == null) {//to graveyard
       translation =
-          Vector3(ii! * 100 + 48 + (gyPosition ?? 0) * -60, ij! * 100 + 5, 0);
+          Vector3(ii! * 100 + 12 + (gyPosition ?? 0) * -47, ij! * 100 + 5, 0);
       iScale = 1;
-      fScale = .6;
+      fScale = .4;
       rotation = pi;
     }
     update();
@@ -44,11 +44,10 @@ class TileController extends GetxController
 
   @override
   void onInit() {
-    print('Initing tile controller');
     super.onInit();
     animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 800),
     );
   }
 
