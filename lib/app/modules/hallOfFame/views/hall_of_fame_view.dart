@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../data/userDom.dart';
 import '../../../routes/app_pages.dart';
+import '../../../utils/gameObjects/BackgroundController.dart';
 import '../controllers/hall_of_fame_controller.dart';
-import '../../../data/enums.dart';
 
 class HallOfFameView extends GetView<HallOfFameController> {
-  const HallOfFameView({Key? key}) : super(key: key);
+  HallOfFameView({Key? key}) : super(key: key);
+  BackgroundController backgroundController = Get.find<BackgroundController>();
 
   Widget stremBuilder(query) {
     return StreamBuilder<QuerySnapshot>(
@@ -76,12 +77,7 @@ class HallOfFameView extends GetView<HallOfFameController> {
       body: Stack(
         // alignment: Alignment.center,
         children: [
-          SizedBox.expand(
-            child: Image.asset(
-              'assets/images/backgrounds/bg2.png',
-              fit: BoxFit.cover,
-            ),
-          ),
+          backgroundController.backGround(context),
           Column(
             children: [
               AppBar(

@@ -13,23 +13,21 @@ class TutorialPageView extends GetView {
       children: [
         Padding(
           padding: const EdgeInsets.all(16.0),
-          child: SizedBox(
-            height: 24,
-            child: Text(text,
-                textAlign: TextAlign.center,
-                style:
-                    const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
-          ),
+          child: Text(text,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 2,
+              textAlign: TextAlign.center,
+              style:
+                  const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
         ),
         Container(
-          // height: 500,
           padding: const EdgeInsets.all(16.0),
           child: Stack(
             alignment: Alignment.center,
             children: [
               Center(
                 child: SizedBox(
-                    height: getScale(context) * 380,
+                    height: getFullScale(context) * 380,
                     // width: 310,
                     // color: Colors.red,
                     child: Image.asset(
@@ -39,7 +37,7 @@ class TutorialPageView extends GetView {
               ),
               Center(
                   child: SizedBox(
-                      height: getScale(context) * 420,
+                      height: getFullScale(context) * 420,
                       child: Image.asset(
                         'assets/images/border.png',
                         fit: BoxFit.fitHeight,

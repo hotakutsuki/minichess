@@ -10,6 +10,7 @@ import 'app/modules/auth/controllers/auth_controller.dart';
 import 'app/modules/errors/controllers/errors_controller.dart';
 import 'app/routes/app_pages.dart';
 import 'app/services/database.dart';
+import 'app/utils/gameObjects/BackgroundController.dart';
 import 'firebase_options.dart';
 
 @pragma('vm:entry-point')
@@ -30,6 +31,7 @@ void main() async {
   Get.put(ErrorsController(), permanent: true);
   Get.put(DatabaseController(), permanent: true);
   Get.put(HomeController(), permanent: true);
+  Get.put(BackgroundController(), permanent: true);
 
   const AndroidNotificationChannel channel = AndroidNotificationChannel(
     'mini_chess_channel', // id

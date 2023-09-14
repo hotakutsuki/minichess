@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import '../../../data/enums.dart';
 import '../../../data/userDom.dart';
 import '../../../routes/app_pages.dart';
+import '../../../utils/gameObjects/BackgroundController.dart';
 import '../../../utils/utils.dart';
 import '../controllers/match_controller.dart';
 import '../widgets/ChessBoard.dart';
@@ -14,6 +15,7 @@ import 'gameover_view.dart';
 
 class MatchView extends GetView<MatchController> {
   MatchView({Key? key}) : super(key: key);
+  BackgroundController backgroundController = Get.find<BackgroundController>();
 
   Widget searchingWidget() {
     return SizedBox(
@@ -133,15 +135,6 @@ class MatchView extends GetView<MatchController> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget background() {
-    return SizedBox.expand(
-      child: Image.asset(
-        'assets/images/backgrounds/bg2.png',
-        fit: BoxFit.cover,
-      ),
     );
   }
 
@@ -305,7 +298,7 @@ class MatchView extends GetView<MatchController> {
         body: SafeArea(
           child: Stack(
             children: [
-              background(),
+              backgroundController.backGround(context),
               SizedBox.expand(
                 child: Stack(
                   alignment: Alignment.center,

@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'dart:math';
 import '../../../data/enums.dart';
 import '../../../routes/app_pages.dart';
+import '../../../utils/gameObjects/BackgroundController.dart';
 import '../../../utils/utils.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../controllers/home_controller.dart';
@@ -12,6 +13,7 @@ import '../controllers/home_controller.dart';
 class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
   HomeView({Key? key}) : super(key: key);
   AuthController authController = Get.find<AuthController>();
+  BackgroundController backgroundController = Get.find<BackgroundController>();
 
   @override
   Widget build(BuildContext context) {
@@ -22,12 +24,7 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
           width: double.infinity,
           height: double.infinity,
           child: Stack(alignment: Alignment.center, children: [
-            SizedBox.expand(
-              child: Image.asset(
-                'assets/images/backgrounds/bg2.png',
-                fit: BoxFit.cover,
-              ),
-            ),
+            backgroundController.backGround(context),
             Transform.scale(
               scale: getScale(context),
               child: Column(

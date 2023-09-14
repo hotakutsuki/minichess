@@ -1,19 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:inti_the_inka_chess_game/app/modules/tutorial/views/tutorial_page_moon_view.dart';
+import '../../../utils/gameObjects/BackgroundController.dart';
+import '../../../utils/utils.dart';
 import '../controllers/tutorial_controller.dart';
 
 class TutorialView extends GetView<TutorialController> {
-  const TutorialView({Key? key}) : super(key: key);
-
-  Widget backGround() {
-    return SizedBox.expand(
-      child: Image.asset(
-        'assets/images/backgrounds/bg2.png',
-        fit: BoxFit.cover,
-      ),
-    );
-  }
+  TutorialView({Key? key}) : super(key: key);
+  BackgroundController backgroundController = Get.find<BackgroundController>();
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +15,7 @@ class TutorialView extends GetView<TutorialController> {
       body: SafeArea(
         child: Stack(
           children: [
-            backGround(),
+            backgroundController.backGround(context),
             Column(
               children: [
                 AppBar(
