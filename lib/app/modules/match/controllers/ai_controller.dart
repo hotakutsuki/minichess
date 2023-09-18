@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
@@ -41,9 +42,9 @@ class AiController extends GetxController {
         matchIdEntry: record.matchid,
         metadatoEntry: '',
       });
-      print(url);
+      // print(url);
       http.get(url);
-    });
+    }).toList();
   }
 
   List<RemoteRecord> createRemoteHistoryArray(
@@ -100,6 +101,35 @@ class AiController extends GetxController {
       }
     }
     return isInCheck;
+  }
+
+  bool isInEnemyCheck(GameState gs) {
+    bool isInCheck = false;
+    for (var myTile in getMyPieces(gs)) {
+      for (var row in gs.board) {
+        for (var tile in row) {
+          Move m = Move(myTile, tile);
+          if (checkIfValidMove(m, gs, true) && tile.char == chrt.king) {
+            isInCheck = true;
+          }
+        }
+      }
+    }
+    return isInCheck;
+  }
+
+  Tile? getTileMakingCheck(GameState gs) {
+    for (var myTile in getMyPieces(gs)) {
+      for (var row in gs.board) {
+        for (var tile in row) {
+          Move m = Move(myTile, tile);
+          if (checkIfValidMove(m, gs, true) && tile.char == chrt.king) {
+            return myTile;
+          }
+        }
+      }
+    }
+    return null;
   }
 
   Move? runFromCheckmate(GameState gameState) {
@@ -251,23 +281,57 @@ class AiController extends GetxController {
     print('getting bestMoves');
     List<int> califications = [];
     for (var value in allMoves) {
+      print('Evaluating: $value');
       califications
           .add(evaluateState(GameState.clone(gs).changeGameState(value)));
     }
-    print('all moves: ${allMoves}');
-    print('scores: ${califications}');
-    int maxQualification = califications[0];
-    Move move = allMoves[0];
-    int selected = 0;
+
+    allMoves.asMap().forEach((i, move) {
+      print('$move -> ${califications[i]}');
+    });
+
+    //TODO: Easy:
+
+    int minQualification = califications[0];
+    califications.asMap().forEach((i, score) {
+      if (score < minQualification) {
+        minQualification = score;
+      }
+    });
+    //normalizate scores
+    List<num> normalizedQuadraticCalifications = [];
+    califications.asMap().forEach((i, score) {
+      normalizedQuadraticCalifications.add(pow(score - minQualification, 2) );
+    });
+    print('normalizedQuadraticCalifications: $normalizedQuadraticCalifications');
+    //create pool
+    List<Move> pool = [];
+    normalizedQuadraticCalifications.asMap().forEach((i, score) {
+      for (int idx = 0; idx < score; idx++){ //added at least once
+        pool.add(allMoves[i]);
+      }
+    });
+    if (pool.isNotEmpty){
+      return getRandomObject(pool);
+    }
+    return getRandomObject(allMoves);
+
+    //Hard:
+    /* int maxQualification = califications[0];
     califications.asMap().forEach((i, score) {
       if (score > maxQualification) {
-        move = allMoves[i];
-        selected = i;
         maxQualification = score;
       }
     });
-    print('selected move ${selected}: ${move}');
-    return move;
+    //create pool
+    List<Move> pool = [];
+    califications.asMap().forEach((i, score) {
+      if (score == maxQualification){
+        pool.add(allMoves[i]);
+      }
+    });
+    print('pool: $pool');
+    return getRandomObject(pool);*/
   }
 
   List<Tile> getEnemyPieces(GameState gameState) {
@@ -303,7 +367,101 @@ class AiController extends GetxController {
   }
 
   int evaluateState(GameState gs) {
-    return getMyPieces(gs).length - getEnemyPieces(gs).length;
+    int piecesWeight = 3;
+    int protectionWeight = 3;
+    int attackWeight = 1;
+    int protectionEnemy = 1;
+    int attackEnemyWeight = 3;
+    int checkWeight = 8;
+
+    int score1 = (getMyPieces(gs).length - getEnemyPieces(gs).length) * piecesWeight;
+    int score2 = getProtectedLinksNumber(gs) * protectionWeight;
+    int score3 = getAttackedPieces(gs) * attackWeight;
+    int score4 = - getProtectedEnemyLinksNumber(gs) * protectionEnemy;
+    int score5 = - getAttackedEnemyPieces(gs) * attackEnemyWeight;
+    int score6 = 0;
+    Tile? makingCheck = getTileMakingCheck(gs);
+    if (makingCheck != null && isProtected(gs, makingCheck)){
+      score6 = 2 * checkWeight;
+    }
+
+    print('$score1 Pieces + $score2 links + $score3 attacks + $score4 EnemyLinks + $score5 EnemyAttacks + $score6 efectiveCheck = ${score1 + score2 + score3 + score4 + score5 + score6}');
+    return score1 + score2 + score3 + score4 + score5 + score6;
+  }
+
+  int getAttackedPieces(gs){
+    int attacked = 0;
+    for (var myTile in getMyPieces(gs)) {
+      for (var row in gs.board) {
+        for (Tile tile in row) {
+          Move m = Move(myTile, tile);
+          if (checkIfValidMove(m, gs, true) && tile.owner == possession.enemy) {
+            attacked++;
+          }
+        }
+      }
+    }
+    return attacked;
+  }
+
+  int getAttackedEnemyPieces(gs){
+    int attacked = 0;
+    for (var enemyTile in getEnemyPieces(gs)) {
+      for (var row in gs.board) {
+        for (Tile tile in row) {
+          Move m = Move(enemyTile, tile);
+          if (checkIfValidMove(m, gs, true) && tile.owner == possession.mine) {
+            attacked++;
+          }
+        }
+      }
+    }
+    return attacked;
+  }
+
+  int getProtectedLinksNumber(gs){
+    List<Tile> protectedTiles = [];
+    for (var myTile in getMyPieces(gs)) {
+      for (var row in gs.board) {
+        for (Tile tile in row) {
+          Move m = Move(myTile, tile);
+          if (isProtecting(m,gs) && tile.char!=chrt.king) { //king does not need protection
+            protectedTiles.addIf(!protectedTiles.contains(tile), tile);
+          }
+        }
+      }
+    }
+    return protectedTiles.length;
+  }
+
+  bool isProtected(GameState gs, Tile makingCheckTile){
+    bool isProtected = false;
+    for (var myTile in getMyPieces(gs)) {
+      for (var row in gs.board) {
+        for (Tile tile in row) {
+          Move m = Move(myTile, tile);
+          if (isProtecting(m,gs) && makingCheckTile == tile) {
+            isProtected = true;
+          }
+        }
+      }
+    }
+    return isProtected;
+  }
+
+  int getProtectedEnemyLinksNumber(gs){
+    int links = 0;
+    for (var enemyTile in getEnemyPieces(gs)) {
+      for (var row in gs.board) {
+        for (Tile tile in row) {
+          Move m = Move(enemyTile, tile);
+          if (isProtecting(m,gs)) {
+            links++;
+          }
+        }
+      }
+    }
+    return links;
   }
 
   getRandomObject(ts) {

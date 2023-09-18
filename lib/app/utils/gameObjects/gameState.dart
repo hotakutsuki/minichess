@@ -40,7 +40,9 @@ class GameState {
     board[move.finalTile.j!][move.finalTile.i!].owner = move.initialTile.owner;
     transformPawn(move);
     if (isFromGraveyard(move.initialTile)) {
-      myGraveyard.removeWhere((t) => t.isSelected);
+      int idxRemove = myGraveyard.indexWhere((t) => t.char == move.initialTile.char);
+      myGraveyard.removeAt(idxRemove);
+      // myGraveyard.removeWhere((t) => t.isSelected);
     } else {
       board[move.initialTile.j!][move.initialTile.i!].char = chrt.empty;
       board[move.initialTile.j!][move.initialTile.i!].owner = possession.none;

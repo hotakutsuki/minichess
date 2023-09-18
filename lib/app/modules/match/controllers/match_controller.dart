@@ -66,7 +66,6 @@ class MatchController extends GetxController with WidgetsBindingObserver{
   var isLoading = true.obs;
   var isAnimating = false.obs;
 
-  // var audioPlayer = AudioPlayer();
   var moveAudioPLayer = AudioPlayer();
 
   Future<bool> startOnlineMatch() async {
@@ -75,17 +74,11 @@ class MatchController extends GetxController with WidgetsBindingObserver{
       print('creating new match');
       isHost.value = true;
       return await dbController.addMatch();
-      // if (result) {
-      //   homeController.setMode(gameMode.online);
-      // }
     } else {
       gameId.value = openMatches[0].id;
       print('joining to match ${gameId.value}');
       isHost.value = false;
       return await dbController.joinToAMatch();
-      // if (result) {
-      //   homeController.setMode(gameMode.online);
-      // }
     }
   }
 
@@ -179,8 +172,6 @@ class MatchController extends GetxController with WidgetsBindingObserver{
   }
 
   void resetTimers() {
-    // blackClockState.stopTimer();
-    // whiteClockState.stopTimer();
     whiteClockState.resetTimer();
     blackClockState.resetTimer();
   }
@@ -223,7 +214,7 @@ class MatchController extends GetxController with WidgetsBindingObserver{
       if (tile.char != chrt.empty && tile.owner == possession.mine) {
         tile.isSelected = true;
         selectedTile.value = tile;
-        print('selectedTile: $selectedTile');
+        // print('selectedTile: $selectedTile');
         highlightAvailableOptions();
       }
     } else {
@@ -276,7 +267,7 @@ class MatchController extends GetxController with WidgetsBindingObserver{
   }
 
   onTapTile(Tile tile) async {
-    print('tapping tile: $tile');
+    // print('tapping tile: $tile');
     if (isValidPlay(tile)) {
       if (gamemode == gameMode.online) {
         localTiles.add(tile.toString());
@@ -326,8 +317,8 @@ class MatchController extends GetxController with WidgetsBindingObserver{
 
     if (await isConnected()) {
       print('saving match...');
-      aiController.storeMovemntHistory(
-          boardHistory, whiteHistory, blackHistory, winner);
+      // aiController.storeMovemntHistory(
+      //     boardHistory, whiteHistory, blackHistory, winner);
     }
     await Future.delayed(const Duration(milliseconds: 100));
     if (gamemode == gameMode.training) {
@@ -372,6 +363,7 @@ class MatchController extends GetxController with WidgetsBindingObserver{
     gs.value = GameState.named(
       board: createNewBoard(),
       enemyGraveyard: <Tile>[],
+      // enemyGraveyard: <Tile>[Tile(chrt.pawn, possession.enemy, null, null)],
       myGraveyard: <Tile>[],
     );
   }

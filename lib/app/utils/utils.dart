@@ -41,6 +41,32 @@ import 'gameObjects/tile.dart';
 //   return matrix;
 // }
 
+// createNewBoard() {
+//   var matrix = [
+//     [
+//       Tile(chrt.empty, possession.none, 0, 0),
+//       Tile(chrt.king, possession.mine, 1, 0),
+//       Tile(chrt.empty, possession.none, 2, 0)
+//     ],
+//     [
+//       Tile(chrt.pawn, possession.mine, 0, 1),
+//       Tile(chrt.empty, possession.none, 1, 1),
+//       Tile(chrt.empty, possession.none, 2, 1)
+//     ],
+//     [
+//       Tile(chrt.empty, possession.none, 0, 2),
+//       Tile(chrt.rock, possession.enemy, 1, 2),
+//       Tile(chrt.pawn, possession.enemy, 2, 2)
+//     ],
+//     [
+//       Tile(chrt.empty, possession.none, 0, 3),
+//       Tile(chrt.king, possession.enemy, 1, 3),
+//       Tile(chrt.empty, possession.none, 2, 3)
+//     ],
+//   ];
+//   return matrix;
+// }
+
 createNewBoard() {
   var matrix = [
     [
@@ -347,6 +373,13 @@ bool hardSearchMove(Move move, GameState gs, bool hard) {
   return !aiController.isInCheck(newGameState);
 }
 
+bool isProtecting(Move m, GameState gs) {
+  if (isFromGraveyard(m.initialTile) || m.initialTile.owner != m.finalTile.owner) {
+    return false;
+  }
+  return isValidMovmentPerPiece(m, gs, true);
+}
+
 bool checkIfValidMove(Move m, GameState gs, [bool hard = false]) {
   //TODO: Enhace: check if is players turn, and check of move have initial and final tile
   if (isFromGraveyard(m.initialTile)) {
@@ -355,93 +388,96 @@ bool checkIfValidMove(Move m, GameState gs, [bool hard = false]) {
     if (m.initialTile.owner == m.finalTile.owner) {
       return false;
     } else {
-      switch (m.initialTile.char) {
-        case chrt.pawn:
-          // print(selectedTile);
-          if (m.initialTile.owner == possession.mine) {
-            return m.initialTile.i! == m.finalTile.i &&
-                m.initialTile.j == (m.finalTile.j! - 1);
-          } else {
-            return m.initialTile.i! == m.finalTile.i &&
-                m.initialTile.j == (m.finalTile.j! + 1);
-          }
-        case chrt.king:
-          return (m.initialTile.i! + 1 == m.finalTile.i &&
-                  m.initialTile.j! + 1 == m.finalTile.j &&
-                  hardSearchMove(m, gs, hard)) ||
-              (m.initialTile.i! + 1 == m.finalTile.i &&
-                  m.initialTile.j == m.finalTile.j &&
-                  hardSearchMove(m, gs, hard)) ||
-              (m.initialTile.i! + 1 == m.finalTile.i &&
-                  m.initialTile.j! - 1 == m.finalTile.j &&
-                  hardSearchMove(m, gs, hard)) ||
-              (m.initialTile.i == m.finalTile.i &&
-                  m.initialTile.j! + 1 == m.finalTile.j &&
-                  hardSearchMove(m, gs, hard)) ||
-              (m.initialTile.i == m.finalTile.i &&
-                  m.initialTile.j! - 1 == m.finalTile.j &&
-                  hardSearchMove(m, gs, hard)) ||
-              (m.initialTile.i! - 1 == m.finalTile.i &&
-                  m.initialTile.j! + 1 == m.finalTile.j &&
-                  hardSearchMove(m, gs, hard)) ||
-              (m.initialTile.i! - 1 == m.finalTile.i &&
-                  m.initialTile.j == m.finalTile.j &&
-                  hardSearchMove(m, gs, hard)) ||
-              (m.initialTile.i! - 1 == m.finalTile.i &&
-                  m.initialTile.j! - 1 == m.finalTile.j &&
-                  hardSearchMove(m, gs, hard));
-        case chrt.bishop:
-          return (m.initialTile.i! + 1 == m.finalTile.i &&
-                  m.initialTile.j! + 1 == m.finalTile.j) ||
-              (m.initialTile.i! + 1 == m.finalTile.i &&
-                  m.initialTile.j! - 1 == m.finalTile.j) ||
-              (m.initialTile.i! - 1 == m.finalTile.i &&
-                  m.initialTile.j! + 1 == m.finalTile.j) ||
-              (m.initialTile.i! - 1 == m.finalTile.i &&
-                  m.initialTile.j! - 1 == m.finalTile.j);
-        case chrt.rock:
-          return (m.initialTile.i! + 1 == m.finalTile.i &&
-                  m.initialTile.j == m.finalTile.j) ||
-              (m.initialTile.i == m.finalTile.i &&
-                  m.initialTile.j! + 1 == m.finalTile.j) ||
-              (m.initialTile.i == m.finalTile.i &&
-                  m.initialTile.j! - 1 == m.finalTile.j) ||
-              (m.initialTile.i! - 1 == m.finalTile.i &&
-                  m.initialTile.j == m.finalTile.j);
-        case chrt.knight:
-          if (m.initialTile.owner == player.white) {
-            return (m.initialTile.j! + 1 == m.finalTile.j &&
-                    m.initialTile.i == m.finalTile.i) ||
-                (m.initialTile.j == m.finalTile.j &&
-                    m.initialTile.i! + 1 == m.finalTile.i) ||
-                (m.initialTile.j == m.finalTile.j &&
-                    m.initialTile.i! - 1 == m.finalTile.i) ||
-                (m.initialTile.j! - 1 == m.finalTile.j &&
-                    m.initialTile.i == m.finalTile.i) ||
-                (m.initialTile.j! - 1 == m.finalTile.j &&
-                    m.initialTile.i! + 1 == m.finalTile.i) ||
-                (m.initialTile.j! - 1 == m.finalTile.j &&
-                    m.initialTile.i! - 1 == m.finalTile.i);
-          } else {
-            return (m.initialTile.j! + 1 == m.finalTile.j &&
-                    m.initialTile.i == m.finalTile.i) ||
-                (m.initialTile.j == m.finalTile.j &&
-                    m.initialTile.i! + 1 == m.finalTile.i) ||
-                (m.initialTile.j == m.finalTile.j &&
-                    m.initialTile.i! - 1 == m.finalTile.i) ||
-                (m.initialTile.j! - 1 == m.finalTile.j &&
-                    m.initialTile.i == m.finalTile.i) ||
-                (m.initialTile.j! + 1 == m.finalTile.j &&
-                    m.initialTile.i! + 1 == m.finalTile.i) ||
-                (m.initialTile.j! + 1 == m.finalTile.j &&
-                    m.initialTile.i! - 1 == m.finalTile.i);
-          }
-        case chrt.empty:
-          return false;
-        case chrt.queen:
-          return false;
-      }
+      return isValidMovmentPerPiece(m, gs, hard);
     }
+  }
+}
+
+bool isValidMovmentPerPiece(Move m, GameState gs, [bool hard = false]){
+  switch (m.initialTile.char) {
+    case chrt.pawn:
+      if (m.initialTile.owner == possession.mine) {
+        return m.initialTile.i! == m.finalTile.i &&
+            m.initialTile.j == (m.finalTile.j! - 1);
+      } else {
+        return m.initialTile.i! == m.finalTile.i &&
+            m.initialTile.j == (m.finalTile.j! + 1);
+      }
+    case chrt.king:
+      return (m.initialTile.i! + 1 == m.finalTile.i &&
+          m.initialTile.j! + 1 == m.finalTile.j &&
+          hardSearchMove(m, gs, hard)) ||
+          (m.initialTile.i! + 1 == m.finalTile.i &&
+              m.initialTile.j == m.finalTile.j &&
+              hardSearchMove(m, gs, hard)) ||
+          (m.initialTile.i! + 1 == m.finalTile.i &&
+              m.initialTile.j! - 1 == m.finalTile.j &&
+              hardSearchMove(m, gs, hard)) ||
+          (m.initialTile.i == m.finalTile.i &&
+              m.initialTile.j! + 1 == m.finalTile.j &&
+              hardSearchMove(m, gs, hard)) ||
+          (m.initialTile.i == m.finalTile.i &&
+              m.initialTile.j! - 1 == m.finalTile.j &&
+              hardSearchMove(m, gs, hard)) ||
+          (m.initialTile.i! - 1 == m.finalTile.i &&
+              m.initialTile.j! + 1 == m.finalTile.j &&
+              hardSearchMove(m, gs, hard)) ||
+          (m.initialTile.i! - 1 == m.finalTile.i &&
+              m.initialTile.j == m.finalTile.j &&
+              hardSearchMove(m, gs, hard)) ||
+          (m.initialTile.i! - 1 == m.finalTile.i &&
+              m.initialTile.j! - 1 == m.finalTile.j &&
+              hardSearchMove(m, gs, hard));
+    case chrt.bishop:
+      return (m.initialTile.i! + 1 == m.finalTile.i &&
+          m.initialTile.j! + 1 == m.finalTile.j) ||
+          (m.initialTile.i! + 1 == m.finalTile.i &&
+              m.initialTile.j! - 1 == m.finalTile.j) ||
+          (m.initialTile.i! - 1 == m.finalTile.i &&
+              m.initialTile.j! + 1 == m.finalTile.j) ||
+          (m.initialTile.i! - 1 == m.finalTile.i &&
+              m.initialTile.j! - 1 == m.finalTile.j);
+    case chrt.rock:
+      return (m.initialTile.i! + 1 == m.finalTile.i &&
+          m.initialTile.j == m.finalTile.j) ||
+          (m.initialTile.i == m.finalTile.i &&
+              m.initialTile.j! + 1 == m.finalTile.j) ||
+          (m.initialTile.i == m.finalTile.i &&
+              m.initialTile.j! - 1 == m.finalTile.j) ||
+          (m.initialTile.i! - 1 == m.finalTile.i &&
+              m.initialTile.j == m.finalTile.j);
+    case chrt.knight:
+      if (m.initialTile.owner == player.white) {
+        return (m.initialTile.j! + 1 == m.finalTile.j &&
+            m.initialTile.i == m.finalTile.i) ||
+            (m.initialTile.j == m.finalTile.j &&
+                m.initialTile.i! + 1 == m.finalTile.i) ||
+            (m.initialTile.j == m.finalTile.j &&
+                m.initialTile.i! - 1 == m.finalTile.i) ||
+            (m.initialTile.j! - 1 == m.finalTile.j &&
+                m.initialTile.i == m.finalTile.i) ||
+            (m.initialTile.j! - 1 == m.finalTile.j &&
+                m.initialTile.i! + 1 == m.finalTile.i) ||
+            (m.initialTile.j! - 1 == m.finalTile.j &&
+                m.initialTile.i! - 1 == m.finalTile.i);
+      } else {
+        return (m.initialTile.j! + 1 == m.finalTile.j &&
+            m.initialTile.i == m.finalTile.i) ||
+            (m.initialTile.j == m.finalTile.j &&
+                m.initialTile.i! + 1 == m.finalTile.i) ||
+            (m.initialTile.j == m.finalTile.j &&
+                m.initialTile.i! - 1 == m.finalTile.i) ||
+            (m.initialTile.j! - 1 == m.finalTile.j &&
+                m.initialTile.i == m.finalTile.i) ||
+            (m.initialTile.j! + 1 == m.finalTile.j &&
+                m.initialTile.i! + 1 == m.finalTile.i) ||
+            (m.initialTile.j! + 1 == m.finalTile.j &&
+                m.initialTile.i! - 1 == m.finalTile.i);
+      }
+    case chrt.empty:
+      return false;
+    case chrt.queen:
+      return false;
   }
 }
 

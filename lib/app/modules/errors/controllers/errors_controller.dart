@@ -10,7 +10,6 @@ class ErrorsController extends GetxController {
 
   @override
   void onInit() {
-    print('initing errorsController');
     super.onInit();
   }
 
