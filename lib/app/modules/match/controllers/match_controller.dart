@@ -30,7 +30,7 @@ class MatchController extends GetxController with WidgetsBindingObserver{
   Rx<int> wScore = 0.obs, bScore = 0.obs;
   final selectedTile = Rxn<Tile>();
 
-  player playersTurn = player.white;
+  late player playersTurn = player.white;
   player winner = player.none;
   Rx<bool> isGameOver = false.obs;
   List<String> boardHistory = [];
@@ -268,6 +268,9 @@ class MatchController extends GetxController with WidgetsBindingObserver{
 
   onTapTile(Tile tile) async {
     // print('tapping tile: $tile');
+    if (isAnimating.value){
+      return;
+    }
     if (isValidPlay(tile)) {
       if (gamemode == gameMode.online) {
         localTiles.add(tile.toString());
@@ -284,15 +287,18 @@ class MatchController extends GetxController with WidgetsBindingObserver{
     if (gamemode == gameMode.solo || gamemode == gameMode.online) {
       await Future.delayed(Duration(milliseconds: getRandomIntBetween(400, 1000)));
     }
-    if (playersTurn == player.black){
-      play(move.initialTile);
-    }
+    // if (playersTurn == player.black){
+    play(move.initialTile);
+    // }
     if (gamemode == gameMode.solo || gamemode == gameMode.online) {
       await Future.delayed(Duration(milliseconds: getRandomIntBetween(400, 1000)));
     }
-    if (playersTurn == player.black){
-      play(move.finalTile);
+    if (gamemode == gameMode.training) {
+      await Future.delayed(const Duration(milliseconds: 50));
     }
+    // if (playersTurn == player.black){
+    play(move.finalTile);
+    // }
   }
 
   void gameOver(player p) async {
@@ -347,6 +353,10 @@ class MatchController extends GetxController with WidgetsBindingObserver{
 
     await Future.delayed(const Duration(milliseconds: 1000));
     isLoading.value = false;
+
+    if (!isGameOver.value && gamemode == gameMode.training) {
+      playAsPc();
+    }
   }
 
   void closeTheGame() async {
@@ -440,14 +450,15 @@ class MatchController extends GetxController with WidgetsBindingObserver{
         closeTheGame();
       }
     }
-    if (!isGameOver.value && gamemode == gameMode.training) {
-      playAsPc();
-    }
 
     homeController.playBattleSong();
 
     await Future.delayed(const Duration(milliseconds: 1000));
     isLoading.value = false;
+
+    if (!isGameOver.value && gamemode == gameMode.training) {
+      playAsPc();
+    }
 
     // hostUser.value ??= createFakeUser();
     // invitedUser.value ??= createFakeUser();

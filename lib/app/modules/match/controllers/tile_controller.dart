@@ -4,10 +4,13 @@ import 'package:flutter/animation.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:vector_math/vector_math_64.dart';
+import '../../../data/enums.dart';
+import 'match_controller.dart';
 
 class TileController extends GetxController
     with GetSingleTickerProviderStateMixin {
   late AnimationController animationController;
+  late MatchController matchController;
   Vector3 translation = Vector3.zero();
   double iScale = 1;
   double fScale = 1;
@@ -45,9 +48,10 @@ class TileController extends GetxController
   @override
   void onInit() {
     super.onInit();
+    matchController = Get.find<MatchController>();
     animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 800),
+      duration: Duration(milliseconds: matchController.gamemode == gameMode.training ? 100 : 800),
     );
   }
 

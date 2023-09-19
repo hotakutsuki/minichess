@@ -61,6 +61,20 @@ class GameoverView extends GetView<MatchController> {
               ),
             ),
           if (controller.gamemode == gameMode.online)
+            SizedBox(
+              height: 40,
+              width: 150,
+              child: ElevatedButton(
+                onPressed: () {
+                  playButtonSound();
+                  controller.closeTheGame();
+                },
+                child: const Text(
+                  'Close',
+                ),
+              ),
+            ),
+          if (controller.gamemode == gameMode.online)
             Obx(() {
               return SizedBox(
                   height: 100,

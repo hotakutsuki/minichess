@@ -95,6 +95,17 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
                               ),
                             ),
                           ),
+                          SizedBox(
+                            height: 40,
+                            width: 150,
+                            child: ElevatedButton(
+                              onPressed: () {playButtonSound();
+                              controller.setMode(gameMode.training);},
+                              child: const Text(
+                                'training',
+                              ),
+                            ),
+                          ),
                           Text(
                               authController.user.value != null
                                   ? 'score: ${authController.user.value?.score}'

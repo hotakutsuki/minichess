@@ -149,8 +149,6 @@ class AiController extends GetxController {
     }
     if (moves.isNotEmpty) {
       result = bestEvaluatedMove(gameState, moves);
-      // result = getRandomObject(moves);
-      // print('result:$result');
     }
     return result;
   }

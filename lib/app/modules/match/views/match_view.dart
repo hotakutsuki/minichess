@@ -18,16 +18,15 @@ class MatchView extends GetView<MatchController> {
   BackgroundController backgroundController = Get.find<BackgroundController>();
 
   Widget searchingWidget() {
-    return SizedBox(
+    return Obx(() => isOnline() && controller.searching.value ? Container(
       width: double.infinity,
       height: double.infinity,
+      color: brackgroundColorSolid,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const CircularProgressIndicator(),
-          const SizedBox(
-            height: 20,
-          ),
+          CircularProgressIndicator( color: brackgroundColorLight),
+          const SizedBox(height: 20,),
           const Text('looking for another player...'),
           Text(controller.searchingSeconds.value),
           const SizedBox(
@@ -41,51 +40,50 @@ class MatchView extends GetView<MatchController> {
               child: const Text('cancel')),
         ],
       ),
-    );
+    ) : RotatedBox(quarterTurns: controller.searching.value ? 0 : 1, child: null,));
   }
 
-  Widget? userAvatarMatch(User? user) {
+  Widget userAvatarMatch(User? user, bool isHostUser) {
     if (user != null) {
-      return Container(
-        height: 30,
-        width: 280,
-        decoration: BoxDecoration(
-          color: brackgroundColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircleAvatar(
-              backgroundImage: Image
-                  .network(user.photoUrl ?? '')
-                  .image,
-              radius: 12,
+      return RotatedBox(
+        quarterTurns: !controller.isHost.value ^ isHostUser ? 0 : 2,
+        child: Container(
+          height: 30,
+          width: 280,
+          decoration: BoxDecoration(
+            color: brackgroundColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+          ),
+          child: RotatedBox(
+            quarterTurns: !controller.isHost.value ^ isHostUser ? 0 : 2,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircleAvatar(
+                  backgroundImage: Image
+                      .network(user.photoUrl ?? '')
+                      .image,
+                  radius: 12,
+                ),
+                const SizedBox(
+                  width: 5,
+                ),
+                Text(user.name),
+                const SizedBox(
+                  width: 5,
+                ),
+                Text('${user.score}'),
+              ],
             ),
-            const SizedBox(
-              width: 5,
-            ),
-            Text(user.name),
-            const SizedBox(
-              width: 5,
-            ),
-            Text('${user.score}'),
-          ],
+          ),
         ),
       );
     }
-    return null;
+    return const SizedBox();
   }
 
   bool isOnline() {
     return controller.gamemode == gameMode.online;
-  }
-
-  Widget userInfo(Rxn<User> user) {
-    return RotatedBox(
-      quarterTurns: isOnline() && controller.isHost.value == true ? 0 : 2,
-      child: userAvatarMatch(user.value),
-    );
   }
 
   Widget clock(int turns, player player) {
@@ -233,16 +231,11 @@ class MatchView extends GetView<MatchController> {
                       board(),
                       Positioned(top: 0, child: Graveyard(p: player.black)),
                       Positioned(bottom: 0, child: Graveyard(p: player.white)),
-                      // Positioned(top: 20, child: clock(2, player.black)),
-                      // Positioned(bottom: 20, child: clock(0, player.white)),
                     ],
                   ),
                 ),
               ),
             ),
-            isOnline() && controller.searching.value
-                ? searchingWidget()
-                : const SizedBox(),
           ],
         );
       }),
@@ -255,7 +248,7 @@ class MatchView extends GetView<MatchController> {
 
   Widget buttonPannel(player p) {
     return RotatedBox(
-      quarterTurns: p == player.white ? 0 : 2,
+      quarterTurns: !controller.isHost.value ^ (p == player.white) ? 0 : 2,
       child: Container(
         height: 60,
         width: 300,
@@ -307,9 +300,12 @@ class MatchView extends GetView<MatchController> {
                         top: 0,
                         child: Column(
                           children: [
-                            buttonPannel(player.black),
+                            Obx(() => buttonPannel(controller.isHost.value ? player.black : player.white)),
                             Obx(() {
-                              return userInfo(controller.invitedUser);
+                              return userAvatarMatch(
+                                  controller.isHost.value ? controller.invitedUser.value : controller.hostUser.value,
+                                  controller.isHost.value ? false : true,
+                              );
                             }),
                           ],
                         ),
@@ -321,13 +317,12 @@ class MatchView extends GetView<MatchController> {
                         child: Column(
                           children: [
                             Obx(() {
-                              return userInfo(controller.hostUser);
+                              return userAvatarMatch(
+                                controller.isHost.value ? controller.hostUser.value : controller.invitedUser.value,
+                                controller.isHost.value ? true : false,
+                              );
                             }),
-                            Container(
-                              // color: Colors.green,
-                              // height: getFullScale(context) * 60,
-                              child: buttonPannel(player.white),
-                            ),
+                            Obx(() => buttonPannel(controller.isHost.value ? player.white : player.black)),
                           ],
                         ),
                       )
@@ -335,6 +330,7 @@ class MatchView extends GetView<MatchController> {
               ),
               gameOver(),
               transitionScreen(context),
+              searchingWidget(),
             ],
           ),
         ),
