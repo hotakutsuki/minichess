@@ -220,19 +220,16 @@ class MatchView extends GetView<MatchController> {
             RotatedBox(
               quarterTurns:
               isOnline() && controller.isHost.value == false ? 2 : 0,
-              child: Container(
-                // color: Colors.yellow,
-                child: SizedBox(
-                  height: 540,
-                  width: 360,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      board(),
-                      Positioned(top: 0, child: Graveyard(p: player.black)),
-                      Positioned(bottom: 0, child: Graveyard(p: player.white)),
-                    ],
-                  ),
+              child: SizedBox(
+                height: 540,
+                width: 360,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    board(),
+                    Positioned(top: 0, child: Graveyard(p: player.black)),
+                    Positioned(bottom: 0, child: Graveyard(p: player.white)),
+                  ],
                 ),
               ),
             ),
@@ -328,6 +325,9 @@ class MatchView extends GetView<MatchController> {
                       )
                     ]),
               ),
+              FloatingActionButton(
+                child: const Icon(Icons.pause),
+                  onPressed: (){controller.pausa.value = !controller.pausa.value;}),
               gameOver(),
               transitionScreen(context),
               searchingWidget(),

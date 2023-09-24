@@ -20,9 +20,7 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
     controller.removeLatcher();
     return Scaffold(
       body: SafeArea(
-        child: SizedBox(
-          width: double.infinity,
-          height: double.infinity,
+        child: SizedBox.expand(
           child: Stack(alignment: Alignment.center, children: [
             backgroundController.backGround(context),
             Transform.scale(
@@ -35,7 +33,7 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
                       style: TextStyle(
                           fontSize: 36,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white30)),
+                          color: Colors.white38)),
                   AnimatedBuilder(
                     animation: controller.logoController,
                     builder: (_, child) {
@@ -62,7 +60,7 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
                               onPressed: () {
                                 controller.setMode(gameMode.solo);
                                 playButtonSound();
-                                },
+                              },
                               child: const Text(
                                 'Vs PC',
                               ),
@@ -72,10 +70,12 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
                             height: 40,
                             width: 150,
                             child: ElevatedButton(
-                              onPressed: () {playButtonSound();
-                              controller.setMode(gameMode.vs);},
+                              onPressed: () {
+                                playButtonSound();
+                                controller.setMode(gameMode.vs);
+                              },
                               child: const Text(
-                                '2 players',
+                                '2 Players',
                               ),
                             ),
                           ),
@@ -91,7 +91,7 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
                                     }
                                   : null,
                               child: const Text(
-                                'Multiplayer online',
+                                'Multiplayer Online',
                               ),
                             ),
                           ),
@@ -99,10 +99,12 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
                             height: 40,
                             width: 150,
                             child: ElevatedButton(
-                              onPressed: () {playButtonSound();
-                              controller.setMode(gameMode.training);},
+                              onPressed: () {
+                                playButtonSound();
+                                controller.setMode(gameMode.training);
+                              },
                               child: const Text(
-                                'training',
+                                'Training',
                               ),
                             ),
                           ),
@@ -122,31 +124,31 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
               ),
             ),
             if (kIsWeb)
-            Obx(
-              () => AnimatedPositioned(
-                bottom: 30,
-                left: (controller.isOnline.value) ? 10 : -60,
-                duration: const Duration(milliseconds: 500),
-                curve: Curves.easeInOutExpo,
-                child: Column(
-                  children: [
-                    FloatingActionButton(
-                      heroTag: 'gplay',
-                      onPressed: () {
-                        controller.goToUrl(
-                            'https://play.google.com/store/apps/details?id=com.hotakutsuki.minichess');
-                      },
-                      backgroundColor: Colors.black87,
-                      child: SizedBox(
-                          width: 25,
-                          height: 25,
-                          child: Image.asset('assets/images/gplay.png')),
-                    ),
-                    const Text('Senpai notice me'),
-                  ],
+              Obx(
+                () => AnimatedPositioned(
+                  bottom: 30,
+                  left: (controller.isOnline.value) ? 10 : -60,
+                  duration: const Duration(milliseconds: 500),
+                  curve: Curves.easeInOutExpo,
+                  child: Column(
+                    children: [
+                      FloatingActionButton(
+                        heroTag: 'gplay',
+                        onPressed: () {
+                          controller.goToUrl(
+                              'https://play.google.com/store/apps/details?id=com.hotakutsuki.minichess');
+                        },
+                        backgroundColor: Colors.black87,
+                        child: SizedBox(
+                            width: 25,
+                            height: 25,
+                            child: Image.asset('assets/images/gplay.png')),
+                      ),
+                      const Text('Senpai notice me'),
+                    ],
+                  ),
                 ),
               ),
-            ),
             Obx(
               () => AnimatedPositioned(
                 top: 40,
@@ -197,6 +199,78 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
             ),
             Obx(
               () => AnimatedPositioned(
+                top: controller.firstTime.value
+                    ? 10
+                    : -MediaQuery.of(context).size.height,
+                left: 5,
+                curve: Curves.easeOutExpo,
+                duration: const Duration(milliseconds: 500),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    color: brackgroundColorSemi,
+                  ),
+                  width: MediaQuery.of(context).size.width - 10,
+                  height: MediaQuery.of(context).size.height - 20,
+                  child: Center(
+                      child: SizedBox(
+                        height: 400,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                        const Text('Hello there!',
+                            style: TextStyle(fontSize: 20),
+                            textAlign: TextAlign.center,
+                            overflow: TextOverflow.fade),
+                        const Text(
+                            "Looks like is your first time here.\nWanna know how to play?",
+                            maxLines: 2,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontSize: 15),
+                            overflow: TextOverflow.fade),
+                        SizedBox(
+                            height: 25,
+                            child:
+                                Image.asset('assets/images/pieces/wkings.png')),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                                height: 40,
+                                width: 150,
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    playButtonSound();
+                                    Get.toNamed(Routes.TUTORIAL);
+                                    controller.setFirstTime(false);
+                                  },
+                                  child: const Text(
+                                    'How to Play',
+                                  ),
+                                )),
+                            const SizedBox(width: 75,),
+                            SizedBox(
+                                height: 40,
+                                width: 150,
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    playButtonSound();
+                                    controller.setFirstTime(false);
+                                  },
+                                  child: const Text(
+                                    'I Can Handle it',
+                                  ),
+                                )),
+                          ],
+                        ),
+                    ],
+                  ),
+                      )),
+                ),
+              ),
+            ),
+            Obx(
+              () => AnimatedPositioned(
                 top: controller.isLoading.value
                     ? 10
                     : -MediaQuery.of(context).size.height,
@@ -213,7 +287,8 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
                   child: Center(
                       child: SizedBox(
                           height: 25,
-                          child: Image.asset('assets/images/pieces/wkingd.png'))),
+                          child:
+                              Image.asset('assets/images/pieces/wkingd.png'))),
                 ),
               ),
             ),
@@ -223,7 +298,7 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
       floatingActionButton: Stack(children: [
         Obx(
           () => AnimatedPositioned(
-            right: !controller.isLoading.value ? 0 : -100,
+            right: controller.isLoading.value || controller.firstTime.value ? -100 : 0,
             bottom: 0,
             curve: Curves.easeOutExpo,
             duration: const Duration(milliseconds: 500),
@@ -236,8 +311,9 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
                       FloatingActionButton(
                           heroTag: 'sound',
                           onPressed: controller.toggleSound,
-                          child: controller.withSound.value ?  const Icon(Icons.volume_up) : const Icon(CupertinoIcons.volume_off)
-                      ),
+                          child: controller.withSound.value
+                              ? const Icon(Icons.volume_up)
+                              : const Icon(CupertinoIcons.volume_off)),
                       const Text('Sound'),
                     ],
                   ),

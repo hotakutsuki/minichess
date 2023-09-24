@@ -60,6 +60,7 @@ class MatchController extends GetxController with WidgetsBindingObserver{
   Rxn<int> scoreChange = Rxn<int>();
 
   bool isFake = false;
+  var pausa = false.obs;
 
   Function eq = const ListEquality().equals;
 
@@ -203,13 +204,16 @@ class MatchController extends GetxController with WidgetsBindingObserver{
       return playersTurn == player.white;
     }
     if (gamemode == gameMode.online) {
-      return (isHost.value! && playersTurn == player.white) ||
-          (!isHost.value! && playersTurn == player.black);
+      return (isHost.value && playersTurn == player.white) ||
+          (!isHost.value && playersTurn == player.black);
     }
     return true;
   }
 
   play(Tile tile) async {
+    if (pausa.value){
+      return;
+    }
     if (selectedTile.value == null) {
       if (tile.char != chrt.empty && tile.owner == possession.mine) {
         tile.isSelected = true;
@@ -294,7 +298,12 @@ class MatchController extends GetxController with WidgetsBindingObserver{
       await Future.delayed(Duration(milliseconds: getRandomIntBetween(400, 1000)));
     }
     if (gamemode == gameMode.training) {
-      await Future.delayed(const Duration(milliseconds: 50));
+      await Future.delayed(const Duration(milliseconds: 1000));
+      if (aiController.diff == difficult.easy){
+        aiController.diff = difficult.hard;
+      }else if (aiController.diff == difficult.hard){
+        aiController.diff = difficult.easy;
+      }
     }
     // if (playersTurn == player.black){
     play(move.finalTile);
@@ -350,6 +359,8 @@ class MatchController extends GetxController with WidgetsBindingObserver{
     playersTurn = player.white;
     resetTimers();
     initBoardState();
+
+    aiController.diff = difficult.hard;
 
     await Future.delayed(const Duration(milliseconds: 1000));
     isLoading.value = false;

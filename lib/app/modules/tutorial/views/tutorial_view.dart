@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:inti_the_inka_chess_game/app/modules/tutorial/views/tutorial_page_moon_view.dart';
 import '../../../utils/gameObjects/BackgroundController.dart';
-import '../../../utils/utils.dart';
 import '../controllers/tutorial_controller.dart';
 
 class TutorialView extends GetView<TutorialController> {

@@ -373,11 +373,11 @@ bool hardSearchMove(Move move, GameState gs, bool hard) {
   return !aiController.isInCheck(newGameState);
 }
 
-bool isProtecting(Move m, GameState gs) {
+bool isProtecting(Move m, GameState gs, bool hard) {
   if (isFromGraveyard(m.initialTile) || m.initialTile.owner != m.finalTile.owner) {
     return false;
   }
-  return isValidMovmentPerPiece(m, gs, true);
+  return isValidMovmentPerPiece(m, gs, hard);
 }
 
 bool checkIfValidMove(Move m, GameState gs, [bool hard = false]) {

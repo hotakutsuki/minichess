@@ -2,6 +2,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/animation.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:get/get.dart';
 import 'package:flutter/foundation.dart';
@@ -22,6 +23,7 @@ class HomeController extends GetxController with GetSingleTickerProviderStateMix
   final player = AudioPlayer();
   late final AnimationController logoController = AnimationController(vsync: this, duration: const Duration(seconds: 2))..repeat();
   bool isVolumeZero = false;
+  var firstTime = false.obs;
   void setMode(gameMode mode) async {
     isLoading.value = true;
     await Future.delayed(const Duration(milliseconds: 500));
@@ -53,6 +55,12 @@ class HomeController extends GetxController with GetSingleTickerProviderStateMix
     player.play(AssetSource('sounds/titlescreen.mp3'));
     player.setReleaseMode(ReleaseMode.loop);
     resumeSong();
+  }
+
+  void setFirstTime(bool b) async {
+    firstTime.value = b;
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(sharedPrefs.firstTimeToOpen.name, b);
   }
 
   void playBattleSong() async {
@@ -104,6 +112,10 @@ class HomeController extends GetxController with GetSingleTickerProviderStateMix
 
   @override
   void onReady() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    firstTime.value = prefs.getBool(sharedPrefs.firstTimeToOpen.name) ?? true;
+    print('firstTime: ${firstTime.value}');
+
     isOnline.value = await isConnected();
     if (isOnline.value) {
       messaging = FirebaseMessaging.instance;
