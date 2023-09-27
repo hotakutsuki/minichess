@@ -1,5 +1,5 @@
 name: "inti_the_inka_chess_game"
-version: 1.0.0+15
+version: 1.0.0+16
 publish_to: none
 description: "A mini board game"
 environment: 

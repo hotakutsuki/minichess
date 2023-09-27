@@ -15,6 +15,22 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
   AuthController authController = Get.find<AuthController>();
   BackgroundController backgroundController = Get.find<BackgroundController>();
 
+  PopupMenuItem<difficult> PopupMenuItemG(difficult diff) {
+    return PopupMenuItem(
+        padding: const EdgeInsets.all(0),
+        value: diff,
+        child: Container(
+            padding: const EdgeInsets.all(16),
+            alignment: Alignment.centerLeft,
+            height:
+            kMinInteractiveDimension,
+            width: double.infinity,
+            color: controller.diff.value == diff
+                ? brackgroundColorLightTrans
+                : null,
+            child: Text(diff.name.capitalizeFirst!)));
+  }
+
   @override
   Widget build(BuildContext context) {
     controller.removeLatcher();
@@ -56,14 +72,61 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
                           SizedBox(
                             height: 40,
                             width: 150,
-                            child: ElevatedButton(
-                              onPressed: () {
-                                controller.setMode(gameMode.solo);
-                                playButtonSound();
-                              },
-                              child: const Text(
-                                'Vs PC',
-                              ),
+                            child: Stack(
+                              alignment: Alignment.center,
+                              fit: StackFit.expand,
+                              children: [
+                                ElevatedButton(
+                                  onPressed: () {
+                                    controller.setMode(gameMode.solo);
+                                    playButtonSound();
+                                  },
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Text(
+                                        'Vs PC',
+                                      ),
+                                      Obx(() {
+                                        return Text(
+                                          '(${controller.diff.value.name.capitalizeFirst!})', style: TextStyle(fontSize: 8),
+                                        );
+                                      }),
+                                    ],
+                                  ),
+                                ),
+                                Positioned(
+                                  right: 0,
+                                  child: SizedBox(
+                                    width: 30,
+                                    height: 40,
+                                    child: PopupMenuButton(
+                                      itemBuilder: (BuildContext context) =>
+                                      [
+                                        PopupMenuItemG(difficult.easy),
+                                        PopupMenuItemG(difficult.normal),
+                                        PopupMenuItemG(difficult.hard),
+                                      ],
+                                      onSelected: (difficult value) {
+                                        controller.setDifficult(value);
+                                      },
+                                      child: Container(
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                            const BorderRadius.horizontal(
+                                              right: Radius.circular(4),
+                                            ),
+                                            border: Border.all(
+                                                color: Colors.white54),
+                                          ),
+                                          child: const Icon(
+                                            Icons.arrow_drop_down,
+                                            color: Colors.white,
+                                          )),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                           SizedBox(
@@ -85,17 +148,18 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
                             child: ElevatedButton(
                               onPressed: controller.isOnline.value
                                   ? () {
-                                      authController.tryStartMultuplayer = true;
-                                      playButtonSound();
-                                      controller.tryMultiplayer();
-                                    }
+                                authController.tryStartMultuplayer = true;
+                                playButtonSound();
+                                controller.tryMultiplayer();
+                              }
                                   : null,
                               child: const Text(
                                 'Multiplayer Online',
                               ),
                             ),
                           ),
-                          SizedBox(
+                          if (kDebugMode)
+                            SizedBox(
                             height: 40,
                             width: 150,
                             child: ElevatedButton(
@@ -125,231 +189,260 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
             ),
             if (kIsWeb)
               Obx(
-                () => AnimatedPositioned(
-                  bottom: 30,
-                  left: (controller.isOnline.value) ? 10 : -60,
-                  duration: const Duration(milliseconds: 500),
-                  curve: Curves.easeInOutExpo,
-                  child: Column(
-                    children: [
-                      FloatingActionButton(
-                        heroTag: 'gplay',
-                        onPressed: () {
-                          controller.goToUrl(
-                              'https://play.google.com/store/apps/details?id=com.hotakutsuki.minichess');
-                        },
-                        backgroundColor: Colors.black87,
-                        child: SizedBox(
-                            width: 25,
-                            height: 25,
-                            child: Image.asset('assets/images/gplay.png')),
+                    () =>
+                    AnimatedPositioned(
+                      bottom: 30,
+                      left: (controller.isOnline.value) ? 10 : -60,
+                      duration: const Duration(milliseconds: 500),
+                      curve: Curves.easeInOutExpo,
+                      child: Column(
+                        children: [
+                          FloatingActionButton(
+                            heroTag: 'gplay',
+                            onPressed: () {
+                              controller.goToUrl(
+                                  'https://play.google.com/store/apps/details?id=com.hotakutsuki.minichess');
+                            },
+                            backgroundColor: Colors.black87,
+                            child: SizedBox(
+                                width: 25,
+                                height: 25,
+                                child: Image.asset('assets/images/gplay.png')),
+                          ),
+                          const Text('Senpai notice me'),
+                        ],
                       ),
-                      const Text('Senpai notice me'),
-                    ],
-                  ),
-                ),
+                    ),
               ),
             Obx(
-              () => AnimatedPositioned(
-                top: 40,
-                right: controller.isOnline.value ? 10 : -60,
-                duration: const Duration(milliseconds: 500),
-                curve: Curves.easeInOutExpo,
-                child: Obx(() {
-                  return Column(
-                    children: [
-                      FloatingActionButton(
-                          heroTag: 'person',
-                          child: authController.loading.value
-                              ? const CircularProgressIndicator(
-                                  color: Colors.white,
-                                )
-                              : authController.user.value == null
+                  () =>
+                  AnimatedPositioned(
+                    top: 40,
+                    right: controller.isOnline.value ? 10 : -60,
+                    duration: const Duration(milliseconds: 500),
+                    curve: Curves.easeInOutExpo,
+                    child: Obx(() {
+                      return Column(
+                        children: [
+                          FloatingActionButton(
+                              heroTag: 'person',
+                              child: authController.loading.value
+                                  ? const CircularProgressIndicator(
+                                color: Colors.white,
+                              )
+                                  : authController.user.value == null
                                   ? const Icon(CupertinoIcons.person)
                                   : CircleAvatar(
-                                      backgroundColor: brackgroundColor,
-                                      backgroundImage:
-                                          authController.user.value?.photoUrl ==
-                                                  null
-                                              ? null
-                                              : Image.network(authController
-                                                      .user.value!.photoUrl!)
-                                                  .image,
-                                      radius: 30,
-                                      child: authController
-                                                  .user.value?.photoUrl ==
-                                              null
-                                          ? Text(
-                                              authController.user.value!.name[0]
-                                                  .toUpperCase(),
-                                              style:
-                                                  const TextStyle(fontSize: 30),
-                                            )
-                                          : null,
+                                backgroundColor: brackgroundColor,
+                                backgroundImage:
+                                authController.user.value?.photoUrl ==
+                                    null
+                                    ? null
+                                    : Image
+                                    .network(authController
+                                    .user.value!.photoUrl!)
+                                    .image,
+                                radius: 30,
+                                child: authController
+                                    .user.value?.photoUrl ==
+                                    null
+                                    ? Text(
+                                  authController.user.value!.name[0]
+                                      .toUpperCase(),
+                                  style:
+                                  const TextStyle(fontSize: 30),
+                                )
+                                    : null,
+                              ),
+                              onPressed: () {
+                                authController.tryStartMultuplayer = false;
+                                controller.showAuthDialog();
+                              }),
+                          Text(authController.user.value?.name ?? 'Account'),
+                        ],
+                      );
+                    }),
+                  ),
+            ),
+            Obx(
+                  () =>
+                  AnimatedPositioned(
+                    top: controller.firstTime.value
+                        ? 10
+                        : -MediaQuery
+                        .of(context)
+                        .size
+                        .height,
+                    left: 5,
+                    curve: Curves.easeOutExpo,
+                    duration: const Duration(milliseconds: 500),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        color: brackgroundColorSemi,
+                      ),
+                      width: MediaQuery
+                          .of(context)
+                          .size
+                          .width - 10,
+                      height: MediaQuery
+                          .of(context)
+                          .size
+                          .height - 20,
+                      child: Center(
+                          child: SizedBox(
+                            height: 400,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                const Text('Hello there!',
+                                    style: TextStyle(fontSize: 20),
+                                    textAlign: TextAlign.center,
+                                    overflow: TextOverflow.fade),
+                                const Text(
+                                    "Looks like is your first time here.\nWanna know how to play?",
+                                    maxLines: 2,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(fontSize: 15),
+                                    overflow: TextOverflow.fade),
+                                SizedBox(
+                                    height: 25,
+                                    child:
+                                    Image.asset(
+                                        'assets/images/pieces/wkings.png')),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    SizedBox(
+                                        height: 40,
+                                        width: 150,
+                                        child: ElevatedButton(
+                                          onPressed: () {
+                                            playButtonSound();
+                                            Get.toNamed(Routes.TUTORIAL);
+                                            controller.setFirstTime(false);
+                                          },
+                                          child: const Text(
+                                            'How to Play',
+                                          ),
+                                        )),
+                                    const SizedBox(
+                                      width: 75,
                                     ),
-                          onPressed: () {
-                            authController.tryStartMultuplayer = false;
-                            controller.showAuthDialog();
-                          }),
-                      Text(authController.user.value?.name ?? 'Account'),
-                    ],
-                  );
-                }),
-              ),
+                                    SizedBox(
+                                        height: 40,
+                                        width: 150,
+                                        child: ElevatedButton(
+                                          onPressed: () {
+                                            playButtonSound();
+                                            controller.setFirstTime(false);
+                                          },
+                                          child: const Text(
+                                            'I Can Handle it',
+                                          ),
+                                        )),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          )),
+                    ),
+                  ),
             ),
             Obx(
-              () => AnimatedPositioned(
-                top: controller.firstTime.value
-                    ? 10
-                    : -MediaQuery.of(context).size.height,
-                left: 5,
-                curve: Curves.easeOutExpo,
-                duration: const Duration(milliseconds: 500),
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    color: brackgroundColorSemi,
-                  ),
-                  width: MediaQuery.of(context).size.width - 10,
-                  height: MediaQuery.of(context).size.height - 20,
-                  child: Center(
-                      child: SizedBox(
-                        height: 400,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                        const Text('Hello there!',
-                            style: TextStyle(fontSize: 20),
-                            textAlign: TextAlign.center,
-                            overflow: TextOverflow.fade),
-                        const Text(
-                            "Looks like is your first time here.\nWanna know how to play?",
-                            maxLines: 2,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: 15),
-                            overflow: TextOverflow.fade),
-                        SizedBox(
-                            height: 25,
-                            child:
-                                Image.asset('assets/images/pieces/wkings.png')),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                                height: 40,
-                                width: 150,
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    playButtonSound();
-                                    Get.toNamed(Routes.TUTORIAL);
-                                    controller.setFirstTime(false);
-                                  },
-                                  child: const Text(
-                                    'How to Play',
-                                  ),
-                                )),
-                            const SizedBox(width: 75,),
-                            SizedBox(
-                                height: 40,
-                                width: 150,
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    playButtonSound();
-                                    controller.setFirstTime(false);
-                                  },
-                                  child: const Text(
-                                    'I Can Handle it',
-                                  ),
-                                )),
-                          ],
-                        ),
-                    ],
-                  ),
-                      )),
-                ),
-              ),
-            ),
-            Obx(
-              () => AnimatedPositioned(
-                top: controller.isLoading.value
-                    ? 10
-                    : -MediaQuery.of(context).size.height,
-                left: 5,
-                curve: Curves.easeOutExpo,
-                duration: const Duration(milliseconds: 500),
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    color: brackgroundColorSolid,
-                  ),
-                  width: MediaQuery.of(context).size.width - 10,
-                  height: MediaQuery.of(context).size.height - 20,
-                  child: Center(
-                      child: SizedBox(
-                          height: 25,
-                          child:
+                  () =>
+                  AnimatedPositioned(
+                    top: controller.isLoading.value
+                        ? 10
+                        : -MediaQuery
+                        .of(context)
+                        .size
+                        .height,
+                    left: 5,
+                    curve: Curves.easeOutExpo,
+                    duration: const Duration(milliseconds: 500),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        color: brackgroundColorSolid,
+                      ),
+                      width: MediaQuery
+                          .of(context)
+                          .size
+                          .width - 10,
+                      height: MediaQuery
+                          .of(context)
+                          .size
+                          .height - 20,
+                      child: Center(
+                          child: SizedBox(
+                              height: 25,
+                              child:
                               Image.asset('assets/images/pieces/wkingd.png'))),
-                ),
-              ),
+                    ),
+                  ),
             ),
           ]),
         ),
       ),
       floatingActionButton: Stack(children: [
         Obx(
-          () => AnimatedPositioned(
-            right: controller.isLoading.value || controller.firstTime.value ? -100 : 0,
-            bottom: 0,
-            curve: Curves.easeOutExpo,
-            duration: const Duration(milliseconds: 500),
-            child: SizedBox(
-              height: 280,
-              child: Column(
-                children: [
-                  Column(
+              () =>
+              AnimatedPositioned(
+                right: controller.isLoading.value || controller.firstTime.value
+                    ? -100
+                    : 0,
+                bottom: 0,
+                curve: Curves.easeOutExpo,
+                duration: const Duration(milliseconds: 500),
+                child: SizedBox(
+                  height: 280,
+                  child: Column(
                     children: [
-                      FloatingActionButton(
-                          heroTag: 'sound',
-                          onPressed: controller.toggleSound,
-                          child: controller.withSound.value
-                              ? const Icon(Icons.volume_up)
-                              : const Icon(CupertinoIcons.volume_off)),
-                      const Text('Sound'),
+                      Column(
+                        children: [
+                          FloatingActionButton(
+                              heroTag: 'sound',
+                              onPressed: controller.toggleSound,
+                              child: controller.withSound.value
+                                  ? const Icon(Icons.volume_up)
+                                  : const Icon(CupertinoIcons.volume_off)),
+                          const Text('Sound'),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 16,
+                      ),
+                      if (controller.isOnline.value)
+                        Column(
+                          children: [
+                            FloatingActionButton(
+                                heroTag: 'records',
+                                child: const Icon(Icons.stacked_bar_chart),
+                                onPressed: () {
+                                  Get.toNamed(Routes.HALL_OF_FAME);
+                                }),
+                            const Text('Fame'),
+                          ],
+                        ),
+                      const SizedBox(
+                        height: 16,
+                      ),
+                      Column(
+                        children: [
+                          FloatingActionButton(
+                              heroTag: 'tutorial',
+                              child: const Icon(CupertinoIcons.question),
+                              onPressed: () {
+                                Get.toNamed(Routes.TUTORIAL);
+                              }),
+                          const Text('How to play'),
+                        ],
+                      ),
                     ],
                   ),
-                  const SizedBox(
-                    height: 16,
-                  ),
-                  if (controller.isOnline.value)
-                    Column(
-                      children: [
-                        FloatingActionButton(
-                            heroTag: 'records',
-                            child: const Icon(Icons.stacked_bar_chart),
-                            onPressed: () {
-                              Get.toNamed(Routes.HALL_OF_FAME);
-                            }),
-                        const Text('Fame'),
-                      ],
-                    ),
-                  const SizedBox(
-                    height: 16,
-                  ),
-                  Column(
-                    children: [
-                      FloatingActionButton(
-                          heroTag: 'tutorial',
-                          child: const Icon(CupertinoIcons.question),
-                          onPressed: () {
-                            Get.toNamed(Routes.TUTORIAL);
-                          }),
-                      const Text('How to play'),
-                    ],
-                  ),
-                ],
+                ),
               ),
-            ),
-          ),
         )
       ]),
     );

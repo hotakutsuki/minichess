@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../data/enums.dart';
@@ -18,29 +19,36 @@ class MatchView extends GetView<MatchController> {
   BackgroundController backgroundController = Get.find<BackgroundController>();
 
   Widget searchingWidget() {
-    return Obx(() => isOnline() && controller.searching.value ? Container(
-      width: double.infinity,
-      height: double.infinity,
-      color: brackgroundColorSolid,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          CircularProgressIndicator( color: brackgroundColorLight),
-          const SizedBox(height: 20,),
-          const Text('looking for another player...'),
-          Text(controller.searchingSeconds.value),
-          const SizedBox(
-            height: 20,
-          ),
-          ElevatedButton(
-              onPressed: () {
-                playButtonSound();
-                controller.closeTheGame();
-              },
-              child: const Text('cancel')),
-        ],
-      ),
-    ) : RotatedBox(quarterTurns: controller.searching.value ? 0 : 1, child: null,));
+    return Obx(() => isOnline() && controller.searching.value
+        ? Container(
+            width: double.infinity,
+            height: double.infinity,
+            color: brackgroundColorSolid,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(color: brackgroundColorLight),
+                const SizedBox(
+                  height: 20,
+                ),
+                const Text('looking for another player...'),
+                Text(controller.searchingSeconds.value),
+                const SizedBox(
+                  height: 20,
+                ),
+                ElevatedButton(
+                    onPressed: () {
+                      playButtonSound();
+                      controller.closeTheGame();
+                    },
+                    child: const Text('cancel')),
+              ],
+            ),
+          )
+        : RotatedBox(
+            quarterTurns: controller.searching.value ? 0 : 1,
+            child: null,
+          ));
   }
 
   Widget userAvatarMatch(User? user, bool isHostUser) {
@@ -60,9 +68,7 @@ class MatchView extends GetView<MatchController> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 CircleAvatar(
-                  backgroundImage: Image
-                      .network(user.photoUrl ?? '')
-                      .image,
+                  backgroundImage: Image.network(user.photoUrl ?? '').image,
                   radius: 12,
                 ),
                 const SizedBox(
@@ -115,7 +121,7 @@ class MatchView extends GetView<MatchController> {
                     top: 3, child: Image.asset('assets/images/board.png')),
                 RotatedBox(
                     quarterTurns:
-                    controller.playersTurn == player.white ? 0 : 2,
+                        controller.playersTurn == player.white ? 0 : 2,
                     child: ChessBoard(
                         matrix: controller.gs.value!.board,
                         playersTurn: controller.playersTurn)),
@@ -138,51 +144,38 @@ class MatchView extends GetView<MatchController> {
 
   Widget gameOver() {
     return Obx(
-          () =>
-      !controller.isGameOver.value
-          ? const SizedBox()
-          : GameoverView(),
+      () => !controller.isGameOver.value ? const SizedBox() : GameoverView(),
     );
   }
 
   Widget transitionScreen(context) {
     return Obx(
-          () =>
-          AnimatedPositioned(
-            top: controller.isLoading.value
-                ? 10
-                : -MediaQuery
-                .of(context)
-                .size
-                .height,
-            left: 5,
-            curve: Curves.easeOutExpo,
-            duration: const Duration(milliseconds: 500),
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                color: brackgroundColorSolid,
-              ),
-              width: MediaQuery
-                  .of(context)
-                  .size
-                  .width - 10,
-              height: MediaQuery
-                  .of(context)
-                  .size
-                  .height - 20,
-              child: Center(
-                  child: SizedBox(
-                      height: 25,
-                      child: Image.asset('assets/images/pieces/wkings.png'))),
-            ),
+      () => AnimatedPositioned(
+        top: controller.isLoading.value
+            ? 10
+            : -MediaQuery.of(context).size.height,
+        left: 5,
+        curve: Curves.easeOutExpo,
+        duration: const Duration(milliseconds: 500),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            color: brackgroundColorSolid,
           ),
+          width: MediaQuery.of(context).size.width - 10,
+          height: MediaQuery.of(context).size.height - 20,
+          child: Center(
+              child: SizedBox(
+                  height: 25,
+                  child: Image.asset('assets/images/pieces/wkings.png'))),
+        ),
+      ),
     );
   }
 
   Widget closeButton() {
     return FloatingActionButton(
-      heroTag: 'close',
+      heroTag: 'close${getRandomInt(100)}',
       backgroundColor: brackgroundColor,
       mini: true,
       onPressed: controller.closeTheGame,
@@ -192,7 +185,7 @@ class MatchView extends GetView<MatchController> {
 
   Widget tutorialButton() {
     return FloatingActionButton(
-      heroTag: 'tutorial',
+      heroTag: 'tutorial${getRandomInt(100)}',
       backgroundColor: brackgroundColor,
       mini: true,
       onPressed: () {
@@ -204,7 +197,7 @@ class MatchView extends GetView<MatchController> {
 
   Widget restartButton() {
     return FloatingActionButton(
-      heroTag: 'restart',
+      heroTag: 'restart${getRandomInt(100)}',
       backgroundColor: brackgroundColor,
       mini: true,
       onPressed: controller.restartGame,
@@ -219,7 +212,7 @@ class MatchView extends GetView<MatchController> {
           children: [
             RotatedBox(
               quarterTurns:
-              isOnline() && controller.isHost.value == false ? 2 : 0,
+                  isOnline() && controller.isHost.value == false ? 2 : 0,
               child: SizedBox(
                 height: 540,
                 width: 360,
@@ -259,10 +252,7 @@ class MatchView extends GetView<MatchController> {
             SizedBox(height: 50, width: 50, child: ClockView(p)),
             Obx(() {
               return Text(
-                'V D\n${p == player.white ? controller.wScore : controller
-                    .bScore} ${p != player.white
-                    ? controller.wScore
-                    : controller.bScore}',
+                'V D\n${p == player.white ? controller.wScore : controller.bScore} ${p != player.white ? controller.wScore : controller.bScore}',
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 20,
@@ -274,6 +264,24 @@ class MatchView extends GetView<MatchController> {
             closeButton(),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget pcInfo() {
+    return Container(
+      height: 25,
+      width: 150,
+      decoration: BoxDecoration(
+        color: brackgroundColor,
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(16)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+              'Difficult: ${controller.aiController.diff.value.name.capitalizeFirst ?? ''}'),
+        ],
       ),
     );
   }
@@ -290,44 +298,60 @@ class MatchView extends GetView<MatchController> {
             children: [
               backgroundController.backGround(context),
               SizedBox.expand(
-                child: Stack(
-                  alignment: Alignment.center,
-                    children: [
-                      Positioned(
-                        top: 0,
-                        child: Column(
-                          children: [
-                            Obx(() => buttonPannel(controller.isHost.value ? player.black : player.white)),
-                            Obx(() {
-                              return userAvatarMatch(
-                                  controller.isHost.value ? controller.invitedUser.value : controller.hostUser.value,
-                                  controller.isHost.value ? false : true,
-                              );
-                            }),
-                          ],
-                        ),
-                      ),
-                      Transform.scale(
-                          scale: getFullScale(context), child: gameZone()),
-                      Positioned(
-                        bottom: 0,
-                        child: Column(
-                          children: [
-                            Obx(() {
-                              return userAvatarMatch(
-                                controller.isHost.value ? controller.hostUser.value : controller.invitedUser.value,
-                                controller.isHost.value ? true : false,
-                              );
-                            }),
-                            Obx(() => buttonPannel(controller.isHost.value ? player.white : player.black)),
-                          ],
-                        ),
-                      )
-                    ]),
+                child: Stack(alignment: Alignment.center, children: [
+                  Positioned(
+                    top: 0,
+                    child: Column(
+                      children: [
+                        Obx(() => buttonPannel(controller.isHost.value
+                            ? player.black
+                            : player.white)),
+                        Obx(() {
+                          return userAvatarMatch(
+                            controller.isHost.value
+                                ? controller.invitedUser.value
+                                : controller.hostUser.value,
+                            controller.isHost.value ? false : true,
+                          );
+                        }),
+                        if (controller.gamemode == gameMode.solo ||
+                            controller.gamemode == gameMode.training)
+                          Obx(() {
+                            return controller.aiControllerInitialized.value
+                                ? pcInfo()
+                                : const SizedBox();
+                          }),
+                      ],
+                    ),
+                  ),
+                  Transform.scale(
+                      scale: getFullScale(context), child: gameZone()),
+                  Positioned(
+                    bottom: 0,
+                    child: Column(
+                      children: [
+                        Obx(() {
+                          return userAvatarMatch(
+                            controller.isHost.value
+                                ? controller.hostUser.value
+                                : controller.invitedUser.value,
+                            controller.isHost.value ? true : false,
+                          );
+                        }),
+                        Obx(() => buttonPannel(controller.isHost.value
+                            ? player.white
+                            : player.black)),
+                      ],
+                    ),
+                  )
+                ]),
               ),
-              FloatingActionButton(
-                child: const Icon(Icons.pause),
-                  onPressed: (){controller.pausa.value = !controller.pausa.value;}),
+              if (kDebugMode)
+                FloatingActionButton(
+                    child: const Icon(Icons.pause),
+                    onPressed: () {
+                      controller.pausa.value = !controller.pausa.value;
+                    }),
               gameOver(),
               transitionScreen(context),
               searchingWidget(),

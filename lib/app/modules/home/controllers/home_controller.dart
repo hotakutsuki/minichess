@@ -24,6 +24,8 @@ class HomeController extends GetxController with GetSingleTickerProviderStateMix
   late final AnimationController logoController = AnimationController(vsync: this, duration: const Duration(seconds: 2))..repeat();
   bool isVolumeZero = false;
   var firstTime = false.obs;
+  var diff = difficult.normal.obs;
+
   void setMode(gameMode mode) async {
     isLoading.value = true;
     await Future.delayed(const Duration(milliseconds: 500));
@@ -61,6 +63,26 @@ class HomeController extends GetxController with GetSingleTickerProviderStateMix
     firstTime.value = b;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool(sharedPrefs.firstTimeToOpen.name, b);
+  }
+  
+  void setDifficult(difficult setDiff) async {
+    diff.value = setDiff;
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString(sharedPrefs.difficult.name, setDiff.name);
+  }
+
+  void getDifficult() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    var localDiff = prefs.getString(sharedPrefs.difficult.name);
+    if (localDiff == difficult.easy.name){
+      diff.value = difficult.easy;
+    }
+    if (localDiff == difficult.normal.name){
+      diff.value = difficult.normal;
+    }
+    if (localDiff == difficult.hard.name){
+      diff.value = difficult.hard;
+    }
   }
 
   void playBattleSong() async {
@@ -115,6 +137,8 @@ class HomeController extends GetxController with GetSingleTickerProviderStateMix
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     firstTime.value = prefs.getBool(sharedPrefs.firstTimeToOpen.name) ?? true;
     print('firstTime: ${firstTime.value}');
+
+    getDifficult();
 
     isOnline.value = await isConnected();
     if (isOnline.value) {

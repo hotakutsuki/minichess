@@ -25,7 +25,7 @@ class AiController extends GetxController {
   static const String matchIdEntry = 'entry.423913528';
   static const String metadatoEntry = 'entry.196101266';
 
-  difficult diff = difficult.hard;
+  Rx<difficult> diff = difficult.normal.obs;
 
   storeMovemntHistory(
     List<String> boardHistory,
@@ -169,11 +169,6 @@ class AiController extends GetxController {
       }
     }
 
-    // if (canTakeforFree(gameState)){
-    //   print('free piece');
-    //
-    // }
-
     if (!(await isConnected())) {
       print('Playing without internet...');
       return makeLocalDecision(gameState);
@@ -181,6 +176,7 @@ class AiController extends GetxController {
 
     String stateKey = gameState.toString();
 
+    return makeLocalDecision(gameState);
     List<String> remotePlaysResponse = await fetchRemotePlays(stateKey);
     if (isNewState(remotePlaysResponse)) {
       print('Playing locally...');
@@ -212,7 +208,8 @@ class AiController extends GetxController {
     // print(uri);
     http.Response response;
     try {
-      response = await http.get(uri);
+      response = await http.get(uri).timeout(const Duration(seconds: 1));
+      print('time limit reached');
     } catch (e) {
       print('Network error. playing random');
       return remotePlays;
@@ -284,14 +281,14 @@ class AiController extends GetxController {
   }
 
   Move bestEvaluatedMove(GameState gs, List<Move> allMoves) {
-    print('getting bestMoves in ${diff.name} mode. moves: ${allMoves.length}');
-    switch (diff){
+    print('getting bestMoves in ${diff.value.name} mode. moves: ${allMoves.length}');
+    switch (diff.value){
       case difficult.easy:
         return createEasyMove(gs, allMoves);
       case difficult.normal:
         return createHardMove(gs, allMoves, 1);
       case difficult.hard:
-        return createHardMove(gs, allMoves, 2);
+        return createHardMove(gs, allMoves, 3);
     }
   }
 
@@ -310,7 +307,6 @@ class AiController extends GetxController {
         minQualification = score;
       }
     });
-    print('min cualification: $minQualification');
     //normalizate scores
     List<num> normalizedQuadraticCalifications = [];
     califications.asMap().forEach((i, score) {
@@ -342,19 +338,29 @@ class AiController extends GetxController {
       califications
           .add(evaluateStateCheap(GameState.clone(gs).changeGameState(value)));
     }
-    int maxQualification = califications[0];
-    Move move = allMoves[0];
-    int selected = 0;
+
+    int minQualification = califications[0];
     califications.asMap().forEach((i, score) {
-      if (score > maxQualification) {
-        move = allMoves[i];
-        selected = i;
-        maxQualification = score;
+      if (score < minQualification) {
+        minQualification = score;
       }
     });
-
-    // print('selected move ${selected}: ${move}');
-    return move;
+    //normalizate scores
+    List<num> normalizedQuadraticCalifications = [];
+    califications.asMap().forEach((i, score) {
+      normalizedQuadraticCalifications.add(score - minQualification);
+    });
+    print('normalizedQuadraticCalifications: $normalizedQuadraticCalifications');
+    //create pool
+    List<Move> pool = [];
+    List<num> scores = [];
+    normalizedQuadraticCalifications.asMap().forEach((i, score) {
+      for (int idx = -1; idx < score; idx++){ //added at least once
+        pool.add(allMoves[i]);
+        scores.add(score);
+      }
+    });
+    return getRandomObject(pool);
   }
 
   List<Tile> getEnemyPieces(GameState gameState) {

@@ -66,6 +66,7 @@ class MatchController extends GetxController with WidgetsBindingObserver{
 
   var isLoading = true.obs;
   var isAnimating = false.obs;
+  var aiControllerInitialized = false.obs;
 
   var moveAudioPLayer = AudioPlayer();
 
@@ -298,11 +299,11 @@ class MatchController extends GetxController with WidgetsBindingObserver{
       await Future.delayed(Duration(milliseconds: getRandomIntBetween(400, 1000)));
     }
     if (gamemode == gameMode.training) {
-      await Future.delayed(const Duration(milliseconds: 1000));
-      if (aiController.diff == difficult.easy){
-        aiController.diff = difficult.hard;
-      }else if (aiController.diff == difficult.hard){
-        aiController.diff = difficult.easy;
+      await Future.delayed(const Duration(milliseconds: 50));
+      if (aiController.diff.value == difficult.easy){
+        aiController.diff.value = difficult.hard;
+      }else if (aiController.diff.value == difficult.hard){
+        aiController.diff.value = difficult.easy;
       }
     }
     // if (playersTurn == player.black){
@@ -360,13 +361,13 @@ class MatchController extends GetxController with WidgetsBindingObserver{
     resetTimers();
     initBoardState();
 
-    aiController.diff = difficult.hard;
+    aiController.diff.value = homeController.diff.value;
 
     await Future.delayed(const Duration(milliseconds: 1000));
     isLoading.value = false;
 
     if (!isGameOver.value && gamemode == gameMode.training) {
-      playAsPc();
+      await playAsPc();
     }
   }
 
@@ -467,8 +468,11 @@ class MatchController extends GetxController with WidgetsBindingObserver{
     await Future.delayed(const Duration(milliseconds: 1000));
     isLoading.value = false;
 
+    aiControllerInitialized.value = true;
+    aiController.diff.value = homeController.diff.value;
+
     if (!isGameOver.value && gamemode == gameMode.training) {
-      playAsPc();
+      await playAsPc();
     }
 
     // hostUser.value ??= createFakeUser();
