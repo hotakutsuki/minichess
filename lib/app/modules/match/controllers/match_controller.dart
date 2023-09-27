@@ -333,8 +333,8 @@ class MatchController extends GetxController with WidgetsBindingObserver{
 
     if (await isConnected()) {
       print('saving match...');
-      // aiController.storeMovemntHistory(
-      //     boardHistory, whiteHistory, blackHistory, winner);
+      aiController.storeMovemntHistory(
+          boardHistory, whiteHistory, blackHistory, winner);
     }
     await Future.delayed(const Duration(milliseconds: 100));
     if (gamemode == gameMode.training) {
