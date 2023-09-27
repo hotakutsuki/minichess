@@ -154,7 +154,7 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
                               }
                                   : null,
                               child: const Text(
-                                'Multiplayer Online',
+                                'Online',
                               ),
                             ),
                           ),
@@ -327,7 +327,7 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
                                           ),
                                         )),
                                     const SizedBox(
-                                      width: 75,
+                                      width: 20,
                                     ),
                                     SizedBox(
                                         height: 40,
