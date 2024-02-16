@@ -1,6 +1,5 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/animation.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -24,6 +23,7 @@ class HomeController extends GetxController with GetSingleTickerProviderStateMix
   late final AnimationController logoController = AnimationController(vsync: this, duration: const Duration(seconds: 2))..repeat();
   bool isVolumeZero = false;
   var firstTime = false.obs;
+  var showTale = false.obs;
   var diff = difficult.normal.obs;
 
   void setMode(gameMode mode) async {
@@ -63,6 +63,12 @@ class HomeController extends GetxController with GetSingleTickerProviderStateMix
     firstTime.value = b;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool(sharedPrefs.firstTimeToOpen.name, b);
+  }
+
+  void setShowTale(bool b) async {
+    showTale.value = b;
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(sharedPrefs.showTale.name, b);
   }
   
   void setDifficult(difficult setDiff) async {
@@ -136,7 +142,7 @@ class HomeController extends GetxController with GetSingleTickerProviderStateMix
   void onReady() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     firstTime.value = prefs.getBool(sharedPrefs.firstTimeToOpen.name) ?? true;
-    print('firstTime: ${firstTime.value}');
+    showTale.value = prefs.getBool(sharedPrefs.firstTimeToOpen.name) ?? true;
 
     getDifficult();
 
