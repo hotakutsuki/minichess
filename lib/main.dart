@@ -4,11 +4,13 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_notifications_handler/firebase_notifications_handler.dart';
+import 'package:inti_the_inka_chess_game/app/utils/utils.dart';
 import 'app/data/enums.dart';
 import 'app/modules/home/controllers/home_controller.dart';
 import 'app/modules/auth/controllers/auth_controller.dart';
 import 'app/modules/errors/controllers/errors_controller.dart';
 import 'app/modules/home/controllers/intro_tale_controller.dart';
+import 'app/modules/language/controllers/language_controller.dart';
 import 'app/routes/app_pages.dart';
 import 'app/services/database.dart';
 import 'app/utils/gameObjects/BackgroundController.dart';
@@ -32,8 +34,10 @@ void main() async {
   Get.put(ErrorsController(), permanent: true);
   Get.put(DatabaseController(), permanent: true);
   Get.put(HomeController(), permanent: true);
-  Get.put(IntroTaleController(), permanent: true);
+  // Get.put(IntroTaleController(), permanent: true);
   Get.put(BackgroundController(), permanent: true);
+  Get.put(LanguageController(), permanent: true);
+  Get.lazyPut(()=>IntroTaleController());
 
   const AndroidNotificationChannel channel = AndroidNotificationChannel(
     'mini_chess_channel', // id

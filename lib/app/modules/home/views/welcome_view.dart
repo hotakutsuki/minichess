@@ -1,12 +1,18 @@
+import 'package:inti_the_inka_chess_game/app/modules/home/controllers/home_controller.dart';
+
 import '../../../routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../data/enums.dart';
 import '../../../utils/utils.dart';
+import '../../language/controllers/language_controller.dart';
 
 class WelcomeView extends GetView {
-  const WelcomeView({super.key});
+  WelcomeView({super.key});
+
+  final HomeController homeController = Get.find<HomeController>();
+  final LanguageController l = Get.find<LanguageController>();
 
   @override
   Widget build(BuildContext context) {
@@ -29,15 +35,15 @@ class WelcomeView extends GetView {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                const Text('Hello there!',
+                Text(l.g('HelloThere'),
                     style: TextStyle(fontSize: 20),
                     textAlign: TextAlign.center,
                     overflow: TextOverflow.fade),
-                const Text(
-                    "Looks like is your first time here.\nWanna know how to play?",
+                Text(
+                    l.g('LooksLikeIsYourFirstTimeHere'),
                     maxLines: 2,
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 15),
+                    style: const TextStyle(fontSize: 15),
                     overflow: TextOverflow.fade),
                 SizedBox(
                     height: 25,
@@ -54,10 +60,10 @@ class WelcomeView extends GetView {
                           onPressed: () {
                             playButtonSound();
                             Get.toNamed(Routes.TUTORIAL);
-                            controller.setFirstTime(false);
+                            homeController.setFirstTime(false);
                           },
-                          child: const Text(
-                            'How to Play',
+                          child: Text(
+                            l.g('ShowMeHow'),
                           ),
                         )),
                     const SizedBox(
@@ -69,10 +75,10 @@ class WelcomeView extends GetView {
                         child: ElevatedButton(
                           onPressed: () {
                             playButtonSound();
-                            controller.setFirstTime(false);
+                            homeController.setFirstTime(false);
                           },
-                          child: const Text(
-                            'I Can Handle it',
+                          child: Text(
+                            l.g('ICanHandleIt'),
                           ),
                         )),
                   ],

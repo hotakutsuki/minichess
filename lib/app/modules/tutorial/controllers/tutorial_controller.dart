@@ -40,6 +40,7 @@ class TutorialController extends GetxController
 
   @override
   void onClose() {
+    pageController.dispose();
     super.onClose();
   }
 }

@@ -4,27 +4,29 @@ import 'package:lottie/lottie.dart';
 
 import '../../../data/enums.dart';
 import '../../../utils/utils.dart';
+import '../../language/controllers/language_controller.dart';
 import '../controllers/tutorial_controller.dart';
 
 class TutorialPageMoonView extends GetView {
   TutorialPageMoonView({Key? key}) : super(key: key);
 
   TutorialController tControler = Get.find<TutorialController>();
+  LanguageController l = Get.find<LanguageController>();
 
   @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Padding(
-          padding: EdgeInsets.all(16.0),
+        Padding(
+          padding: const EdgeInsets.all(16.0),
           child: SizedBox(
             height: 48,
-            child: Text('But watch out. If the moon eclipses, you lose.',
+            child: Text(l.g('ButWatchOutIfTheMoonEclipsesYouLose'),
                 overflow: TextOverflow.ellipsis,
                 maxLines: 2,
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
           ),
         ),
         Container(

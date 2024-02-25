@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../utils/utils.dart';
+import '../../language/controllers/language_controller.dart';
 import '../controllers/auth_controller.dart';
 
 class NewPasswordDialogView extends GetView<AuthController> {
   NewPasswordDialogView({Key? key}) : super(key: key);
   final FocusNode newPassFocusNode = FocusNode();
   final FocusNode repeatNewPassFocusNode = FocusNode();
+  LanguageController l = Get.find<LanguageController>();
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -26,7 +29,7 @@ class NewPasswordDialogView extends GetView<AuthController> {
                       icon: const Icon(Icons.arrow_back),
                     ),
                   ),
-                  const Text("Changing Password"),
+                  Text(l.g('ChangingPassword')),
                 ],
               ),
               ...(controller.user.value?.password != null ? [TextField(
@@ -36,7 +39,7 @@ class NewPasswordDialogView extends GetView<AuthController> {
                 obscureText: true,
                 decoration: InputDecoration(
                   border: const OutlineInputBorder(),
-                  label: const Text('Old Password'),
+                  label: Text(l.g('OldPassword')),
                   errorText: controller.oldPasswordError.value,
                 ),
               )] : []),
@@ -48,7 +51,7 @@ class NewPasswordDialogView extends GetView<AuthController> {
                 obscureText: true,
                 decoration: InputDecoration(
                   border: const OutlineInputBorder(),
-                  label: const Text('New Password'),
+                  label: Text(l.g('NewPassword')),
                   errorText: controller.newPasswordError.value,
                 ),
               ),
@@ -59,7 +62,7 @@ class NewPasswordDialogView extends GetView<AuthController> {
                 obscureText: true,
                 decoration: InputDecoration(
                   border: const OutlineInputBorder(),
-                  label: const Text('Repeat New Password'),
+                  label: Text(l.g('RepeatNewPassword')),
                   errorText: controller.repeatNewPasswordError.value,
                 ),
               ),
@@ -83,7 +86,7 @@ class NewPasswordDialogView extends GetView<AuthController> {
                                 child: CircularProgressIndicator(
                                   color: Colors.white,
                                 ))
-                                : const Text('Change Password')));
+                                : Text(l.g('ChangePassword'))));
                   }),
                 ],
               ),

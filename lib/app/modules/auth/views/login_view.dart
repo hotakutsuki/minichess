@@ -4,10 +4,12 @@ import 'package:get/get.dart';
 
 import '../../../utils/utils.dart';
 import '../../../data/enums.dart';
+import '../../language/controllers/language_controller.dart';
 import '../controllers/auth_controller.dart';
 
 class LoginView extends GetView<AuthController> {
   LoginView({Key? key}) : super(key: key);
+  LanguageController l = Get.find<LanguageController>();
 
   googleButton() {
     return FloatingActionButton.extended(
@@ -17,7 +19,7 @@ class LoginView extends GetView<AuthController> {
       ),
       backgroundColor: Colors.white,
       foregroundColor: Colors.black,
-      label: const Text('Login with google'),
+      label: Text(l.g('LoginWithGoogle')),
       onPressed: () {},
     );
   }
@@ -35,7 +37,7 @@ class LoginView extends GetView<AuthController> {
               children: [
                 SizedBox(
                     width: 30, child: Image.asset('assets/images/icon.png')),
-                const Text('Login/Sign Up', style: TextStyle(fontSize: 18), overflow: TextOverflow.fade),
+                Text(l.g('LoginSignUp'), style: const TextStyle(fontSize: 18), overflow: TextOverflow.fade),
               ],
             )),
             IconButton(
@@ -45,9 +47,9 @@ class LoginView extends GetView<AuthController> {
         ),
         const Divider(),
         const Divider(height: 10, color: Colors.transparent,),
-        const Text("What's gonna be your username?", style: TextStyle(fontSize: 16)),
+        Text(l.g('WhatYourUsername'), style: const TextStyle(fontSize: 16)),
         const Divider(height: 20, color: Colors.transparent),
-        const Text('We need you to login in order to establish your score', style: TextStyle(fontSize: 14),),
+        Text(l.g('EstablishYourScore'), style: const TextStyle(fontSize: 14),),
         const Divider(height: 30, color: Colors.transparent),
         Obx(() {
           return TextField(
@@ -61,14 +63,14 @@ class LoginView extends GetView<AuthController> {
             autofocus: true,
             decoration: InputDecoration(
               border: const OutlineInputBorder(),
-              label: const Text('User Name'),
+              label: Text(l.g('UserName')),
               errorText: controller.userNameError.value,
             ),
           );
         }),
-        const Text(
-          '(You wont be able to change your user name in the future)',
-          style: TextStyle(fontSize: 12, color: Colors.grey),
+        Text(
+          l.g('YouCantChangeThisLater'),
+          style: const TextStyle(fontSize: 12, color: Colors.grey),
         ),
         const Divider(height: 30, color: Colors.transparent),
         Row(
@@ -88,7 +90,7 @@ class LoginView extends GetView<AuthController> {
                               child: CircularProgressIndicator(
                                 color: Colors.white,
                               ))
-                          : Text(controller.tryStartMultuplayer ? 'Play Online' : 'Login or Create Account')));
+                          : Text(controller.tryStartMultuplayer ? l.g('PlayOnline') : l.g('LoginOrCreateAccount'))));
             }),
           ],
         ),

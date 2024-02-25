@@ -142,7 +142,7 @@ class HomeController extends GetxController with GetSingleTickerProviderStateMix
   void onReady() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     firstTime.value = prefs.getBool(sharedPrefs.firstTimeToOpen.name) ?? true;
-    showTale.value = prefs.getBool(sharedPrefs.firstTimeToOpen.name) ?? true;
+    showTale.value = prefs.getBool(sharedPrefs.showTale.name) ?? true;
 
     getDifficult();
 

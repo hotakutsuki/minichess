@@ -4,11 +4,13 @@ import 'package:get/get.dart';
 import '../../../data/userDom.dart';
 import '../../../routes/app_pages.dart';
 import '../../../utils/gameObjects/BackgroundController.dart';
+import '../../language/controllers/language_controller.dart';
 import '../controllers/hall_of_fame_controller.dart';
 
 class HallOfFameView extends GetView<HallOfFameController> {
   HallOfFameView({Key? key}) : super(key: key);
   BackgroundController backgroundController = Get.find<BackgroundController>();
+  LanguageController l = Get.find<LanguageController>();
 
   Widget stremBuilder(query) {
     return StreamBuilder<QuerySnapshot>(
@@ -16,7 +18,7 @@ class HallOfFameView extends GetView<HallOfFameController> {
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (snapshot.hasError) {
           print(snapshot.error);
-          return const Center(child: Text('Something went wrong'));
+          return Center(child: Text(l.g('SomethingWentWrong')));
         }
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(
@@ -82,8 +84,8 @@ class HallOfFameView extends GetView<HallOfFameController> {
             children: [
               AppBar(
                 elevation: 0,
-                title: const Text(
-                  'Hall of Fame',
+                title: Text(
+                  l.g('HallOfFame'),
                   style: TextStyle(color: Colors.white70),
                 ),
                 backgroundColor: Colors.white10,

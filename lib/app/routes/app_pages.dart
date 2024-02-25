@@ -7,6 +7,8 @@ import '../modules/hallOfFame/bindings/hall_of_fame_binding.dart';
 import '../modules/hallOfFame/views/hall_of_fame_view.dart';
 import '../modules/home/bindings/home_binding.dart';
 import '../modules/home/views/home_view.dart';
+import '../modules/language/bindings/language_binding.dart';
+import '../modules/language/views/language_view.dart';
 import '../modules/match/bindings/match_binding.dart';
 import '../modules/match/views/match_view.dart';
 import '../modules/splash/bindings/splash_binding.dart';
@@ -56,6 +58,11 @@ class AppPages {
       name: _Paths.SPLASH,
       page: () => const SplashView(),
       binding: SplashBinding(),
+    ),
+    GetPage(
+      name: _Paths.LANGUAGE,
+      page: () => LanguageView(),
+      binding: LanguageBinding(),
     ),
   ];
 }

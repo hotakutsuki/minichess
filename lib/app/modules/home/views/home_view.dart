@@ -9,21 +9,23 @@ import '../../../routes/app_pages.dart';
 import '../../../utils/gameObjects/BackgroundController.dart';
 import '../../../utils/utils.dart';
 import '../../auth/controllers/auth_controller.dart';
+import '../../language/controllers/language_controller.dart';
 import '../controllers/home_controller.dart';
-import 'intro_tale.dart';
+import 'intro_tale_view.dart';
 
 class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
   HomeView({Key? key}) : super(key: key);
   AuthController authController = Get.find<AuthController>();
   BackgroundController backgroundController = Get.find<BackgroundController>();
+  LanguageController l = Get.find<LanguageController>();
 
   PopupMenuItem<difficult> PopupMenuItemG(difficult diff) {
     return PopupMenuItem(
         padding: const EdgeInsets.all(0),
         value: diff,
         child: Container(
-            padding: const EdgeInsets.all(16),
-            alignment: Alignment.centerLeft,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            alignment: Alignment.center,
             height: kMinInteractiveDimension,
             width: double.infinity,
             color: controller.diff.value == diff
@@ -45,9 +47,9 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('Inti: The Inka\nChess Game',
+                  Text(l.g('IntiTheInkaChessGame'),
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                           fontSize: 36,
                           fontWeight: FontWeight.bold,
                           color: Colors.white38)),
@@ -85,13 +87,11 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      const Text(
-                                        'Vs PC',
-                                      ),
+                                      Text(l.g('VsPc')),
                                       Obx(() {
                                         return Text(
                                           '(${controller.diff.value.name.capitalizeFirst!})',
-                                          style: TextStyle(fontSize: 8),
+                                          style: const TextStyle(fontSize: 8),
                                         );
                                       }),
                                     ],
@@ -138,9 +138,7 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
                                 playButtonSound();
                                 controller.setMode(gameMode.vs);
                               },
-                              child: const Text(
-                                '2 Players',
-                              ),
+                              child: Text(l.g('2Players')),
                             ),
                           ),
                           SizedBox(
@@ -154,9 +152,7 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
                                       controller.tryMultiplayer();
                                     }
                                   : null,
-                              child: const Text(
-                                'Online',
-                              ),
+                              child: Text(l.g('Online')),
                             ),
                           ),
                           if (kDebugMode)
@@ -168,19 +164,17 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
                                   playButtonSound();
                                   controller.setMode(gameMode.training);
                                 },
-                                child: const Text(
-                                  'Training',
-                                ),
+                                child: Text(l.g('Training')),
                               ),
                             ),
                           Text(
                               authController.user.value != null
-                                  ? 'score: ${authController.user.value?.score}'
+                                  ? '${l.g('Score')}${authController.user.value?.score}'
                                   : '',
                               style: const TextStyle(
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.white60))
+                                  color : Colors.white60))
                         ],
                       ),
                     );
@@ -197,19 +191,36 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
                   curve: Curves.easeInOutExpo,
                   child: Column(
                     children: [
-                      FloatingActionButton(
-                        heroTag: 'gplay',
-                        onPressed: () {
-                          controller.goToUrl(
-                              'https://play.google.com/store/apps/details?id=com.hotakutsuki.minichess');
-                        },
-                        backgroundColor: Colors.black87,
-                        child: SizedBox(
-                            width: 25,
-                            height: 25,
-                            child: Image.asset('assets/images/gplay.png')),
+                      Row(
+                        children: [
+                          FloatingActionButton(
+                            heroTag: 'gplay',
+                            onPressed: () {
+                              controller.goToUrl(
+                                  'https://play.google.com/store/apps/details?id=com.hotakutsuki.minichess');
+                            },
+                            backgroundColor: Colors.black87,
+                            child: SizedBox(
+                                width: 25,
+                                height: 25,
+                                child: Image.asset('assets/images/gplay.png')),
+                          ),
+                          const SizedBox(width: 10),
+                          FloatingActionButton(
+                            heroTag: 'appstore',
+                            onPressed: () {
+                              controller.goToUrl(
+                                  'https://apps.apple.com/ec/app/inti-the-inka-chess-game/id6468368257');
+                            },
+                            backgroundColor: Colors.black87,
+                            child: SizedBox(
+                                width: 25,
+                                height: 25,
+                                child: Image.asset('assets/images/appstorelogo.png')),
+                          ),
+                        ],
                       ),
-                      const Text('Senpai notice me'),
+                      Text(l.g('SenpaiNoticeMe')),
                     ],
                   ),
                 ),
@@ -256,7 +267,7 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
                             authController.tryStartMultuplayer = false;
                             controller.showAuthDialog();
                           }),
-                      Text(authController.user.value?.name ?? 'Account'),
+                      Text(authController.user.value?.name ??l.g('Account')),
                     ],
                   );
                 }),
@@ -270,17 +281,15 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
                 left: 5,
                 curve: Curves.easeOutExpo,
                 duration: const Duration(milliseconds: 500),
-                child: const WelcomeView(),
+                child: WelcomeView(),
               ),
             ),
             Obx(() => AnimatedPositioned(
-                  top: controller.showTale.value
-                      ? 10
+                  top: controller.showTale.value ? 0
                       : -MediaQuery.of(context).size.height,
-                  left: 5,
                   curve: Curves.easeOutExpo,
                   duration: const Duration(milliseconds: 500),
-                  child: IntroTaleView(),
+                  child: const IntroTaleView(),
                 )),
             Obx(
               () => AnimatedPositioned(
@@ -318,9 +327,21 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
             curve: Curves.easeOutExpo,
             duration: const Duration(milliseconds: 500),
             child: SizedBox(
-              height: 280,
+              height: 380,
               child: Column(
                 children: [
+                  Column(
+                    children: [
+                      FloatingActionButton(
+                          heroTag: 'Story',
+                          onPressed: controller.showTale.toggle,
+                          child: const Icon(Icons.movie_creation_outlined)),
+                      Text(l.g('Story')),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 16,
+                  ),
                   Column(
                     children: [
                       FloatingActionButton(
@@ -329,7 +350,7 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
                           child: controller.withSound.value
                               ? const Icon(Icons.volume_up)
                               : const Icon(CupertinoIcons.volume_off)),
-                      const Text('Sound'),
+                      Text(l.g('Sound')),
                     ],
                   ),
                   const SizedBox(
@@ -344,7 +365,7 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
                             onPressed: () {
                               Get.toNamed(Routes.HALL_OF_FAME);
                             }),
-                        const Text('Fame'),
+                        Text(l.g('Fame')),
                       ],
                     ),
                   const SizedBox(
@@ -358,7 +379,7 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
                           onPressed: () {
                             Get.toNamed(Routes.TUTORIAL);
                           }),
-                      const Text('How to play'),
+                      Text(l.g('HowToPlay')),
                     ],
                   ),
                 ],

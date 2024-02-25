@@ -4,6 +4,7 @@ part of 'app_pages.dart';
 abstract class Routes {
   Routes._();
   static const HOME = _Paths.HOME;
+  static const LANGUAGE = _Paths.LANGUAGE;
   static const LOGIN = _Paths.LOGIN;
   static const MATCH = _Paths.MATCH;
   static const AUTH = _Paths.AUTH;
@@ -16,6 +17,7 @@ abstract class Routes {
 abstract class _Paths {
   _Paths._();
   static const HOME = '/home';
+  static const LANGUAGE = '/language';
   static const LOGIN = '/login';
   static const MATCH = '/match';
   static const AUTH = '/auth';

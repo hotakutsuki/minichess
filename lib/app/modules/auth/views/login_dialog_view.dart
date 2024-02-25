@@ -11,7 +11,7 @@ class LoginDialogView extends GetView<AuthController> {
 
   getChild(){
     if (controller.user.value != null) {
-      return const ProfileView();
+      return ProfileView();
     } else if (controller.userName.value != null) {
       return PassView();
     } else {

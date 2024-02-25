@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:inti_the_inka_chess_game/app/modules/tutorial/views/tutorial_page_moon_view.dart';
 import '../../../utils/gameObjects/BackgroundController.dart';
+import '../../language/controllers/language_controller.dart';
 import '../controllers/tutorial_controller.dart';
 
 class TutorialView extends GetView<TutorialController> {
   TutorialView({Key? key}) : super(key: key);
   BackgroundController backgroundController = Get.find<BackgroundController>();
+  LanguageController l = Get.find<LanguageController>();
 
   @override
   Widget build(BuildContext context) {
@@ -19,9 +21,8 @@ class TutorialView extends GetView<TutorialController> {
               children: [
                 AppBar(
                   elevation: 0,
-                  title: const Text(
-                    'Tutorial',
-                    style: TextStyle(color: Colors.white70),
+                  title: Text(l.g('Tutorial'),
+                    style: const TextStyle(color: Colors.white70),
                   ),
                   backgroundColor: Colors.white10,
                   centerTitle: true,
@@ -39,40 +40,22 @@ class TutorialView extends GetView<TutorialController> {
                   child: PageView(
                     controller: controller.pageController,
                     children: [
-                      controller.getPage(
-                          '1', 'Tap on a tile to select it.', context),
-                      controller.getPage(
-                          '2',
-                          'Tap on any of the highlighted tiles to move.',
-                          context),
-                      controller.getPage(
-                          '3', 'Tap on an enemy tile to take it.', context),
-                      controller.getPage(
-                          '4',
-                          'When a piece is taken, it goes to you "graveyard".',
-                          context),
-                      controller.getPage(
-                          '5',
-                          'You can invoke pieces from your "graveyard".',
-                          context),
-                      controller.getPage(
-                          '6',
-                          'Reach to the top to transform a Snake into a Cougar.',
-                          context),
-                      controller.getPage('7', 'Take the Inti to win.', context),
+                      controller.getPage('1', l.g('TapOnTileSelect'), context),
+                      controller.getPage('2', l.g('TapOnHighlightedTiles'), context),
+                      controller.getPage('3', l.g('TapOnEnemyTile'), context),
+                      controller.getPage('4', l.g('WhenTakenGoesGraveyard'), context),
+                      controller.getPage('5', l.g('YouCanInvokePiecesFromYourGraveyard'), context),
+                      controller.getPage('6', l.g('ReachToTheTopToTransformASnakeIntoACougar'), context),
+                      controller.getPage('7', l.g('TakeTheIntiToWin'), context),
                       TutorialPageMoonView(),
-                      controller.getPage(
-                          '8', 'These are the moves of the Tower.', context),
-                      controller.getPage(
-                          '9', 'These are the moves of the Condor.', context),
-                      controller.getPage(
-                          '10', 'These are the moves of the Cougar.', context),
-                      controller.getPage(
-                          '11', 'These are the moves of the Inti.', context),
+                      controller.getPage('8', 'These are the moves of the Tower.', context),
+                      controller.getPage('9', l.g('TheseAreTheMovesOfTheCondor'), context),
+                      controller.getPage('10', l.g('TheseAreTheMovesOfTheCougar'), context),
+                      controller.getPage('11', l.g('TheseAreTheMovesOfTheInti'), context),
                     ],
                   ),
                 ),
-                Container(
+                SizedBox(
                   height: 80,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,

@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../utils/utils.dart';
+import '../../language/controllers/language_controller.dart';
 import '../controllers/auth_controller.dart';
 
 class EditEmailDialogView extends GetView<AuthController> {
   EditEmailDialogView({Key? key}) : super(key: key);
   final FocusNode newPassFocusNode = FocusNode();
   final FocusNode repeatNewPassFocusNode = FocusNode();
+  LanguageController l = Get.find<LanguageController>();
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -26,7 +29,7 @@ class EditEmailDialogView extends GetView<AuthController> {
                       icon: const Icon(Icons.arrow_back),
                     ),
                   ),
-                  const Text("Changing Email"),
+                  Text(l.g('ChangingEmail')),
                 ],
               ),
               TextField(
@@ -35,7 +38,7 @@ class EditEmailDialogView extends GetView<AuthController> {
                 autofocus: true,
                 decoration: InputDecoration(
                   border: const OutlineInputBorder(),
-                  label: const Text('New Email'),
+                  label: Text(l.g('NewEmail')),
                   errorText: controller.newEmailError.value,
                 ),
               ),
@@ -59,7 +62,7 @@ class EditEmailDialogView extends GetView<AuthController> {
                                 child: CircularProgressIndicator(
                                   color: Colors.white,
                                 ))
-                                : const Text('Update Email')));
+                                : Text(l.g('UpdateEmail'))));
                   }),
                 ],
               ),

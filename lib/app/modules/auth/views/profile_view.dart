@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../utils/utils.dart';
 import '../../../data/enums.dart';
+import '../../language/controllers/language_controller.dart';
 import '../controllers/auth_controller.dart';
 import 'edit_email_dialog_view.dart';
 import 'new_password_dialog_view.dart';
 
 class ProfileView extends GetView<AuthController> {
-  const ProfileView({Key? key}) : super(key: key);
+  ProfileView({Key? key}) : super(key: key);
+  LanguageController l = Get.find<LanguageController>();
 
   ImageProvider<Object> getAvatar() {
     if (controller.user.value?.photoUrl == null) {
@@ -21,7 +23,7 @@ class ProfileView extends GetView<AuthController> {
       children: [
         Text('${field.capitalizeFirst}:'),
         const Spacer(),
-        Text(controller.user.value?.getProperty(field) ?? 'not defined'),
+        Text(controller.user.value?.getProperty(field) ?? l.g('NotDefined')),
         TextButton(onPressed: action, child: const Icon(Icons.edit))
       ],
     );
@@ -35,7 +37,7 @@ class ProfileView extends GetView<AuthController> {
         autofocus: true,
         decoration: InputDecoration(
           border: const OutlineInputBorder(),
-          label: const Text('User Name'),
+          label: Text(l.g('UserName')),
           errorText: controller.userNameError.value,
         ),
       ),
@@ -54,9 +56,7 @@ class ProfileView extends GetView<AuthController> {
                 children: [
                   SizedBox(
                       width: 30, child: Image.asset('assets/images/icon.png')),
-                  const Text(
-                    'Your Account',
-                    style: TextStyle(fontSize: 20),
+                  Text(l.g('YourAccount'), style: const TextStyle(fontSize: 20),
                   ),
                 ],
               )),
@@ -98,13 +98,37 @@ class ProfileView extends GetView<AuthController> {
           Text(
               '@${controller.user.value?.name ?? ''} / ${controller.user.value?.countryCode ?? 'unk'}',
               style: const TextStyle(fontSize: 28)),
-          Text('${controller.user.value?.score ?? 'loading...'}',
+          Text('${controller.user.value?.score ?? l.g('Loading')}',
               style: const TextStyle(fontSize: 28)),
+          //add toggle buttons for language
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              Obx(() => ToggleButtons(
+                    isSelected: [
+                      l.language.value == languages.en,
+                      l.language.value == languages.es,
+                    ],
+                    onPressed: (index) {
+                      l.setLanguage(index == 0 ? languages.en : languages.es);
+                    },
+                    children: <Widget>[
+                      Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 40.0),
+                          child: Text('English')
+                      ),
+                      Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 40.0),
+                          child: Text('Español')),
+                    ],
+                  )),
+            ],
+          ),
           Row(
             children: [
-              const Text('Email:'),
+              Text(l.g('Email')),
               const Spacer(),
-              Text(controller.user.value?.email ?? 'not defined'),
+              Text(controller.user.value?.email ?? l.g('NotDefined')),
               IconButton(
                   onPressed: () {
                     Get.dialog(EditEmailDialogView(), barrierDismissible: true);
@@ -114,11 +138,11 @@ class ProfileView extends GetView<AuthController> {
           ),
           Row(
             children: [
-              const Text('Password:'),
+              Text(l.g('Password')),
               const Spacer(),
               Text(controller.user.value?.password != null
                   ? "••••••••"
-                  : 'not defined'),
+                  : l.g('NotDefined')),
               IconButton(
                   onPressed: () {
                     Get.dialog(NewPasswordDialogView(),
@@ -132,9 +156,7 @@ class ProfileView extends GetView<AuthController> {
               playButtonSound();
               controller.logout();
             },
-            child: const Text(
-              "logout",
-              style: TextStyle(color: Colors.redAccent),
+            child: Text(l.g('Logout'), style: const TextStyle(color: Colors.redAccent),
             ),
           ),
         ],

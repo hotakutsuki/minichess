@@ -1,0 +1,46 @@
+import 'package:flutter/animation.dart';
+import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../../data/enums.dart';
+import '../../../language/lang_en.dart' as en;
+import '../../../language/lang_es.dart' as es;
+
+class LanguageController extends GetxController with GetSingleTickerProviderStateMixin  {
+  late SharedPreferences prefs;
+  final Rxn<languages> language = Rxn<languages>(null);
+
+  late final AnimationController logoController = AnimationController(vsync: this, duration: const Duration(seconds: 2))..repeat();
+
+  @override
+  void onInit() async {
+    prefs = await SharedPreferences.getInstance();
+    language.value = languages.values.firstWhere((e) => e.name == prefs.getString(sharedPrefs.language.name));
+    super.onInit();
+  }
+
+  //general purpose function to get localized strings
+  String getLocalizedString(String key) {
+    switch (language.value) {
+      case languages.en:
+        return en.english[key]??key;
+      case languages.es:
+        return es.spanish[key]??key;
+      default:
+        return en.english[key]??key;
+    }
+  }
+
+  String g(String string) {
+    return getLocalizedString(string);
+  }
+
+  void setLanguage(languages s) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('language', s.name);
+    language.value = languages.values.firstWhere((e) => e.name == prefs.getString(sharedPrefs.language.name));
+  }
+
+  void goToHomeScreen() {
+    Get.offAllNamed('/home');
+  }
+}

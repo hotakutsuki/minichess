@@ -17,6 +17,7 @@ import '../../../utils/gameObjects/move.dart';
 import '../../../utils/gameObjects/tile.dart';
 import '../../../utils/utils.dart';
 import '../../home/controllers/home_controller.dart';
+import '../../language/controllers/language_controller.dart';
 import 'GraveyardController.dart';
 import 'ai_controller.dart';
 import 'clock_controller.dart';
@@ -24,6 +25,8 @@ import 'clock_controller.dart';
 class MatchController extends GetxController with WidgetsBindingObserver{
   Rxn<GameState> gs = Rxn<GameState>();
   DatabaseController dbController = Get.find<DatabaseController>();
+  LanguageController l = Get.find<LanguageController>();
+
   final homeController = Get.find<HomeController>();
   final gameMode gamemode = Get.arguments ?? gameMode.vs;
 
@@ -417,6 +420,15 @@ class MatchController extends GetxController with WidgetsBindingObserver{
 
   startFakeOnlineGame() {
     dbController.setMatchAsFake();
+  }
+
+  String getRandomGameOverScreenText(){
+    if (winner == player.white){
+      String key = 'mtp${getRandomIntBetween(1, 27)}';
+      return l.g(key);
+    }
+    String key = 'mtn${getRandomIntBetween(1, 16)}';
+    return l.g(key);
   }
 
   // playAudio(){

@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../utils/utils.dart';
 import '../../../data/enums.dart';
+import '../../language/controllers/language_controller.dart';
 import '../controllers/auth_controller.dart';
 
 class PassView extends GetView<AuthController> {
   PassView({Key? key}) : super(key: key);
+  LanguageController l = Get.find<LanguageController>();
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +22,7 @@ class PassView extends GetView<AuthController> {
               children: [
                 SizedBox(
                     width: 30, child: Image.asset('assets/images/icon.png')),
-                const Text('Login/Sign Up', style: TextStyle(fontSize: 18), overflow: TextOverflow.fade),
+                Text(l.g('LoginSignUp'), style: const TextStyle(fontSize: 18), overflow: TextOverflow.fade),
               ],
             )),
             IconButton(
@@ -42,7 +44,7 @@ class PassView extends GetView<AuthController> {
             Text(controller.userName.value ?? ''),
           ],
         ),
-        const Text("Enter Password", style: TextStyle(fontSize: 14)),
+        Text(l.g('EnterPassword'), style: const TextStyle(fontSize: 14)),
         const Divider(
           color: Colors.transparent,
         ),
@@ -54,7 +56,7 @@ class PassView extends GetView<AuthController> {
             onSubmitted: (e) => controller.handlePassword(),
             decoration: InputDecoration(
               border: const OutlineInputBorder(),
-              label: const Text('Password'),
+              label: Text(l.g('Password')),
               errorText: controller.passError.value,
             ),
           );
@@ -62,8 +64,8 @@ class PassView extends GetView<AuthController> {
         const Divider(
           color: Colors.transparent,
         ),
-        const Text(
-            'Forgot your password? contact us for support', style: TextStyle(fontSize: 12)),
+        Text(
+            l.g('ForgotYourPasswordContactUs'), style: const TextStyle(fontSize: 12)),
         const Divider(
           color: Colors.transparent,
         ),
@@ -84,7 +86,7 @@ class PassView extends GetView<AuthController> {
                               child: CircularProgressIndicator(
                                 color: Colors.white,
                               ))
-                          : Text(controller.tryStartMultuplayer ? 'Play Online' : 'Login')));
+                          : Text(controller.tryStartMultuplayer ? l.g('PlayOnline') : l.g('Login'))));
             }),
           ],
         ),

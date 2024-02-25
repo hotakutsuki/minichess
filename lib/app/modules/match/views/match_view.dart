@@ -8,6 +8,7 @@ import '../../../data/userDom.dart';
 import '../../../routes/app_pages.dart';
 import '../../../utils/gameObjects/BackgroundController.dart';
 import '../../../utils/utils.dart';
+import '../../language/controllers/language_controller.dart';
 import '../controllers/match_controller.dart';
 import '../widgets/ChessBoard.dart';
 import '../widgets/Graveyard.dart';
@@ -17,6 +18,7 @@ import 'gameover_view.dart';
 class MatchView extends GetView<MatchController> {
   MatchView({Key? key}) : super(key: key);
   BackgroundController backgroundController = Get.find<BackgroundController>();
+  LanguageController l = Get.find<LanguageController>();
 
   Widget searchingWidget() {
     return Obx(() => isOnline() && controller.searching.value
@@ -31,7 +33,7 @@ class MatchView extends GetView<MatchController> {
                 const SizedBox(
                   height: 20,
                 ),
-                const Text('looking for another player...'),
+                Text(l.g('LookingForAnotherPlayer')),
                 Text(controller.searchingSeconds.value),
                 const SizedBox(
                   height: 20,
@@ -41,7 +43,7 @@ class MatchView extends GetView<MatchController> {
                       playButtonSound();
                       controller.closeTheGame();
                     },
-                    child: const Text('cancel')),
+                    child: Text(l.g('Cancel'))),
               ],
             ),
           )
@@ -252,7 +254,7 @@ class MatchView extends GetView<MatchController> {
             SizedBox(height: 50, width: 50, child: ClockView(p)),
             Obx(() {
               return Text(
-                'V D\n${p == player.white ? controller.wScore : controller.bScore} ${p != player.white ? controller.wScore : controller.bScore}',
+                '▲ ▼\n${p == player.white ? controller.wScore : controller.bScore}   ${p != player.white ? controller.wScore : controller.bScore}',
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 20,
@@ -280,7 +282,7 @@ class MatchView extends GetView<MatchController> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-              'Difficult: ${controller.aiController.diff.value.name.capitalizeFirst ?? ''}'),
+              '${l.g('Difficult')}${controller.aiController.diff.value.name.capitalizeFirst ?? ''}'),
         ],
       ),
     );

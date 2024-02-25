@@ -293,6 +293,7 @@ getRandomInt(int max, [min]) {
   return rnd.nextInt(max);
 }
 
+//Max number is excluded
 getRandomIntBetween(int min, int max) {
   var rnd = Random();
   return min + rnd.nextInt(max - min);

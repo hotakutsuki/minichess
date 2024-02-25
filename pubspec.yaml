@@ -46,5 +46,6 @@ flutter:
     - assets/images/backgrounds/
     - assets/sounds/
     - assets/animations/
+    - assets/images/tale/page1/
   uses-material-design: true
 
