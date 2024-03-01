@@ -78,8 +78,8 @@ class ChessTile extends GetView {
                   ),
                   Center(
                     child: SizedBox(
-                      width: 70,
-                      height: 70,
+                      width: 75,
+                      height: 75,
                       child: Stack(
                         children: [
                           getCharAsset(

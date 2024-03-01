@@ -47,5 +47,19 @@ flutter:
     - assets/sounds/
     - assets/animations/
     - assets/images/tale/page1/
+    - assets/images/tale/page2/
+    - assets/images/tale/page3/
+    - assets/images/tale/page4/
+    - assets/images/tale/page5/
+    - assets/images/tale/page6/
+    - assets/images/tale/page7/
+    - assets/images/tale/page8/
+    - assets/images/tale/page9/
+    - assets/images/tale/page10/
+    - assets/images/tale/page11/
+    - assets/images/tale/page12/
+    - assets/images/tale/page13/
+    - assets/images/tale/page14/
+    - assets/images/tale/page15/
   uses-material-design: true
 

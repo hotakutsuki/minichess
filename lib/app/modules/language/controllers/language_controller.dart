@@ -1,11 +1,13 @@
 import 'package:flutter/animation.dart';
 import 'package:get/get.dart';
+import 'package:inti_the_inka_chess_game/app/modules/home/controllers/home_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../data/enums.dart';
 import '../../../language/lang_en.dart' as en;
 import '../../../language/lang_es.dart' as es;
 
 class LanguageController extends GetxController with GetSingleTickerProviderStateMixin  {
+  final HomeController homeController = Get.find<HomeController>();
   late SharedPreferences prefs;
   final Rxn<languages> language = Rxn<languages>(null);
 
@@ -24,14 +26,14 @@ class LanguageController extends GetxController with GetSingleTickerProviderStat
       case languages.en:
         return en.english[key]??key;
       case languages.es:
-        return es.spanish[key]??key;
+        return es.spanish[key]??en.english[key]??key;
       default:
         return en.english[key]??key;
     }
   }
 
-  String g(String string) {
-    return getLocalizedString(string);
+  String g(String key) {
+    return getLocalizedString(key);
   }
 
   void setLanguage(languages s) async {

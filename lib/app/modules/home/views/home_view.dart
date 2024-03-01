@@ -195,6 +195,7 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
                         children: [
                           FloatingActionButton(
                             heroTag: 'gplay',
+                            mini: true,
                             onPressed: () {
                               controller.goToUrl(
                                   'https://play.google.com/store/apps/details?id=com.hotakutsuki.minichess');
@@ -208,6 +209,7 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
                           const SizedBox(width: 10),
                           FloatingActionButton(
                             heroTag: 'appstore',
+                            mini: true,
                             onPressed: () {
                               controller.goToUrl(
                                   'https://apps.apple.com/ec/app/inti-the-inka-chess-game/id6468368257');
@@ -236,6 +238,7 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
                     children: [
                       FloatingActionButton(
                           heroTag: 'person',
+                          mini: true,
                           child: authController.loading.value
                               ? const CircularProgressIndicator(
                                   color: Colors.white,
@@ -320,20 +323,21 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
       floatingActionButton: Stack(children: [
         Obx(
           () => AnimatedPositioned(
-            right: controller.isLoading.value || controller.firstTime.value
+            right: controller.isLoading.value || controller.firstTime.value || controller.showTale.value
                 ? -100
                 : 0,
             bottom: 0,
             curve: Curves.easeOutExpo,
             duration: const Duration(milliseconds: 500),
             child: SizedBox(
-              height: 380,
+              height: 320,
               child: Column(
                 children: [
                   Column(
                     children: [
                       FloatingActionButton(
                           heroTag: 'Story',
+                          mini: true,
                           onPressed: controller.showTale.toggle,
                           child: const Icon(Icons.movie_creation_outlined)),
                       Text(l.g('Story')),
@@ -346,6 +350,7 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
                     children: [
                       FloatingActionButton(
                           heroTag: 'sound',
+                          mini: true,
                           onPressed: controller.toggleSound,
                           child: controller.withSound.value
                               ? const Icon(Icons.volume_up)
@@ -361,6 +366,7 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
                       children: [
                         FloatingActionButton(
                             heroTag: 'records',
+                            mini: true,
                             child: const Icon(Icons.stacked_bar_chart),
                             onPressed: () {
                               Get.toNamed(Routes.HALL_OF_FAME);
@@ -375,6 +381,7 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
                     children: [
                       FloatingActionButton(
                           heroTag: 'tutorial',
+                          mini: true,
                           child: const Icon(CupertinoIcons.question),
                           onPressed: () {
                             Get.toNamed(Routes.TUTORIAL);

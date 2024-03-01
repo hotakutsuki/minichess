@@ -1,6 +1,7 @@
 Map<String, String> english = {
   'Close': 'close',
   'Cancel': 'cancel',
+  'Continue': 'Continue',
   'HallOfFame': 'Hall of Fame',
   'UserName': 'User Name',
   'IntiTheInkaChessGame': 'Inti: The Inka\nChess Game',
@@ -28,6 +29,8 @@ Map<String, String> english = {
   'LoginWithGoogle': 'Login with google',
   'Story': 'Story',
   'Sound': 'Sound',
+  'WithOutSound': 'With Sound',
+  'WithSound': 'Without Sound',
   'Fame': 'Fame',
   'HowToPlay': 'How to play',
   'SenpaiNoticeMe': 'Senpai notice me',

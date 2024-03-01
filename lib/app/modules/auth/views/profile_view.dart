@@ -114,12 +114,12 @@ class ProfileView extends GetView<AuthController> {
                     },
                     children: <Widget>[
                       Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 40.0),
-                          child: Text('English')
+                          margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 0),
+                          child: const Text('English')
                       ),
                       Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 40.0),
-                          child: Text('Español')),
+                          margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 0),
+                          child: const Text('Español')),
                     ],
                   )),
             ],

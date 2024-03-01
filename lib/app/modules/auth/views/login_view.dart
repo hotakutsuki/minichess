@@ -94,6 +94,33 @@ class LoginView extends GetView<AuthController> {
             }),
           ],
         ),
+        const Divider(color: Colors.transparent, height: 30,),
+        Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              Obx(() =>
+                  ToggleButtons(
+                    isSelected: [
+                      l.language.value == languages.en,
+                      l.language.value == languages.es,
+                    ],
+                    onPressed: (index) {
+                      l.setLanguage(
+                          index == 0 ? languages.en : languages.es);
+                    },
+                    children: <Widget>[
+                      Container(
+                          margin: const EdgeInsets.symmetric(
+                              horizontal: 10.0, vertical: 0),
+                          child: const Text('English')
+                      ),
+                      Container(
+                          margin: const EdgeInsets.symmetric(
+                              horizontal: 10.0, vertical: 0),
+                          child: const Text('Español')),
+                    ],
+                  )),
+            ]),
       ],
     );
   }
