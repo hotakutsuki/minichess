@@ -10,7 +10,7 @@ class IntroTaleController extends GetxController with GetSingleTickerProviderSta
   final HomeController homeController = Get.find<HomeController>();
   LanguageController l = Get.find<LanguageController>();
   final pages = <TalePage>[].obs;
-  late AnimationController aController = AnimationController(vsync: this, duration: const Duration(seconds: 15))..repeat(reverse: true);
+  late AnimationController aController = AnimationController(vsync: this, duration: const Duration(seconds: 8))..repeat(reverse: true);
 
   var pageController = PageController(
     initialPage: 0,
@@ -23,7 +23,8 @@ class IntroTaleController extends GetxController with GetSingleTickerProviderSta
   void playButtonSound(int page) {
     audioPlayer.stop();
     if (homeController.withSound.value && homeController.showTale.value){
-      audioPlayer.play(AssetSource('sounds/tale${page+1}${l.language.value!.name}.mp3'), volume: 1);
+      String file = l.language.value?.name == 'es' ? 'sounds/tale${page+1}es.mp3' : 'sounds/tale${page+1}en.mp3';
+      audioPlayer.play(AssetSource(file), volume: 1);
     }
   }
 
@@ -33,6 +34,14 @@ class IntroTaleController extends GetxController with GetSingleTickerProviderSta
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setBool(sharedPrefs.showTale.name, false);
     pageController.jumpToPage(0);
+  }
+
+  showTale() async {
+    pageController = PageController(
+      initialPage: 0,
+    );
+    homeController.showTale.value = true;
+    handleOnPageChange(0);
   }
 
   void handleNextPage() {
@@ -74,6 +83,7 @@ class IntroTaleController extends GetxController with GetSingleTickerProviderSta
   @override
   void onReady() async {
     super.onReady();
+    await Future.delayed(const Duration(milliseconds: 1000));
     pages.value = [TalePage(title: 'page1', text: l.g('Page1'), layers: [
     TaleLayer(asset: Image.asset('assets/images/tale/page1/1.png', fit: BoxFit.fitHeight),
     hwxy: [0, 0, 0, 0], delay: 300, showing: false.obs,),
@@ -180,8 +190,20 @@ class IntroTaleController extends GetxController with GetSingleTickerProviderSta
         TaleLayer(asset: const Placeholder(color: Colors.black38,),
               hwxy: [200, 200, 200, 200], delay: 500, showing: false.obs,)]),
     ];
-    await Future.delayed(const Duration(milliseconds: 1000));
     handleOnPageChange(0);
+  }
+
+  @override
+  void onClose() {
+    print('closing');
+    print(pageController);
+    for (final page in pages) {
+      for (final layer in page.layers) {
+        layer.showing.close();
+      }
+    }
+    pageController.dispose();
+    super.onClose();
   }
 
 }

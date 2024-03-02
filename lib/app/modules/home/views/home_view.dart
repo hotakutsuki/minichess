@@ -11,12 +11,14 @@ import '../../../utils/utils.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../../language/controllers/language_controller.dart';
 import '../controllers/home_controller.dart';
+import '../controllers/intro_tale_controller.dart';
 import 'intro_tale_view.dart';
 
 class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
   HomeView({Key? key}) : super(key: key);
   AuthController authController = Get.find<AuthController>();
   BackgroundController backgroundController = Get.find<BackgroundController>();
+  IntroTaleController taleController = Get.find<IntroTaleController>();
   LanguageController l = Get.find<LanguageController>();
 
   PopupMenuItem<difficult> PopupMenuItemG(difficult diff) {
@@ -338,7 +340,7 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
                       FloatingActionButton(
                           heroTag: 'Story',
                           mini: true,
-                          onPressed: controller.showTale.toggle,
+                          onPressed: taleController.showTale,
                           child: const Icon(Icons.movie_creation_outlined)),
                       Text(l.g('Story')),
                     ],

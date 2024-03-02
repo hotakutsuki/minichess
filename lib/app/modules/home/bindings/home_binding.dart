@@ -5,10 +5,6 @@ class HomeBinding extends Bindings {
 
   @override
   void dependencies() {
-    print('binding home');
     Get.put(HomeController());
-    // Get.lazyPut<HomeController>(
-    //   () => HomeController(),
-    // );
   }
 }

@@ -40,7 +40,7 @@ class LanguageView extends GetView<LanguageController> {
                         child: SizedBox(
                             height: 100,
                             // child: Image.asset('assets/images/pieces/wkings.png')),
-                            child: Icon(Icons.settings, size: 80, color: brackgroundColor,)),
+                            child: Icon(Icons.settings, size: 100, color: brackgroundColor,)),
                       ),
                       const Divider(height: 20, color: Colors.transparent,),
                       //add toggle buttons for language
@@ -80,8 +80,8 @@ class LanguageView extends GetView<LanguageController> {
                               : const Icon(CupertinoIcons.volume_off)),
                       const Divider(height: 5, color: Colors.transparent,),
                       Text(controller.homeController.withSound.value
-                          ? controller.g('WithOutSound') : controller.g('WithSound'), style: const TextStyle(fontSize: 14),),
-                      const Divider(height: 20, color: Colors.transparent,),
+                          ? controller.g('WithSound') : controller.g('WithOutSound'), style: const TextStyle(fontSize: 14),),
+                      const Divider(height: 50, color: Colors.transparent,),
                       SizedBox(
                         height: 40,
                         width: 150,
@@ -90,7 +90,7 @@ class LanguageView extends GetView<LanguageController> {
                             playButtonSound();
                             controller.goToHomeScreen();
                           },
-                          child: Text(controller.g('Continue'),),
+                          child: Text(controller.g('Start'),),
                         ),
                       ),
                     ],

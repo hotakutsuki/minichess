@@ -26,6 +26,7 @@ class BackgroundController extends GetxController
               height: MediaQuery.of(context).size.height,
               width: MediaQuery.of(context).size.height,
               'assets/images/backgrounds/bg.jpeg',
+              fit: BoxFit.cover,
             )],
           ),
         ),

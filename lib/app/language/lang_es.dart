@@ -2,6 +2,7 @@ Map<String, String> spanish = {
   'Close': 'cerrar',
   'Cancel': 'cancelar',
   'Continue': 'Continuar',
+  'Start': 'Iniciar',
   'HallOfFame': 'Salón de la Fama',
   'UserName': 'Nombre de Usuario',
   'IntiTheInkaChessGame': 'Inti: El Ajedrez Inka',
@@ -122,7 +123,7 @@ Map<String, String> spanish = {
   'Page11': 'Durante siglos, guardianes y humanos en labor,\n'
       'Protegieron los Andes, con esfuerzo y con ardor.\n'
       'Pero cada día más difícil fue contener el rigor,\n'
-      'Frente a los peligros que asechaban y causaban pavor.',
+      'Frente a los peligros que acechaban y causaban pavor.',
   'Page12': 'La contaminación del aire, bosques talados sin dolor,\n'
       'Caza furtiva, agua desperdiciada, que triste error.\n'
       'Monocultivo, pesticidas, urbanización sin cesar,\n'

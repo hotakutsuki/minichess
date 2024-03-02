@@ -120,6 +120,7 @@ class HomeController extends GetxController with GetSingleTickerProviderStateMix
 
   @override
   void onInit() async {
+    print('Home Controller is ready');
     super.onInit();
     WidgetsBinding.instance.addObserver(this);
   }
@@ -140,6 +141,7 @@ class HomeController extends GetxController with GetSingleTickerProviderStateMix
 
   @override
   void onReady() async {
+    print('Home Controller is ready');
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     firstTime.value = prefs.getBool(sharedPrefs.firstTimeToOpen.name) ?? true;
     showTale.value = prefs.getBool(sharedPrefs.showTale.name) ?? true;
