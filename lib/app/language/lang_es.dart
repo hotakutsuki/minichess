@@ -32,8 +32,8 @@ Map<String, String> spanish = {
   'LoginWithGoogle': 'Iniciar Sesión con Google',
   'Story': 'Historia',
   'Sound': 'Sonido',
-  'WithOutSound': 'Con Sonido',
-  'WithSound': 'Sin Sonido',
+  'WithOutSound': 'Sin Sonido',
+  'WithSound': 'Con Sonido',
   'Fame': 'Fama',
   'HowToPlay': 'Cómo Jugar',
   'SenpaiNoticeMe': 'Senpai notice me',
@@ -81,68 +81,111 @@ Map<String, String> spanish = {
   'Account': 'Cuenta',
   // tale:
   'Page1': 'En los Andes antiguos, que los Incas poblaban,\n'
-      'Los animales guardianes servidores de Inti los guiaban.\n'
-      'Todos en armonía, la vida tejían,\n'
-      'y la Pacha Mama, con amor los sostenían.',
-  'Page2': 'Inti, misiones especiales creaba,\n'
-      'y a sus guardianes queridos se las encomendaba.\n'
-      'Oso, puma, cóndor y llama, juntos brillaban,\n'
-      'y en el Templo del Sol, sus instrucciones aguardaban.',
-  'Page3': 'A Ukuku el oso andino, con voz solemne decía,\n'
-      '“Tu misión es proteger los bosques, guía con sabiduría.\n'
-      'Asegura que los árboles crezcan, fuertes cada día,\n'
-      'Y enseña a los humanos, el respeto a la flora sería."',
-  'Page4': 'Entusiasmado, Ukuku, la tarea asumió con alegría,\n'
-      'Se internó en bosques, con gran maestría.\n'
-      'A los hombres enseñó a recuperar, con sabia guía,\n'
-      'Replantar y usar madera, con respeto, era su melodía.',
-  'Page5': 'A Uturunku, el jaguar, con decisión le decía:\n'
-      '"Tu misión es proteger la diversidad día a día.\n'
-      'Asegura que cada especie en su hábitat viviría,\n'
-      'Y los hombres una especia más de ellas serian”.',
-  'Page6': 'Uturunku, por montañas y selvas, se deslizaba,\n'
-      'Asegurando que ninguna especie se amenazara.\n'
-      'Enseñó a los humanos, con saber que guiaba,\n'
-      'Vivir en paz con la fauna, para que la armonía se resguardara.',
-  'Page7': 'Luego, Inti llamó a Kuntur, el cóndor, con mensaje claro:\n'
-      '"Tu misión es cuidar el cielo y las aguas con cuidado.\n'
-      'Asegura que el aire sea puro, ríos fluyan limpios a tu lado,\n'
-      'Enseña a los hombres a cuidar el entorno, que es su amparo."',
-  'Page8': 'Kuntur voló alto en el cielo, su misión clara llevaba,\n'
-      'Vigilando la pureza del aire, ríos con amor cuidaba.\n'
-      'Enseñó a los humanos que la contaminación evitaran,\n'
-      'Y a apreciar la belleza del cielo despejado, con aguas que brillaban.',
-  'Page9': 'Finalmente, Inti a Taruka la llama, con firme posición:\n'
-      '"Tu deberás cuidar las tierras altas, fomentar la agricultura con devoción.\n'
-      'los humanos deben, cultivar la tierra sin dañarla y en oración,\n'
-      'Que la armonía con la naturaleza sea una dulce melodía en creación."',
-  'Page10': 'Taruka por los campos caminó,\n'
-      'Y a los hombres con su palabra inspiro.\n'
-      '“Cultivar de forma sostenible, un acto de valor,\n'
-      'Respeta la tierra, sembrando con amor”.',
-  'Page11': 'Durante siglos, guardianes y humanos en labor,\n'
-      'Protegieron los Andes, con esfuerzo y con ardor.\n'
-      'Pero cada día más difícil fue contener el rigor,\n'
-      'Frente a los peligros que acechaban y causaban pavor.',
-  'Page12': 'La contaminación del aire, bosques talados sin dolor,\n'
-      'Caza furtiva, agua desperdiciada, que triste error.\n'
-      'Monocultivo, pesticidas, urbanización sin cesar,\n'
-      'Ganadería industrial, gigantes invasores están para acechar.',
-  'Page13': 'A los altos Andes, alarmantes noticias sombrías:\n'
-      'Pacha Mama enferma, con tristeza día tras día.\n'
-      'Los mandatos ancestrales olvidados en esta distopía,\n'
-      'La misión de los guardianes, cada día más se desafía.',
-  'Page14': 'Los emisarios traían noticias de mares en desdén,\n'
-      'Incendios, deshielos, inundaciones, un cruel vaivén.\n'
-      'Infertilidad de la tierra, sequía, que triste vivir,\n'
-      'La muerte de animales, en todas partes, al salir.',
-  'Page15': 'El tiempo se agota, en la luna se reflejará,\n'
-      'Pero con ingenio y ayuda de todos, la Pacha Mama se salvará.\n'
-      'Ukuku, Uturunku, Kuntur y Taruka, en unidad regresaran,\n'
-      'Y el equilibrio a la tierra una vez más hallaran\n'
-      '\n\n'
-      'Lo necesario para lograrlo en tus manos descansa,\n'
-      '¿Qué hiciste hoy para sanar y dar esperanza?',
+    'de la Pacha Mama, los Inti-Guardianes cuidaban\n'
+    'todos en armonía, la vida tejían,\n'
+    'Flora, fauna, deidades y hombres sostenían.',
+  'Page2': 'Inti que todo lo ve, tareas especiales creaba,\n'
+    'y a sus guardianes queridos se las encomendaba.\n'
+    'Al oso, el puma, el cóndor y la llama, se las daba,\n'
+    'Mientras ellos en el Templo del Sol, instrucciones aguardaban.',
+  'Page3': 'A Ukuku, el gran oso andino, con voz solemne le  decía,\n'
+    '“Tu misión es proteger los bosques, guía con sabiduría.\n'
+    'Asegura que los árboles crezcan, fuertes cada día,\n'
+    'Y enseña a los humanos, a respetar la flora cual poesía."',
+  'Page4': 'A Uturunku, el feroz puma, con decisión le decía:\n'
+    '"Tu misión es proteger la diversidad día a día.\n'
+    'Asegura que cada especie en su hábitat viva,\n'
+    'Y los hombres una especie más de ellas serían”.',
+  'Page5': 'Luego, Inti llamó a Kuntur, el veloz cóndor, con mensaje claro:\n'
+    '"Tu misión es cuidar el cielo y las aguas con cuidado.\n'
+    'Asegura que el aire sea puro, ríos fluyan limpios a tu lado,\n'
+    'Enseña a los hombres a cuidar el entorno, que es su amparo."',
+  'Page6': 'y a Taruka la amable llama, dijo con firme voluntad:\n'
+    '"Fomenta la agricultura sostenible, y la tierra cuidad.\n'
+    'Que los humanos las trabajen, pensando en su fertilidad,\n'
+    'Busca que la naturaleza tenga armonía con lealtad".',
+  'Page7': 'Durante siglos, guardianes y humanos en labor,\n'
+    'Protegieron los Andes, con esfuerzo y con ardor.\n'
+    'Pero cada día más difícil fue contener el rigor,\n'
+    'Frente a los peligros que acechaban y causaban pavor.',
+  'Page8': 'A los altos Andes, alarmantes noticias sombrías:\n'
+    'Pacha Mama enferma, con tristeza día tras día.\n'
+    'Los mandatos ancestrales olvidados en esta distopía,\n'
+    'La misión de los guardianes, cada día más se desafía.',
+  'Page9': 'La contaminación del aire, bosques talados sin dolor,\n'
+    'Caza furtiva, agua desperdiciada, que triste error.\n'
+    'Monocultivo, pesticidas, urbanización sin cesar,\n'
+    'Ganadería industrial, gigantes invasores están para acechar.',
+  'Page10': 'El tiempo se agota, la luna lo reflejará,\n'
+    'Pero con ingenio y tu ayuda, la Pacha Mama se salvará.\n'
+    'Ukuku, Uturunku, Kuntur y Taruka, en unidad regresaran,\n'
+    'Y el equilibrio a la tierra una vez más traerán\n'
+    '\n\n'
+    'Lo necesario para lograrlo en tus manos descansa,\n'
+    '¿Qué hiciste hoy para sanar y dar esperanza?',
+  // 'Page1': 'En los Andes antiguos, que los Incas poblaban,\n'
+  //     'Los animales guardianes servidores de Inti los guiaban.\n'
+  //     'Todos en armonía, la vida tejían,\n'
+  //     'y la Pacha Mama, con amor los sostenían.',
+  // 'Page2': 'Inti, misiones especiales creaba,\n'
+  //     'y a sus guardianes queridos se las encomendaba.\n'
+  //     'Oso, puma, cóndor y llama, juntos brillaban,\n'
+  //     'y en el Templo del Sol, sus instrucciones aguardaban.',
+  // 'Page3': 'A Ukuku el oso andino, con voz solemne decía,\n'
+  //     '“Tu misión es proteger los bosques, guía con sabiduría.\n'
+  //     'Asegura que los árboles crezcan, fuertes cada día,\n'
+  //     'Y enseña a los humanos, el respeto a la flora sería."',
+  // 'Page4': 'Entusiasmado, Ukuku, la tarea asumió con alegría,\n'
+  //     'Se internó en bosques, con gran maestría.\n'
+  //     'A los hombres enseñó a recuperar, con sabia guía,\n'
+  //     'Replantar y usar madera, con respeto, era su melodía.',
+  // 'Page5': 'A Uturunku, el jaguar, con decisión le decía:\n'
+  //     '"Tu misión es proteger la diversidad día a día.\n'
+  //     'Asegura que cada especie en su hábitat viviría,\n'
+  //     'Y los hombres una especia más de ellas serian”.',
+  // 'Page6': 'Uturunku, por montañas y selvas, se deslizaba,\n'
+  //     'Asegurando que ninguna especie se amenazara.\n'
+  //     'Enseñó a los humanos, con saber que guiaba,\n'
+  //     'Vivir en paz con la fauna, para que la armonía se resguardara.',
+  // 'Page7': 'Luego, Inti llamó a Kuntur, el cóndor, con mensaje claro:\n'
+  //     '"Tu misión es cuidar el cielo y las aguas con cuidado.\n'
+  //     'Asegura que el aire sea puro, ríos fluyan limpios a tu lado,\n'
+  //     'Enseña a los hombres a cuidar el entorno, que es su amparo."',
+  // 'Page8': 'Kuntur voló alto en el cielo, su misión clara llevaba,\n'
+  //     'Vigilando la pureza del aire, ríos con amor cuidaba.\n'
+  //     'Enseñó a los humanos que la contaminación evitaran,\n'
+  //     'Y a apreciar la belleza del cielo despejado, con aguas que brillaban.',
+  // 'Page9': 'Finalmente, Inti a Taruka la llama, con firme posición:\n'
+  //     '"Tu deberás cuidar las tierras altas, fomentar la agricultura con devoción.\n'
+  //     'los humanos deben, cultivar la tierra sin dañarla y en oración,\n'
+  //     'Que la armonía con la naturaleza sea una dulce melodía en creación."',
+  // 'Page10': 'Taruka por los campos caminó,\n'
+  //     'Y a los hombres con su palabra inspiro.\n'
+  //     '“Cultivar de forma sostenible, un acto de valor,\n'
+  //     'Respeta la tierra, sembrando con amor”.',
+  // 'Page11': 'Durante siglos, guardianes y humanos en labor,\n'
+  //     'Protegieron los Andes, con esfuerzo y con ardor.\n'
+  //     'Pero cada día más difícil fue contener el rigor,\n'
+  //     'Frente a los peligros que acechaban y causaban pavor.',
+  // 'Page12': 'La contaminación del aire, bosques talados sin dolor,\n'
+  //     'Caza furtiva, agua desperdiciada, que triste error.\n'
+  //     'Monocultivo, pesticidas, urbanización sin cesar,\n'
+  //     'Ganadería industrial, gigantes invasores están para acechar.',
+  // 'Page13': 'A los altos Andes, alarmantes noticias sombrías:\n'
+  //     'Pacha Mama enferma, con tristeza día tras día.\n'
+  //     'Los mandatos ancestrales olvidados en esta distopía,\n'
+  //     'La misión de los guardianes, cada día más se desafía.',
+  // 'Page14': 'Los emisarios traían noticias de mares en desdén,\n'
+  //     'Incendios, deshielos, inundaciones, un cruel vaivén.\n'
+  //     'Infertilidad de la tierra, sequía, que triste vivir,\n'
+  //     'La muerte de animales, en todas partes, al salir.',
+  // 'Page15': 'El tiempo se agota, en la luna se reflejará,\n'
+  //     'Pero con ingenio y ayuda de todos, la Pacha Mama se salvará.\n'
+  //     'Ukuku, Uturunku, Kuntur y Taruka, en unidad regresaran,\n'
+  //     'Y el equilibrio a la tierra una vez más hallaran\n'
+  //     '\n\n'
+  //     'Lo necesario para lograrlo en tus manos descansa,\n'
+  //     '¿Qué hiciste hoy para sanar y dar esperanza?',
 //motivatioal texts:
   //postive
   'mtp1': 'Ayudemos a Inti! Reduce tu consumo de energía: apaga las luces innecesarias',

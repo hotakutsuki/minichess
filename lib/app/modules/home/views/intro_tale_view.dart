@@ -34,8 +34,10 @@ class IntroTaleView extends GetView<IntroTaleController> {
                                   var index = e.key;
                                   var layer = e.value;
                                   return AnimatedPositioned(
-                                      left: index == 0 ? -200 : 0, // background goes beyond boundaries
-                                      right: index == 0 ? -200 : 0, // background goes beyond boundaries
+                                      // left: index == 0 ? -200 : 0, // background goes beyond boundaries
+                                      // right: index == 0 ? -200 : 0, // background goes beyond boundaries
+                                      left: -200, // background goes beyond boundaries
+                                      right: -200, // background goes beyond boundaries
                                       top: layer.showing.value
                                           ? 0
                                           : -MediaQuery.of(context).size.height,
@@ -56,16 +58,16 @@ class IntroTaleView extends GetView<IntroTaleController> {
                                           child: index == 0 ? layer.asset : Transform.translate(
                                             offset: Offset(layer.hwxy[2], layer.hwxy[3]),
                                             child: SizedBox(
-                                                height: layer.hwxy[0],
-                                                width: layer.hwxy[1],
+                                                // height: layer.hwxy[0],
+                                                // width: layer.hwxy[1],
                                                 child: layer.asset),
                                           ),
                                         ),
                                       ));
                                 }).toList(),
                                 AnimatedPositioned(
-                                  left: page.layers[2].showing.value ? 0 : MediaQuery.of(context).size.width,
-                                  right: page.layers[2].showing.value ? 0 : MediaQuery.of(context).size.width,
+                                  left: page.layers[0].showing.value ? 0 : MediaQuery.of(context).size.width,
+                                  right: page.layers[0].showing.value ? 0 : MediaQuery.of(context).size.width,
                                   bottom: 0,
                                   curve: Curves.easeOutExpo,
                                   duration: const Duration(milliseconds: 500),
