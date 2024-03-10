@@ -12,10 +12,38 @@ class LanguageController extends GetxController
   final HomeController homeController = Get.find<HomeController>();
   late SharedPreferences prefs;
   final Rxn<languages> language = Rxn<languages>(null);
+  final RxInt step = 0.obs;
 
   late final AnimationController logoController =
-      AnimationController(vsync: this, duration: const Duration(seconds: 2))
-        ..repeat();
+      AnimationController(vsync: this, duration: const Duration(seconds: 5))
+        ..forward()..addListener(() => handleStep());
+
+  handleStep() {
+    if (logoController.value >= 0.99 && step.value == 0) {
+      step.value = 1;
+      logoController.duration = const Duration(seconds: 1);
+      logoController.reset();
+      logoController.forward();
+    }
+    if (logoController.value >= 0.99 && step.value == 1) {
+      step.value = 2;
+      logoController.duration = const Duration(seconds: 2);
+      logoController.reset();
+      logoController.repeat();
+    }
+  }
+
+  // late final AnimationController loadingController =
+  // AnimationController(vsync: this, duration: const Duration(seconds: 5))
+  //   ..forward()..addListener(() => hideLoadingScreen()
+  // );
+  //
+  // late final AnimationController hideLoadingAnimationController =
+  //     AnimationController(vsync: this, duration: const Duration(seconds: 1));
+  //
+  // hideLoadingScreen(){
+  //   hideLoadingAnimationController.forward();
+  // }
 
   @override
   void onInit() async {

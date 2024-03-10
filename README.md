@@ -2,7 +2,9 @@
 A minichess game in flutter
 
 deploy:
-copy /build/web => /docs. avoid index.html
+copy /build/web => /docs.
+(you can overwrite index.html)
+
 then firebase deploy --only hosting
 
 try it out:

@@ -82,10 +82,10 @@ Map<String, String> english = {
   'ThereWasAnUnkownError': 'There was an unkown error.',
   'Account': 'Account',
   //Tale:
-  'Page1': 'In the ancient Andes, Where the Incas thrived,\n'
-      'Inti\'s Guardians cared for Pacha Mama, love derived.\n'
-      'Harmony prevailed among all, a cosmic symphony,\n'
-      'Flora, fauna, deities, and men in blissful unity.\n',
+  'Page1': 'In the ancient Andes, where the Incas did dwell,'
+      'The guardian animals that served Inti guided them well.'
+      'In harmony they lived, crafting life\'s story,'
+      'and Pacha Mama with love, held them in glory.',
   'Page2': 'Inti, bespoken missions with special grace,\n'
       'To his dear guardians, trust did embrace.\n'
       'Bear, puma, condor, and llama in their place,\n'

@@ -63,7 +63,7 @@ class WelcomeView extends GetView {
                             homeController.setFirstTime(false);
                           },
                           child: Text(
-                            l.g('ShowMeHow'),
+                            l.g('ShowMeHow'), textAlign: TextAlign.center,
                           ),
                         )),
                     const SizedBox(
