@@ -1,4 +1,7 @@
 Map<String, String> english = {
+  'easy': 'Easy',
+  'normal': 'Normal',
+  'hard': 'Hard',
   'Close': 'close',
   'Cancel': 'cancel',
   'Continue': 'Continue',
@@ -79,10 +82,10 @@ Map<String, String> english = {
   'ThereWasAnUnkownError': 'There was an unkown error.',
   'Account': 'Account',
   //Tale:
-  'Page1': 'In the ancient Andes, where the Incas did dwell,\n'
-      'The guardian animals that served Inti guided them well.\n'
-      'In harmony they lived, crafting life\'s story,\n'
-      'and Pacha Mama with love, held them in glory.',
+  'Page1': 'In the ancient Andes, Where the Incas thrived,\n'
+      'Inti\'s Guardians cared for Pacha Mama, love derived.\n'
+      'Harmony prevailed among all, a cosmic symphony,\n'
+      'Flora, fauna, deities, and men in blissful unity.\n',
   'Page2': 'Inti, bespoken missions with special grace,\n'
       'To his dear guardians, trust did embrace.\n'
       'Bear, puma, condor, and llama in their place,\n'
@@ -90,58 +93,101 @@ Map<String, String> english = {
   'Page3': 'Ukuku\'s charge, a solemn affair,\n'
       '"Guard the forests, let trees flourish in the air.\n'
       'Teach humans to respect flora, beyond compare,\n'
-      'In the Andean bear\'s mission, a commitment to bear.',
-  'Page4': 'Ukuku thrilled, the mission held tight,\n'
-      'Into the forests, embarked with might.\n'
-      'Teaching humans to replant, day and night,\n'
-      'Using wood with respect, under nature\'s light.',
-  'Page5': 'To Uturunku, the jaguar, a decree so clear,\n'
+      'In the Andean bear\'s mission, a commitment to bear."',
+  'Page4': 'To Uturuncu, the jaguar, a decree so sincere,\n'
       '"Your mission: protect diversity, hold it dear.\n'
       'Ensure each species thrives in its habitat near,\n'
       'and teach humans to be part of nature\'s tapestry and sincere."',
-  'Page6': 'Uturunku roamed the mountains high,\n'
-      'Ensuring species faced no threat in the sky.\n'
-      'Taught humans to live in peace, oh my,\n'
-      'With harmonious coexistence, under nature\'s eye.',
-  'Page7': 'Next, Inti called Kuntur, the condor, a message so,\n'
+  'Page5': 'Next, Inti called Kuntur, the condor, a message so,\n'
       '"Your mission: care for sky and waters, let it flow.\n'
       'Ensure the air stays pure, rivers clean in their glow,\n'
       'Teach humans to protect, let environmental respect grow."',
-  'Page8': 'Kuntur soared above with majestic grace,\n'
-      'Guarding skies, rivers\' pristine embrace.\n'
-      'Teaching humans to shun pollution\'s trace,\n'
-      'Appreciate clear skies, where life finds its space.',
-  'Page9': 'Finally, Inti called Taruka, the llama, with a mission so clear,\n'
+  'Page6': 'Finally, Inti called Taruka, the llama, with a mission so clear,\n'
       '"Your duty: protect highlands, cherish sustainable agriculture, my dear.\n'
       'Humans must cultivate without causing affliction near,\n'
       'Harmony with nature, let that be their career."',
-  'Page10': 'Taruka walked through fields, a noble quest,\n'
-      'Guiding humans?, a task that\'s impressed.\n'
-      '"Cultivate sustainably, a valorous zest,\n'
-      'Respect the land, sow with love. then rest."',
-  'Page11': 'For centuries, guardians and humans toiled,\n'
+  'Page7': 'For centuries, guardians and humans toiled,\n'
       'Protecting the Andes, where efforts coiled.\n'
       'But each day, the challenge grows harder,\n'
-      'Against dangers that threaten, their task must be sturdier.',
-  'Page12': 'Air pollution, forests felled with disdain,\n'
+      'Against dangers that threaten, their task must be smarter.',
+  'Page8': 'To the high Andes, alarming news would flow,\n'
+      'The Pacha Mama is ailing, with sadness to show.\n'
+      'Ancestral mandates were forgotten, in a dystopian blow,\n'
+      'Guardian\'s mission is challenging in tow.',
+  'Page9': 'Air pollution, forests felled with disdain,\n'
       'Poaching, water wasted, again and again.\n'
       'Monoculture, pesticides, urban sprawls gain,\n'
       'Industrial farming, giants invading, causing pain.',
-  'Page13': 'To the high Andes, alarming news would flow,\n'
-      'The Pacha Mama is ailing, with sadness to show.\n'
-      'Ancestral mandates were forgotten, in a dystopian blow,\n'
-      'Guardian\'s mission, is challenging in tow.',
-  'Page14': 'Emissaries brought news of oceans in despair,\n'
-      'Fires, ice melts, floods, an unkind affair.\n'
-      'Infertility in the land, droughts, what a sad stare,\n'
-      'Animal deaths everywhere, a disheartening flare.',
-  'Page15': 'Time is ticking, see it on the moon,\n'
+  'Page10': 'Time is ticking, see it on the moon,\n'
       'With wisdom and help, Pacha Mama will attune.\n'
-      'Ukuku, Uturunku, Kuntur, and Taruka, their missions boon,\n'
+      'Ukuku, Uturuncu, Kuntur, and Taruka, their missions boon,\n'
       'To restore balance to the earth, you must act soon\n'
-      '\n'
-      'The responsibility lies in your hands,\n'
+      '\n\n'
+      'The responsibility lies in your hands.\n'
       'What have you done today to heal these lands?',
+  // 'Page1': 'In the ancient Andes, where the Incas did dwell,\n'
+  //     'The guardian animals that served Inti guided them well.\n'
+  //     'In harmony they lived, crafting life\'s story,\n'
+  //     'and Pacha Mama with love, held them in glory.',
+  // 'Page2': 'Inti, bespoken missions with special grace,\n'
+  //     'To his dear guardians, trust did embrace.\n'
+  //     'Bear, puma, condor, and llama in their place,\n'
+  //     'In the Temple of the Sun, instructions to chase.',
+  // 'Page3': 'Ukuku\'s charge, a solemn affair,\n'
+  //     '"Guard the forests, let trees flourish in the air.\n'
+  //     'Teach humans to respect flora, beyond compare,\n'
+  //     'In the Andean bear\'s mission, a commitment to bear.',
+  // 'Page4': 'Ukuku thrilled, the mission held tight,\n'
+  //     'Into the forests, embarked with might.\n'
+  //     'Teaching humans to replant, day and night,\n'
+  //     'Using wood with respect, under nature\'s light.',
+  // 'Page5': 'To Uturunku, the jaguar, a decree so clear,\n'
+  //     '"Your mission: protect diversity, hold it dear.\n'
+  //     'Ensure each species thrives in its habitat near,\n'
+  //     'and teach humans to be part of nature\'s tapestry and sincere."',
+  // 'Page6': 'Uturunku roamed the mountains high,\n'
+  //     'Ensuring species faced no threat in the sky.\n'
+  //     'Taught humans to live in peace, oh my,\n'
+  //     'With harmonious coexistence, under nature\'s eye.',
+  // 'Page7': 'Next, Inti called Kuntur, the condor, a message so,\n'
+  //     '"Your mission: care for sky and waters, let it flow.\n'
+  //     'Ensure the air stays pure, rivers clean in their glow,\n'
+  //     'Teach humans to protect, let environmental respect grow."',
+  // 'Page8': 'Kuntur soared above with majestic grace,\n'
+  //     'Guarding skies, rivers\' pristine embrace.\n'
+  //     'Teaching humans to shun pollution\'s trace,\n'
+  //     'Appreciate clear skies, where life finds its space.',
+  // 'Page9': 'Finally, Inti called Taruka, the llama, with a mission so clear,\n'
+  //     '"Your duty: protect highlands, cherish sustainable agriculture, my dear.\n'
+  //     'Humans must cultivate without causing affliction near,\n'
+  //     'Harmony with nature, let that be their career."',
+  // 'Page10': 'Taruka walked through fields, a noble quest,\n'
+  //     'Guiding humans?, a task that\'s impressed.\n'
+  //     '"Cultivate sustainably, a valorous zest,\n'
+  //     'Respect the land, sow with love. then rest."',
+  // 'Page11': 'For centuries, guardians and humans toiled,\n'
+  //     'Protecting the Andes, where efforts coiled.\n'
+  //     'But each day, the challenge grows harder,\n'
+  //     'Against dangers that threaten, their task must be sturdier.',
+  // 'Page12': 'Air pollution, forests felled with disdain,\n'
+  //     'Poaching, water wasted, again and again.\n'
+  //     'Monoculture, pesticides, urban sprawls gain,\n'
+  //     'Industrial farming, giants invading, causing pain.',
+  // 'Page13': 'To the high Andes, alarming news would flow,\n'
+  //     'The Pacha Mama is ailing, with sadness to show.\n'
+  //     'Ancestral mandates were forgotten, in a dystopian blow,\n'
+  //     'Guardian\'s mission, is challenging in tow.',
+  // 'Page14': 'Emissaries brought news of oceans in despair,\n'
+  //     'Fires, ice melts, floods, an unkind affair.\n'
+  //     'Infertility in the land, droughts, what a sad stare,\n'
+  //     'Animal deaths everywhere, a disheartening flare.',
+  // 'Page15': 'Time is ticking, see it on the moon,\n'
+  //     'With wisdom and help, Pacha Mama will attune.\n'
+  //     'Ukuku, Uturunku, Kuntur, and Taruka, their missions boon,\n'
+  //     'To restore balance to the earth, you must act soon\n'
+  //     '\n'
+  //     'The responsibility lies in your hands,\n'
+  //     'What have you done today to heal these lands?',
   //motivatioal texts:
     //postive
   // 'mtp1': 'The earth is what we all have in common.',

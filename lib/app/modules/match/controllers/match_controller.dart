@@ -495,8 +495,8 @@ class MatchController extends GetxController with WidgetsBindingObserver{
 
   @override
   void onClose() {
-    print('closing match controller');
     homeController.playTitleSong();
+    Get.back(closeOverlays: true);
     WidgetsBinding.instance.removeObserver(this);
     super.onClose();
   }

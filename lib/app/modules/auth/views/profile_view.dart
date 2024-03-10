@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../../utils/utils.dart';
 import '../../../data/enums.dart';
 import '../../language/controllers/language_controller.dart';
+import '../../language/views/select_languaje_widget.dart';
 import '../controllers/auth_controller.dart';
 import 'edit_email_dialog_view.dart';
 import 'new_password_dialog_view.dart';
@@ -101,29 +102,7 @@ class ProfileView extends GetView<AuthController> {
           Text('${controller.user.value?.score ?? l.g('Loading')}',
               style: const TextStyle(fontSize: 28)),
           //add toggle buttons for language
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              Obx(() => ToggleButtons(
-                    isSelected: [
-                      l.language.value == languages.en,
-                      l.language.value == languages.es,
-                    ],
-                    onPressed: (index) {
-                      l.setLanguage(index == 0 ? languages.en : languages.es);
-                    },
-                    children: <Widget>[
-                      Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 0),
-                          child: const Text('English')
-                      ),
-                      Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 0),
-                          child: const Text('Español')),
-                    ],
-                  )),
-            ],
-          ),
+          LanguageSelectionWidget(),
           Row(
             children: [
               Text(l.g('Email')),

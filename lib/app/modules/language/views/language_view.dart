@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:inti_the_inka_chess_game/app/modules/language/views/select_languaje_widget.dart';
 import '../../../utils/gameObjects/BackgroundController.dart';
 import '../../../utils/utils.dart';
 import '../../../data/enums.dart';
@@ -18,6 +19,20 @@ class LanguageView extends GetView<LanguageController> {
     return Scaffold(
       body: Stack(
         children: [
+          //to force cache tale page 1:
+          SizedBox(
+            height: 1,
+            width: 1,
+            child: Column(
+              children: [
+                Image.asset('assets/images/tale/SC1/Ink-Lore_BG4-01.png'),
+                Image.asset('assets/images/tale/SC1/Ink-Lore_BG3-01.png'),
+                Image.asset('assets/images/tale/SC1/Ink-Lore_BG2-01.png'),
+                Image.asset('assets/images/tale/SC1/Ink-Lore_BG1-01.png'),
+                Image.asset('assets/images/tale/SC1/Ink-Lore_CH-01.png'),
+              ],
+            ),
+          ),
           backgroundController.backGround(context),
           Center(
               child: AlertDialog(
@@ -33,43 +48,16 @@ class LanguageView extends GetView<LanguageController> {
                         animation: controller.logoController,
                         builder: (_, child) {
                           return Transform.rotate(
-                            angle: controller.logoController.value * 2 * pi / 8,
+                            angle: controller.logoController.value * 2 * pi / 6,
                             child: child,
                           );
                         },
                         child: SizedBox(
                             height: 100,
-                            // child: Image.asset('assets/images/pieces/wkings.png')),
                             child: Icon(Icons.settings, size: 100, color: brackgroundColor,)),
                       ),
                       const Divider(height: 20, color: Colors.transparent,),
-                      //add toggle buttons for language
-                      Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            Obx(() =>
-                                ToggleButtons(
-                                  isSelected: [
-                                    controller.language.value == languages.en,
-                                    controller.language.value == languages.es,
-                                  ],
-                                  onPressed: (index) {
-                                    controller.setLanguage(
-                                        index == 0 ? languages.en : languages.es);
-                                  },
-                                  children: <Widget>[
-                                    Container(
-                                        margin: const EdgeInsets.symmetric(
-                                            horizontal: 10.0, vertical: 0),
-                                        child: const Text('English')
-                                    ),
-                                    Container(
-                                        margin: const EdgeInsets.symmetric(
-                                            horizontal: 10.0, vertical: 0),
-                                        child: const Text('Español')),
-                                  ],
-                                )),
-                          ]),
+                      LanguageSelectionWidget(),
                       const Divider(height: 20, color: Colors.transparent,),
                       FloatingActionButton(
                           heroTag: 'sound',

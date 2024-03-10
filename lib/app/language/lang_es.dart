@@ -1,4 +1,7 @@
 Map<String, String> spanish = {
+  'easy': 'Fácil',
+  'normal': 'Normal',
+  'hard': 'Difícil',
   'Close': 'cerrar',
   'Cancel': 'cancelar',
   'Continue': 'Continuar',

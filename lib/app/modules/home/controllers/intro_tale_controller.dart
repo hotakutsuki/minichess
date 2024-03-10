@@ -23,8 +23,11 @@ class IntroTaleController extends GetxController with GetSingleTickerProviderSta
   void playButtonSound(int page) {
     audioPlayer.stop();
     if (homeController.withSound.value && homeController.showTale.value){
-      String lang = l.language.value?.name == 'es' ? 'es' : 'en';
+      String lang = l.language.value?.name == languages.es.name ? 'es'
+          : l.language.value?.name == languages.ki.name ? 'ki'
+          : 'en';
       String file = 'sounds/${lang}/${page+1}.mp3';
+      print('playing $file');
       audioPlayer.play(AssetSource(file), volume: 1);
     }
   }
@@ -85,7 +88,7 @@ class IntroTaleController extends GetxController with GetSingleTickerProviderSta
   void onReady() async {
     super.onReady();
     await Future.delayed(const Duration(milliseconds: 1000));
-    pages.value = [TalePage(title: 'page1', text: l.g('Page1'), layers: [
+    pages.value = [TalePage(title: 'page1', text: 'Page1', layers: [
     TaleLayer(asset: Image.asset('assets/images/tale/SC1/Ink-Lore_BG4-01.png', fit: BoxFit.fitHeight),
     hwxy: [0, 0, 0, 0], delay: 300, showing: false.obs,),
       TaleLayer(asset: Image.asset('assets/images/tale/SC1/Ink-Lore_BG3-01.png', fit: BoxFit.fitHeight),
@@ -97,7 +100,7 @@ class IntroTaleController extends GetxController with GetSingleTickerProviderSta
       TaleLayer(asset: Image.asset('assets/images/tale/SC1/Ink-Lore_CH-01.png', fit: BoxFit.fitHeight),
     hwxy: [0, 0, 0, 0], delay: 500, showing: false.obs,),]),
 
-      TalePage(title: 'page2', text: l.g('Page2'), layers: [
+      TalePage(title: 'page2', text: 'Page2', layers: [
         TaleLayer(asset: Image.asset('assets/images/tale/SC2/Ink-Lore_BG4-02.png', fit: BoxFit.fitHeight),
           hwxy: [0, 0, 0, 0], delay: 300, showing: false.obs,),
         TaleLayer(asset: Image.asset('assets/images/tale/SC2/Ink-Lore_BG3-02.png', fit: BoxFit.fitHeight),
@@ -107,7 +110,7 @@ class IntroTaleController extends GetxController with GetSingleTickerProviderSta
       TaleLayer(asset: Image.asset('assets/images/tale/SC2/Ink-Lore_CH-02.png', fit: BoxFit.fitHeight),
         hwxy: [0, 0, 0, 0], delay: 500, showing: false.obs,),]),
 
-      TalePage(title: 'page3', text: l.g('Page3'), layers: [
+      TalePage(title: 'page3', text: 'Page3', layers: [
         TaleLayer(asset: Image.asset('assets/images/tale/SC3/Ink-Lore_BG4-03.png', fit: BoxFit.fitHeight),
               hwxy: [0, 0, 0, 0], delay: 300, showing: false.obs,),
         TaleLayer(asset: Image.asset('assets/images/tale/SC3/Ink-Lore_BG3-03.png', fit: BoxFit.fitHeight),
@@ -119,7 +122,7 @@ class IntroTaleController extends GetxController with GetSingleTickerProviderSta
         TaleLayer(asset: Image.asset('assets/images/tale/SC3/Ink-Lore_CH-03.png', fit: BoxFit.fitHeight),
               hwxy: [0, 0, 0, 0], delay: 500, showing: false.obs,)]),
 
-      TalePage(title: 'page4', text: l.g('Page4'), layers: [
+      TalePage(title: 'page4', text: 'Page4', layers: [
         TaleLayer(asset: Image.asset('assets/images/tale/SC4/Ink-Lore_BG4-04.png', fit: BoxFit.fitHeight),
               hwxy: [0, 0, 0, 0], delay: 300, showing: false.obs,),
         TaleLayer(asset: Image.asset('assets/images/tale/SC4/Ink-Lore_BG3-04.png', fit: BoxFit.fitHeight),
@@ -131,7 +134,7 @@ class IntroTaleController extends GetxController with GetSingleTickerProviderSta
         TaleLayer(asset: Image.asset('assets/images/tale/SC4/Ink-Lore_CH-04.png', fit: BoxFit.fitHeight),
               hwxy: [0, 0, 0, 0], delay: 500, showing: false.obs,)]),
 
-      TalePage(title: 'page5', text: l.g('Page5'), layers: [
+      TalePage(title: 'page5', text: 'Page5', layers: [
         TaleLayer(asset: Image.asset('assets/images/tale/SC5/Ink-Lore_BG4-05.png', fit: BoxFit.fitHeight),
               hwxy: [0, 0, 0, 0], delay: 300, showing: false.obs,),
         TaleLayer(asset: Image.asset('assets/images/tale/SC5/Ink-Lore_BG3-05.png', fit: BoxFit.fitHeight),
@@ -143,7 +146,7 @@ class IntroTaleController extends GetxController with GetSingleTickerProviderSta
         TaleLayer(asset: Image.asset('assets/images/tale/SC5/Ink-Lore_CH-05.png', fit: BoxFit.fitHeight),
               hwxy: [0, 0, 0, 0], delay: 500, showing: false.obs,)]),
 
-      TalePage(title: 'page6', text: l.g('Page6'), layers: [
+      TalePage(title: 'page6', text: 'Page6', layers: [
         TaleLayer(asset: Image.asset('assets/images/tale/SC6/Ink-Lore_BG4-06.png', fit: BoxFit.fitHeight),
               hwxy: [0, 0, 0, 0], delay: 300, showing: false.obs,),
         TaleLayer(asset: Image.asset('assets/images/tale/SC6/Ink-Lore_BG3-06.png', fit: BoxFit.fitHeight),
@@ -155,7 +158,7 @@ class IntroTaleController extends GetxController with GetSingleTickerProviderSta
         TaleLayer(asset: Image.asset('assets/images/tale/SC6/Ink-Lore_CH-06.png', fit: BoxFit.fitHeight),
           hwxy: [0, 0, 0, 0], delay: 400, showing: false.obs,)]),
 
-      TalePage(title: 'page7', text: l.g('Page7'), layers: [
+      TalePage(title: 'page7', text: 'Page7', layers: [
         TaleLayer(asset: Image.asset('assets/images/tale/SC7/Ink-Lore_BG4-07.png', fit: BoxFit.fitHeight),
               hwxy: [0, 0, 0, 0], delay: 300, showing: false.obs,),
         TaleLayer(asset: Image.asset('assets/images/tale/SC7/Ink-Lore_BG3-07.png', fit: BoxFit.fitHeight),
@@ -163,7 +166,7 @@ class IntroTaleController extends GetxController with GetSingleTickerProviderSta
         TaleLayer(asset: Image.asset('assets/images/tale/SC7/Ink-Lore_CH-07.png', fit: BoxFit.fitHeight),
               hwxy: [0, 0, 0, 0], delay: 500, showing: false.obs,)]),
 
-      TalePage(title: 'page8', text: l.g('Page8'), layers: [
+      TalePage(title: 'page8', text: 'Page8', layers: [
         TaleLayer(asset: Image.asset('assets/images/tale/SC8/Ink-Lore_BG4-08.png', fit: BoxFit.fitHeight),
               hwxy: [0, 0, 0, 0], delay: 300, showing: false.obs,),
         TaleLayer(asset: Image.asset('assets/images/tale/SC8/Ink-Lore_BG3-08.png', fit: BoxFit.fitHeight),
@@ -181,7 +184,7 @@ class IntroTaleController extends GetxController with GetSingleTickerProviderSta
         TaleLayer(asset: Image.asset('assets/images/tale/SC9/Ink-Lore_BG1-09.png', fit: BoxFit.fitHeight),
               hwxy: [0, 0, 0, 0], delay: 500, showing: false.obs,)]),
 
-      TalePage(title: 'page10', text: l.g('Page10'), layers: [
+      TalePage(title: 'page10', text: 'Page10', layers: [
         TaleLayer(asset: Image.asset('assets/images/tale/SC10/Ink-Lore_BG4-10.png', fit: BoxFit.fitHeight),
               hwxy: [0, 0, 0, 0], delay: 300, showing: false.obs,),
         TaleLayer(asset: Image.asset('assets/images/tale/SC10/Ink-Lore_CH-10.png', fit: BoxFit.fitHeight),

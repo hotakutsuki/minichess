@@ -118,6 +118,10 @@ class HomeController extends GetxController with GetSingleTickerProviderStateMix
     Get.dialog(const LoginDialogView(), barrierDismissible: true);
   }
 
+  void hideAuthDialog() {
+    Get.back();
+  }
+
   @override
   void onInit() async {
     print('Home Controller is ready');

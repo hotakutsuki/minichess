@@ -41,9 +41,8 @@ flutter:
     - assets/images/
     - assets/icon/
     - assets/images/tutorial/
-    - assets/images/old/
     - assets/images/pieces/
-    - assets/images/backgrounds/
+    - assets/images/backgrounds/bg.jpeg
     - assets/sounds/
     - assets/sounds/es/
     - assets/sounds/en/

@@ -8,7 +8,7 @@ enum gameState { open, playing, finished, blocked, fake, unknown }
 enum collections {matches, users, tokens}
 enum sharedPrefs {userName, firstTimeToOpen, showTale, difficult, language}
 enum difficult {easy, normal, hard}
-enum languages {en, es}
+enum languages {en, es, ki}
 Color brackgroundColor = const Color.fromRGBO(23, 55, 96, 0.38);
 Color brackgroundColorSolid = const Color.fromRGBO(23, 55, 96, 1);
 Color brackgroundColorSemi = const Color.fromRGBO(23, 55, 96, 0.95);
