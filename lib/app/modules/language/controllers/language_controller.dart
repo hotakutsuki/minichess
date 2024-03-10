@@ -33,18 +33,6 @@ class LanguageController extends GetxController
     }
   }
 
-  // late final AnimationController loadingController =
-  // AnimationController(vsync: this, duration: const Duration(seconds: 5))
-  //   ..forward()..addListener(() => hideLoadingScreen()
-  // );
-  //
-  // late final AnimationController hideLoadingAnimationController =
-  //     AnimationController(vsync: this, duration: const Duration(seconds: 1));
-  //
-  // hideLoadingScreen(){
-  //   hideLoadingAnimationController.forward();
-  // }
-
   @override
   void onInit() async {
     prefs = await SharedPreferences.getInstance();

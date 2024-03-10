@@ -136,6 +136,8 @@ class HomeController extends GetxController with GetSingleTickerProviderStateMix
     } else {
       stopTitleSong();
     }
+    final SharedPreferences prefs = SharedPreferences.getInstance() as SharedPreferences;
+    prefs.setBool(sharedPrefs.withSound.name, withSound.value);
   }
 
   removeLatcher() async {
@@ -149,6 +151,7 @@ class HomeController extends GetxController with GetSingleTickerProviderStateMix
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     firstTime.value = prefs.getBool(sharedPrefs.firstTimeToOpen.name) ?? true;
     showTale.value = prefs.getBool(sharedPrefs.showTale.name) ?? true;
+    withSound.value = prefs.getBool(sharedPrefs.withSound.name) ?? false;
 
     getDifficult();
 
@@ -185,7 +188,7 @@ class HomeController extends GetxController with GetSingleTickerProviderStateMix
       authController.loading.value = false;
     }
 
-    withSound.value = !kIsWeb;
+    // withSound.value = !kIsWeb;
 
     super.onReady();
   }

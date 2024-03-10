@@ -6,7 +6,7 @@ enum possession { mine, enemy, none }
 enum gameMode { vs, solo, online, training }
 enum gameState { open, playing, finished, blocked, fake, unknown }
 enum collections {matches, users, tokens}
-enum sharedPrefs {userName, firstTimeToOpen, showTale, difficult, language}
+enum sharedPrefs {userName, firstTimeToOpen, showTale, difficult, language, withSound}
 enum difficult {easy, normal, hard}
 enum languages {en, es, ki}
 Color brackgroundColor = const Color.fromRGBO(23, 55, 96, 0.38);
