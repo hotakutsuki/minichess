@@ -82,9 +82,9 @@ Map<String, String> english = {
   'ThereWasAnUnkownError': 'There was an unkown error.',
   'Account': 'Account',
   //Tale:
-  'Page1': 'In the ancient Andes, where the Incas did dwell,'
-      'The guardian animals that served Inti guided them well.'
-      'In harmony they lived, crafting life\'s story,'
+  'Page1': 'In the ancient Andes, where the Incas did dwell,\n'
+      'The guardian animals that served Inti guided them well.\n'
+      'In harmony they lived, crafting life\'s story,\n'
       'and Pacha Mama with love, held them in glory.',
   'Page2': 'Inti, bespoken missions with special grace,\n'
       'To his dear guardians, trust did embrace.\n'

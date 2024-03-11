@@ -2,7 +2,7 @@
     package="com.hotakutsuki.minichess">
     <uses-permission android:name="com.google.android.gms.permission.AD_ID"/>
    <application
-        android:label="Inti: The sun Game"
+        android:label="Inti: The Inka Chess Game"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
        <activity

@@ -24,7 +24,7 @@ class LoginDialogView extends GetView<AuthController> {
     return AlertDialog(
       backgroundColor: const Color.fromRGBO(255, 255, 255, .80),
       content: SizedBox(
-        height: 400,
+        height: 450,
         width: 420,
         child: Obx(() {
           return SingleChildScrollView(

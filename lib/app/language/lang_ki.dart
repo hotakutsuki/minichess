@@ -22,8 +22,8 @@ Map<String, String> kichwa = {
   'NotDefined': 'Na Definidota Kapan',
   'NewEmail': 'Mushuc Chaski',
   'UpdateEmail': 'Kunanta Chaski',
-  'LoginSignUp': 'Sesionta Kallarina/Registrankapak',
-  'LoginOrCreateAccount': 'Sesionta Kallarina/\nYupayta Wallpay',
+  'LoginSignUp': 'Sesionta Kallarina\nRegistrankapak',
+  'LoginOrCreateAccount': 'Sesionta Kallarina\nYupayta Wallpay',
   'EstablishYourScore': 'Kanpak sesionta kallarita minishtinchik kanpak puntajeta churankapak',
   'WhatYourUsername': '¿Maykan mawkak shutita churanky?',
   'YouCantChangeThisLater': '(Kutinpa mana turkariy ushanki)',
@@ -36,7 +36,7 @@ Map<String, String> kichwa = {
   'WithOutSound': 'Mana Uyari',
   'WithSound': 'Uyari',
   'Fame': 'Famata',
-  'HowToPlay': 'Imashna Pukllana',
+  'HowToPlay': 'Imashna\nPukllana',
   'SenpaiNoticeMe': 'Senpai notice me',
   'SomethingWentWrong': 'Imatapash na alli llukshirka',
   'HelloThere': 'Imanalla',
@@ -99,13 +99,13 @@ Map<String, String> kichwa = {
       'sapan especiekunata chaykunapak kawsaypacha takyachiyna kanki\n'
       'harikunata chaypurallata mi tikranka',
   'Page5': 'kipa, Intyka shinchiman kayarka, shuk achik chaskihuan\n'
-      'kanpak misionpa kan hawapacha kamayuk kan shinallata yakukunapsh kamakuywan\n'
-      'wayrataka chuyayashka kana kan, mayukunapash lliwkllashkumi kanpak manyata yalina kan\n'
-      'runakunaman muyutinkunata kamayuk yachachina kanki, chaypak yanapaymi kapan',
-  'Page6': 'paktachinkapa, Inty llama takuraman, shinchi takyaykuan shayakuan\n'
-      'kanku hawa allpakunata rikuna kanki, tarpuytaka pachanyachiyna kanki\n'
-      'Runakunaka rurana kan, allpataka na waklliyishpalla yuyaywan\n'
-      'kashkakunataka haynipikuan mishki ñawaraytaki wallpashka kachun',
+      'kanpak misionpa kan hawapacha kamayuk\nkan shinallata yakukunapsh kamakuywan\n'
+      'wayrataka chuyayashka kana kan,\nmayukunapash lliwkllashkumi kanpak manyata yalina kan\n'
+      'runakunaman muyutinkunata kamayuk yachachina kanki,\nchaypak yanapaymi kapan',
+  'Page6': 'paktachinkapa, Inty llama takuraman,\nshinchi takyaykuan shayakuan\n'
+      'kanku hawa allpakunata rikuna kanki,\ntarpuytaka pachanyachiyna kanki\n'
+      'Runakunaka rurana kan, allpataka\nna waklliyishpalla yuyaywan\n'
+      'kashkakunataka haynipikuan mishki\nñawaraytaki wallpashka kachun',
   'Page7': 'unalla patsawatakunapi, harcachikruna, runakunapash llamkanakurca\n'
       'antipakkuna kamachaykurka, sinchikuywan rawraykuan\n'
       'Shinapash punchanta ashta sinchiyashka wakaychita shinchi karka\n'
@@ -114,12 +114,12 @@ Map<String, String> kichwa = {
       'Pachamamaka unkukmi, llakilla punchanta\n'
       'puntamanta kamachiwakuna kunkashkami caypika\n'
       'harcachikrunapa misionta, punchanta ashtawan wiñan',
-  'Page9': 'miyuchiyka wayrapi, sachakunata kuchuy tukushca na nanaywan\n'
-      'chakuytapash, yaku usuchiyskaku, ima llakilla panta\n'
-      'suklla tarpuy, pesticidakunapash, alpa imapash llaktacchiska\n'
-      'wakrakuna kapukamayshka, hatun yankakichuk ñami chapanakunmi',
+  'Page9': 'miyuchiyka wayrapi, sachakunata\nkuchuy tukushca na nanaywan\n'
+      'chakuytapash, yaku usuchiyskaku,\nima llakilla panta\n'
+      'suklla tarpuy, pesticidakunapash,\nalpa imapash llaktacchiska\n'
+      'wakrakuna kapukamayshka,\nhatun yankakichuk ñami chapanakunmi',
   'Page10': 'pachapash tukurikunmi, killapi rikurynka\n'
-      'shinapash allihamutakaywan tukuylla yanapanakuywan, Pachamamaka kishpichikuanka\n'
+      'shinapash allihamutakaywan tukuylla yanapanakuywan,\nPachamamaka kishpichikuanka\n'
       'Ukuku, Uturunku, Sinchi, tarukapasg, pactami tikranka\n'
       'Allpaman paktapakta kutimpak taririnka\n'
       '\n\n'
