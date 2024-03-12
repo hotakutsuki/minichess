@@ -187,6 +187,14 @@ class IntroTaleController extends GetxController with GetSingleTickerProviderSta
               hwxy: [0, 0, 0, 0], delay: 100, showing: false.obs,)]),
 
       TalePage(title: 'page10', text: 'Page10', layers: [
+        TaleLayer(asset: Image.asset('assets/images/tale/SC9/bg4.png', fit: BoxFit.fitHeight),
+          hwxy: [0, 0, 0, 0], delay: 700, showing: false.obs,),
+        TaleLayer(asset: Image.asset('assets/images/tale/SC9/bg3.png', fit: BoxFit.fitHeight),
+          hwxy: [0, 0, 0, 0], delay: 500, showing: false.obs,),
+        TaleLayer(asset: Image.asset('assets/images/tale/SC9/bg2.png', fit: BoxFit.fitHeight),
+          hwxy: [0, 0, 0, 0], delay: 300, showing: false.obs,),
+        TaleLayer(asset: Image.asset('assets/images/tale/SC9/bg1.png', fit: BoxFit.fitHeight),
+          hwxy: [0, 0, 0, 0], delay: 100, showing: false.obs,),
         TaleLayer(asset: Image.asset('assets/images/tale/SC10/ch.png', fit: BoxFit.fitHeight),
               hwxy: [0, 0, 0, 0], delay: 100, showing: false.obs,)]),
     ];

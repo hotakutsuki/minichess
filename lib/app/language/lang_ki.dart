@@ -1,4 +1,5 @@
 Map<String, String> kichwa = {
+  'info': 'Willa',
   'easy': 'Sasa',
   'normal': 'Sasapa',
   'hard': 'Sasak',

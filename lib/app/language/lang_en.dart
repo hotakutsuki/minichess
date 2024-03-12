@@ -1,4 +1,5 @@
 Map<String, String> english = {
+  'info': 'Info',
   'easy': 'Easy',
   'normal': 'Normal',
   'hard': 'Hard',

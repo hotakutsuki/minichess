@@ -51,6 +51,7 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  const Spacer(),
                   Obx(() {
                     return Text(l.g('IntiTheInkaChessGame'),
                         textAlign: TextAlign.center,
@@ -187,6 +188,21 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white60))
                         ],
+                      ),
+                    );
+                  }),
+                  const Spacer(),
+                  Obx(() {
+                    return SizedBox(
+                      height: 50,
+                      width: 150,
+                      child: Center(
+                        child: TextButton(
+                          onPressed: () {
+                            Get.toNamed(Routes.CREDITS);
+                          },
+                          child: Text(l.g('info'), style: const TextStyle(color: Colors.white54),),
+                        ),
                       ),
                     );
                   }),
