@@ -50,12 +50,8 @@ class IntroTaleView extends GetView<IntroTaleController> {
                               var index = e.key;
                               var layer = e.value;
                               return AnimatedPositioned(
-                                // left: index == 0 ? -200 : 0, // background goes beyond boundaries
-                                // right: index == 0 ? -200 : 0, // background goes beyond boundaries
                                   left: -200,
-                                  // background goes beyond boundaries
                                   right: -200,
-                                  // background goes beyond boundaries
                                   top: layer.showing.value
                                       ? 0
                                       : -MediaQuery
@@ -68,8 +64,8 @@ class IntroTaleView extends GetView<IntroTaleController> {
                                       .of(context)
                                       .size
                                       .height,
-                                  curve: Curves.easeOutExpo,
-                                  duration: const Duration(milliseconds: 500),
+                                  curve: Curves.easeOutCirc,
+                                  duration: const Duration(milliseconds: 2500),
                                   child: AnimatedBuilder(
                                     animation: controller.aController,
                                     //parallax
@@ -79,18 +75,7 @@ class IntroTaleView extends GetView<IntroTaleController> {
                                         child: child,
                                       );
                                     },
-                                    child: Center(
-                                      child: index == 0
-                                          ? layer.asset
-                                          : Transform.translate(
-                                        offset: Offset(
-                                            layer.hwxy[2], layer.hwxy[3]),
-                                        child: SizedBox(
-                                          // height: layer.hwxy[0],
-                                          // width: layer.hwxy[1],
-                                            child: layer.asset),
-                                      ),
-                                    ),
+                                    child: layer.asset,
                                   ));
                             }).toList(),
                             AnimatedPositioned(
