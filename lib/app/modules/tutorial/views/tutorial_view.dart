@@ -48,7 +48,7 @@ class TutorialView extends GetView<TutorialController> {
                       controller.getPage('6', l.g('ReachToTheTopToTransformASnakeIntoACougar'), context),
                       controller.getPage('7', l.g('TakeTheIntiToWin'), context),
                       TutorialPageMoonView(),
-                      controller.getPage('8', 'These are the moves of the Tower.', context),
+                      controller.getPage('8', l.g('TheseAreTheMovesOfTheTower'), context),
                       controller.getPage('9', l.g('TheseAreTheMovesOfTheCondor'), context),
                       controller.getPage('10', l.g('TheseAreTheMovesOfTheCougar'), context),
                       controller.getPage('11', l.g('TheseAreTheMovesOfTheInti'), context),

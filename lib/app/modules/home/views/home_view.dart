@@ -201,7 +201,7 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
                           onPressed: () {
                             Get.toNamed(Routes.CREDITS);
                           },
-                          child: Text(l.g('info'), style: const TextStyle(color: Colors.white54),),
+                          child: Text(l.g('credits'), style: const TextStyle(color: Colors.white54),),
                         ),
                       ),
                     );

@@ -25,7 +25,7 @@ class BackgroundController extends GetxController
             children: [Image.asset(
               height: MediaQuery.of(context).size.height,
               width: MediaQuery.of(context).size.height,
-              'assets/images/backgrounds/bg.jpeg',
+              'assets/images/backgrounds/bg.jpg',
               fit: BoxFit.cover,
             )],
           ),
@@ -34,7 +34,7 @@ class BackgroundController extends GetxController
     }
     return SizedBox.expand(
       child: Image.asset(
-        'assets/images/backgrounds/bg.jpeg',
+        'assets/images/backgrounds/bg.jpg',
         fit: BoxFit.cover,
       ),
     );

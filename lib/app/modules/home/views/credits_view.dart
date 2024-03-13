@@ -22,7 +22,8 @@ class CreditsView extends GetView {
         children: [
           InkWell(
             onTap: () {
-              Get.offNamed(Routes.HOME);
+              Get.back();
+              // Get.offNamed(Routes.HOME);
             },
           ),
           Center(
@@ -39,7 +40,7 @@ class CreditsView extends GetView {
                   },
                 ),
                 const SizedBox(height: 20),
-                Text(l.g('Graphs & UI:'), style: const TextStyle(fontSize: 16, color: Colors.white70)),
+                Text(l.g('Illustrations & Graphic Design:'), style: const TextStyle(fontSize: 16, color: Colors.white70)),
                 const SizedBox(height: 10),
                 InkWell(child: Text(l.g('Jonathan Echeverria 🔗'), style: const TextStyle(fontSize: 16, color: Colors.white)),
                   onTap: () {
@@ -47,7 +48,7 @@ class CreditsView extends GetView {
                   },
                 ),
                 const SizedBox(height: 20),
-                Text(l.g('Lore and Texts:'), style: const TextStyle(fontSize: 16, color: Colors.white70)),
+                Text(l.g('Lore & Texts:'), style: const TextStyle(fontSize: 16, color: Colors.white70)),
                 const SizedBox(height: 10),
                 InkWell(child: Text(l.g('Lilia Escudero 🔗'), style: const TextStyle(fontSize: 16, color: Colors.white)),
                   onTap: () {
@@ -55,10 +56,10 @@ class CreditsView extends GetView {
                   },
                 ),
                 const SizedBox(height: 20),
-                Text(l.g('Special thanks to:'), style: const TextStyle(fontSize: 16, color: Colors.white70)),
+                Text(l.g('Voice Talents:'), style: const TextStyle(fontSize: 16, color: Colors.white70)),
                 const SizedBox(height: 10),
-                Text(l.g('Paola Ortiz (Spanish)'), style: const TextStyle(fontSize: 16, color: Colors.white)),
                 Text(l.g('Liisa Bäumler (English)'), style: const TextStyle(fontSize: 16, color: Colors.white)),
+                Text(l.g('Paola Ortiz (Spanish)'), style: const TextStyle(fontSize: 16, color: Colors.white)),
                 Text(l.g('Emily Guajan (Kichwa)'), style: const TextStyle(fontSize: 16, color: Colors.white)),
                 const SizedBox(height: 5),
                 Text(l.g('The Flutter Community'), style: const TextStyle(fontSize: 16, color: Colors.white)),
