@@ -42,7 +42,7 @@ class CreditsView extends GetView {
                 const SizedBox(height: 20),
                 Text(l.g('Illustrations & Graphic Design:'), style: const TextStyle(fontSize: 16, color: Colors.white70)),
                 const SizedBox(height: 10),
-                InkWell(child: Text(l.g('Jonathan Echeverria 🔗'), style: const TextStyle(fontSize: 16, color: Colors.white)),
+                InkWell(child: Text(l.g('Jonathan Nuo 🔗'), style: const TextStyle(fontSize: 16, color: Colors.white)),
                   onTap: () {
                     homeController.goToUrl('https://www.instagram.com/nuomation/');
                   },

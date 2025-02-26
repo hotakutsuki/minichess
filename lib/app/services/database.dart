@@ -85,6 +85,14 @@ class DatabaseController extends GetxController {
     }
   }
 
+  readDocState() {
+    matchController = Get.find<MatchController>();
+    return _firestore
+        .collection(collections.matches.name)
+        .doc(matchController.gameId.value)
+        .get();
+  }
+
   Future<bool> updatePlayedHistory() {
     return _firestore
         .collection(collections.matches.name)

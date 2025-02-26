@@ -1,6 +1,9 @@
 # 'Inti: The Inka Chess Game'
 A minichess game in flutter
 
+to run debug:
+flutter run -d chrome --web-renderer canvaskit
+
 to deploy:
 run: "flutter build web --web-renderer canvaskit --release"
 copy /build/web => /docs.

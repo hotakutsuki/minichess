@@ -31,4 +31,9 @@ class Tile {
   String toString() {
     return '${owner.name} ${char.name} $i $j $isSelected';
   }
+
+  String toStingWithTimeStamp(){
+    var timeStamp = DateTime.now().millisecondsSinceEpoch;
+    return '${owner.name} ${char.name} $i $j $isSelected $timeStamp';
+  }
 }

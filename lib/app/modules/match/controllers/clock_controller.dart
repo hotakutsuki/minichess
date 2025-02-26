@@ -55,6 +55,17 @@ class ClockController extends GetxController
     }
   }
 
+  setCountRemaining(Duration duration){
+    final mSeconds = duration.inMilliseconds;
+    if (mSeconds <= 0 && countdownTimer!=null) {
+      matchController.gameOver(localPlayer == player.white ? player.black : player.white);
+      countdownTimer!.cancel();
+    } else {
+      myDuration = Duration(milliseconds: mSeconds);
+      updateTexts();
+    }
+  }
+
   updateTexts(){
     double value = 0.99 //final state of animation
         - ((myDuration.inSeconds / (gameMinutes * 60))

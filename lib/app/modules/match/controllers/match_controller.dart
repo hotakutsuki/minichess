@@ -22,7 +22,7 @@ import 'GraveyardController.dart';
 import 'ai_controller.dart';
 import 'clock_controller.dart';
 
-class MatchController extends GetxController with WidgetsBindingObserver{
+class MatchController extends GetxController with WidgetsBindingObserver {
   Rxn<GameState> gs = Rxn<GameState>();
   DatabaseController dbController = Get.find<DatabaseController>();
   LanguageController l = Get.find<LanguageController>();
@@ -73,20 +73,38 @@ class MatchController extends GetxController with WidgetsBindingObserver{
 
   var moveAudioPLayer = AudioPlayer();
 
+  Timer? reFetchTimer;
+
+  int? firstWhiteTurnTime;
+  int? currWhiteTurnTime;
+  int? firstBlackTurnTime;
+  int? currBlackTurnTime;
+
   Future<bool> startOnlineMatch() async {
     List<MatchDom> openMatches = await dbController.getOpenMatches();
+    var ans;
     if (openMatches.isEmpty) {
       print('creating new match');
       isHost.value = true;
-      return await dbController.addMatch();
+      ans = await dbController.addMatch();
     } else {
       gameId.value = openMatches[0].id;
       print('joining to match ${gameId.value}');
       isHost.value = false;
-      return await dbController.joinToAMatch();
+      ans = await dbController.joinToAMatch();
     }
+    print('starting timeout listeners');
+    // Start timeout to read the game document every second
+    reFetchTimer = Timer.periodic(Duration(seconds: 1), (Timer t) {
+      if ((isHost.value && playersTurn == player.black) ||
+          (!isHost.value && playersTurn == player.white)) {
+        print('reading doc state $gameId');
+        var event = dbController.readDocState();
+        whenMatchStateChange(event);
+      }
+    });
+    return ans;
   }
-
 
   void updateScore(bool imWinner, myScore, oponentScore) {
     //TODO:Enhance this
@@ -129,14 +147,23 @@ class MatchController extends GetxController with WidgetsBindingObserver{
   void whenMatchStateChange(DocumentSnapshot event) async {
     searching.value = event[MatchDom.STATE] == gameState.open.name;
     remoteTiles = event[MatchDom.TILES];
+    print('event $event');
     if (remoteTiles.length > localTiles.length) {
+      print('remoteTiles.length ${remoteTiles.length}');
+      print('localTiles.length ${localTiles.length}');
+      int startPosition = localTiles.length;
       localTiles = List.from(remoteTiles);
       if (remoteTiles.isNotEmpty) {
-        Tile tile = Tile.fromString(remoteTiles.last);
-        if (isFromGraveyard(tile)) {
-          play(gs.value!.myGraveyard.firstWhere((t) => t.char == tile.char));
-        } else {
-          play(gs.value!.board[tile.j!][tile.i!]);
+        for (int i = startPosition; i < remoteTiles.length; i++) {
+          Tile tile = Tile.fromString(remoteTiles[i]);
+          var playedTimeStamp = int.parse(remoteTiles[i].split(' ')[5]);
+          if (isFromGraveyard(tile)) {
+            await play(
+                gs.value!.myGraveyard.firstWhere((t) => t.char == tile.char),
+                playedTimeStamp);
+          } else {
+            await play(gs.value!.board[tile.j!][tile.i!], playedTimeStamp);
+          }
         }
       }
     }
@@ -166,14 +193,43 @@ class MatchController extends GetxController with WidgetsBindingObserver{
         'unknown', 'city', 'pass');
   }
 
-  void setTimersAndPlayers() {
+  void setTimersAndPlayers(int? date) {
     if (playersTurn == player.white) {
       whiteClockState.stopTimer();
+
+      if (firstBlackTurnTime == null) {
+        firstBlackTurnTime = date;
+      } else if (currBlackTurnTime != null) {
+        currBlackTurnTime = date;
+      }
+      if (firstBlackTurnTime != null && currBlackTurnTime != null) {
+        blackClockState.setCountRemaining(
+            Duration(milliseconds: currBlackTurnTime! - firstBlackTurnTime!));
+      }
       blackClockState.startTimer();
     } else {
-      whiteClockState.startTimer();
       blackClockState.stopTimer();
+
+      if (firstWhiteTurnTime == null) {
+        firstWhiteTurnTime = date;
+      } else if (currWhiteTurnTime != null) {
+        currWhiteTurnTime = date;
+      }
+      if (firstWhiteTurnTime != null && currWhiteTurnTime != null) {
+        whiteClockState.setCountRemaining(
+            Duration(milliseconds: currWhiteTurnTime! - firstWhiteTurnTime!));
+      }
+      whiteClockState.startTimer();
     }
+    print('turn $playersTurn');
+    print(
+        'initial white time ${DateTime.fromMillisecondsSinceEpoch(firstWhiteTurnTime ?? 0).toString()}');
+    print(
+        'initial black time ${DateTime.fromMillisecondsSinceEpoch(firstBlackTurnTime ?? 0).toString()}');
+    print(
+        'curr white time ${DateTime.fromMillisecondsSinceEpoch(currWhiteTurnTime ?? 0).toString()}');
+    print(
+        'curr black time ${DateTime.fromMillisecondsSinceEpoch(currBlackTurnTime ?? 0).toString()}');
   }
 
   void resetTimers() {
@@ -214,8 +270,8 @@ class MatchController extends GetxController with WidgetsBindingObserver{
     return true;
   }
 
-  play(Tile tile) async {
-    if (pausa.value){
+  play(Tile tile, [int? date]) async {
+    if (pausa.value) {
       return;
     }
     if (selectedTile.value == null) {
@@ -229,9 +285,9 @@ class MatchController extends GetxController with WidgetsBindingObserver{
       if (checkIfValidMove(Move(selectedTile.value!, tile), gs.value!, true)) {
         isAnimating.value = true;
         recordHistory(tile);
-        setTimersAndPlayers();
+        setTimersAndPlayers(date);
         Move move = Move(selectedTile.value!, tile);
-        if (homeController.withSound.value){
+        if (homeController.withSound.value) {
           moveAudioPLayer.play(AssetSource('sounds/wind.mp3'), volume: 0.5);
         }
         await animateTiles(move);
@@ -248,40 +304,53 @@ class MatchController extends GetxController with WidgetsBindingObserver{
       if (!isGameOver.value &&
           (gamemode == gameMode.training ||
               (gamemode == gameMode.solo && playersTurn == player.black) ||
-              (gamemode == gameMode.online && playersTurn == player.black && isFake))) {
+              (gamemode == gameMode.online &&
+                  playersTurn == player.black &&
+                  isFake))) {
         await playAsPc();
       }
     }
   }
 
   animateTiles(Move move) async {
-    if (gs.value!.board[move.finalTile.j!][move.finalTile.i!].char != chrt.empty){
-      GraveyardController gyController = Get.find<GraveyardController>(tag: playersTurn.name);
+    if (gs.value!.board[move.finalTile.j!][move.finalTile.i!].char !=
+        chrt.empty) {
+      GraveyardController gyController =
+          Get.find<GraveyardController>(tag: playersTurn.name);
       int length = gyController.getGraveyard(playersTurn).length;
-      TileController takenTileController = Get.find<TileController>(tag: move.finalTile.toString());
-      takenTileController.animateTile(move.finalTile.i!, - 1 - move.finalTile.j!, null, null, length);
+      TileController takenTileController =
+          Get.find<TileController>(tag: move.finalTile.toString());
+      takenTileController.animateTile(
+          move.finalTile.i!, -1 - move.finalTile.j!, null, null, length);
       gyController.animateGraveyard();
     }
-    if (isFromGraveyard(move.initialTile)){
-      GraveyardController gyController = Get.find<GraveyardController>(tag: playersTurn.name);
-      int idx = gyController.getGraveyard(playersTurn).indexWhere((element) => element.isSelected);
-      TileController tileController = Get.find<TileController>(tag: move.initialTile.toString());
-      await tileController.animateTile(null, null, move.finalTile.i, move.finalTile.j, idx);
+    if (isFromGraveyard(move.initialTile)) {
+      GraveyardController gyController =
+          Get.find<GraveyardController>(tag: playersTurn.name);
+      int idx = gyController
+          .getGraveyard(playersTurn)
+          .indexWhere((element) => element.isSelected);
+      TileController tileController =
+          Get.find<TileController>(tag: move.initialTile.toString());
+      await tileController.animateTile(
+          null, null, move.finalTile.i, move.finalTile.j, idx);
     }
     if (!isFromGraveyard(move.initialTile)) {
-      TileController tileController = Get.find<TileController>(tag: move.initialTile.toString());
-      await tileController.animateTile(move.initialTile.i!, move.initialTile.j!, move.finalTile.i, move.finalTile.j);
+      TileController tileController =
+          Get.find<TileController>(tag: move.initialTile.toString());
+      await tileController.animateTile(move.initialTile.i!, move.initialTile.j!,
+          move.finalTile.i, move.finalTile.j);
     }
   }
 
   onTapTile(Tile tile) async {
     // print('tapping tile: $tile');
-    if (isAnimating.value){
+    if (isAnimating.value) {
       return;
     }
     if (isValidPlay(tile)) {
       if (gamemode == gameMode.online) {
-        localTiles.add(tile.toString());
+        localTiles.add(tile.toStingWithTimeStamp());
         dbController.updatePlayedHistory();
       }
       play(tile);
@@ -293,19 +362,21 @@ class MatchController extends GetxController with WidgetsBindingObserver{
     Move move = await aiController.getPlay(gs.value!, gamemode);
     print('generated move: $move');
     if (gamemode == gameMode.solo || gamemode == gameMode.online) {
-      await Future.delayed(Duration(milliseconds: getRandomIntBetween(400, 1000)));
+      await Future.delayed(
+          Duration(milliseconds: getRandomIntBetween(400, 1000)));
     }
     // if (playersTurn == player.black){
     play(move.initialTile);
     // }
     if (gamemode == gameMode.solo || gamemode == gameMode.online) {
-      await Future.delayed(Duration(milliseconds: getRandomIntBetween(400, 1000)));
+      await Future.delayed(
+          Duration(milliseconds: getRandomIntBetween(400, 1000)));
     }
     if (gamemode == gameMode.training) {
       await Future.delayed(const Duration(milliseconds: 50));
-      if (aiController.diff.value == difficult.easy){
+      if (aiController.diff.value == difficult.easy) {
         aiController.diff.value = difficult.hard;
-      }else if (aiController.diff.value == difficult.hard){
+      } else if (aiController.diff.value == difficult.hard) {
         aiController.diff.value = difficult.easy;
       }
     }
@@ -334,6 +405,10 @@ class MatchController extends GetxController with WidgetsBindingObserver{
       updateScore(imWinner, myScore, oponentScore);
     }
 
+    if (reFetchTimer != null) {
+      reFetchTimer!.cancel();
+    }
+
     if (await isConnected()) {
       print('saving match...');
       aiController.storeMovemntHistory(
@@ -347,7 +422,7 @@ class MatchController extends GetxController with WidgetsBindingObserver{
 
   void restartGame([bool force = false]) async {
     print('trying to restart');
-    if (isAnimating.value && !force){
+    if (isAnimating.value && !force) {
       print('restart omited');
       return;
     }
@@ -375,7 +450,7 @@ class MatchController extends GetxController with WidgetsBindingObserver{
   }
 
   void closeTheGame() async {
-    isLoading.value=true;
+    isLoading.value = true;
     await Future.delayed(const Duration(milliseconds: 500));
     restartGame(true);
     if (gamemode == gameMode.online) {
@@ -422,8 +497,8 @@ class MatchController extends GetxController with WidgetsBindingObserver{
     dbController.setMatchAsFake();
   }
 
-  String getRandomGameOverScreenText(){
-    if (winner == player.white){
+  String getRandomGameOverScreenText() {
+    if (winner == player.white) {
       String key = 'mtp${getRandomIntBetween(1, 27)}';
       return l.g(key);
     }
@@ -459,7 +534,7 @@ class MatchController extends GetxController with WidgetsBindingObserver{
 
   @override
   void onReady() async {
-    if (homeController.withSound.value){
+    if (homeController.withSound.value) {
       homeController.stopTitleSong();
     }
 
