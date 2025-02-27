@@ -56,7 +56,9 @@ class ClockController extends GetxController
   }
 
   setCountRemaining(Duration duration){
-    final mSeconds = duration.inMilliseconds;
+    // final mSeconds = duration.inMilliseconds;
+    print('setting time: ${duration.inSeconds}');
+    final mSeconds = Duration(minutes: 1).inMilliseconds;
     if (mSeconds <= 0 && countdownTimer!=null) {
       matchController.gameOver(localPlayer == player.white ? player.black : player.white);
       countdownTimer!.cancel();

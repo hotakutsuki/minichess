@@ -74,6 +74,7 @@ class MatchController extends GetxController with WidgetsBindingObserver {
   var moveAudioPLayer = AudioPlayer();
 
   Timer? reFetchTimer;
+  int reFetchTime = 5;
 
   int? firstWhiteTurnTime;
   int? currWhiteTurnTime;
@@ -95,11 +96,11 @@ class MatchController extends GetxController with WidgetsBindingObserver {
     }
     print('starting timeout listeners');
     // Start timeout to read the game document every second
-    reFetchTimer = Timer.periodic(Duration(seconds: 1), (Timer t) {
+    reFetchTimer = Timer.periodic(Duration(seconds: reFetchTime), (Timer t) async {
       if ((isHost.value && playersTurn == player.black) ||
           (!isHost.value && playersTurn == player.white)) {
         print('reading doc state $gameId');
-        var event = dbController.readDocState();
+        var event = await dbController.readDocState();
         whenMatchStateChange(event);
       }
     });
@@ -147,24 +148,31 @@ class MatchController extends GetxController with WidgetsBindingObserver {
   void whenMatchStateChange(DocumentSnapshot event) async {
     searching.value = event[MatchDom.STATE] == gameState.open.name;
     remoteTiles = event[MatchDom.TILES];
-    print('event $event');
+
     if (remoteTiles.length > localTiles.length) {
       print('remoteTiles.length ${remoteTiles.length}');
       print('localTiles.length ${localTiles.length}');
       int startPosition = localTiles.length;
       localTiles = List.from(remoteTiles);
       if (remoteTiles.isNotEmpty) {
-        for (int i = startPosition; i < remoteTiles.length; i++) {
-          Tile tile = Tile.fromString(remoteTiles[i]);
-          var playedTimeStamp = int.parse(remoteTiles[i].split(' ')[5]);
-          if (isFromGraveyard(tile)) {
-            await play(
-                gs.value!.myGraveyard.firstWhere((t) => t.char == tile.char),
-                playedTimeStamp);
-          } else {
-            await play(gs.value!.board[tile.j!][tile.i!], playedTimeStamp);
-          }
+        Tile tile = Tile.fromString(remoteTiles.last);
+        var playedTimeStamp = int.parse(remoteTiles.last.split(' ')[5]);
+        if (isFromGraveyard(tile)) {
+          play(gs.value!.myGraveyard.firstWhere((t) => t.char == tile.char), playedTimeStamp);
+        } else {
+          play(gs.value!.board[tile.j!][tile.i!], playedTimeStamp);
         }
+        // for (int i = startPosition; i < remoteTiles.length; i++) {
+        //   Tile tile = Tile.fromString(remoteTiles[i]);
+        //   var playedTimeStamp = int.parse(remoteTiles[i].split(' ')[5]);
+        //   if (isFromGraveyard(tile)) {
+        //     await play(
+        //         gs.value!.myGraveyard.firstWhere((t) => t.char == tile.char),
+        //         playedTimeStamp);
+        //   } else {
+        //     await play(gs.value!.board[tile.j!][tile.i!], playedTimeStamp);
+        //   }
+        // }
       }
     }
     if (event[MatchDom.INVITEDPLAYERID] != null) {
@@ -193,14 +201,14 @@ class MatchController extends GetxController with WidgetsBindingObserver {
         'unknown', 'city', 'pass');
   }
 
-  void setTimersAndPlayers(int? date) {
+  void setTimersAndPlayers(int date) {
     if (playersTurn == player.white) {
       whiteClockState.stopTimer();
 
       if (firstBlackTurnTime == null) {
         firstBlackTurnTime = date;
-      } else if (currBlackTurnTime != null) {
-        currBlackTurnTime = date;
+      } else {
+        currBlackTurnTime ??= date;
       }
       if (firstBlackTurnTime != null && currBlackTurnTime != null) {
         blackClockState.setCountRemaining(
@@ -212,8 +220,8 @@ class MatchController extends GetxController with WidgetsBindingObserver {
 
       if (firstWhiteTurnTime == null) {
         firstWhiteTurnTime = date;
-      } else if (currWhiteTurnTime != null) {
-        currWhiteTurnTime = date;
+      } else {
+        currWhiteTurnTime ??= date;
       }
       if (firstWhiteTurnTime != null && currWhiteTurnTime != null) {
         whiteClockState.setCountRemaining(
@@ -223,13 +231,13 @@ class MatchController extends GetxController with WidgetsBindingObserver {
     }
     print('turn $playersTurn');
     print(
-        'initial white time ${DateTime.fromMillisecondsSinceEpoch(firstWhiteTurnTime ?? 0).toString()}');
+        'init w ${DateTime.fromMillisecondsSinceEpoch(firstWhiteTurnTime ?? 0).toString()}');
     print(
-        'initial black time ${DateTime.fromMillisecondsSinceEpoch(firstBlackTurnTime ?? 0).toString()}');
+        'init b ${DateTime.fromMillisecondsSinceEpoch(firstBlackTurnTime ?? 0).toString()}');
     print(
-        'curr white time ${DateTime.fromMillisecondsSinceEpoch(currWhiteTurnTime ?? 0).toString()}');
+        'curr w ${DateTime.fromMillisecondsSinceEpoch(currWhiteTurnTime ?? 0).toString()}');
     print(
-        'curr black time ${DateTime.fromMillisecondsSinceEpoch(currBlackTurnTime ?? 0).toString()}');
+        'curr b ${DateTime.fromMillisecondsSinceEpoch(currBlackTurnTime ?? 0).toString()} \n');
   }
 
   void resetTimers() {
@@ -285,7 +293,7 @@ class MatchController extends GetxController with WidgetsBindingObserver {
       if (checkIfValidMove(Move(selectedTile.value!, tile), gs.value!, true)) {
         isAnimating.value = true;
         recordHistory(tile);
-        setTimersAndPlayers(date);
+        setTimersAndPlayers(date ?? DateTime.now().millisecondsSinceEpoch);
         Move move = Move(selectedTile.value!, tile);
         if (homeController.withSound.value) {
           moveAudioPLayer.play(AssetSource('sounds/wind.mp3'), volume: 0.5);
