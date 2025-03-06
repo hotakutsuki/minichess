@@ -26,7 +26,7 @@ class ClockView extends GetView {
             color: clockController.myDuration.inSeconds > 20
                 ? Colors.white70
                 : Colors.redAccent,
-            fontSize: 24),
+            fontSize: 12),
       );
     });
   }
@@ -48,6 +48,7 @@ class ClockView extends GetView {
                 border: Border.all(color: getColor(), width: 2),
               ),
             ),
+            // timeText(),
             ColorFiltered(
               colorFilter: ColorFilter.mode(getColor(), BlendMode.modulate),
               child: Lottie.asset(
@@ -55,7 +56,6 @@ class ClockView extends GetView {
                 width: graveyardHeight,
                 height: graveyardHeight,
                 controller: clockController.animController,
-
               ),
             ),
           ],

@@ -76,11 +76,6 @@ class MatchController extends GetxController with WidgetsBindingObserver {
   Timer? reFetchTimer;
   int reFetchTime = 5;
 
-  int? firstWhiteTurnTime;
-  int? currWhiteTurnTime;
-  int? firstBlackTurnTime;
-  int? currBlackTurnTime;
-
   Future<bool> startOnlineMatch() async {
     List<MatchDom> openMatches = await dbController.getOpenMatches();
     var ans;
@@ -94,12 +89,10 @@ class MatchController extends GetxController with WidgetsBindingObserver {
       isHost.value = false;
       ans = await dbController.joinToAMatch();
     }
-    print('starting timeout listeners');
-    // Start timeout to read the game document every second
+    // Start timeout to read the game document every 5 seconds
     reFetchTimer = Timer.periodic(Duration(seconds: reFetchTime), (Timer t) async {
       if ((isHost.value && playersTurn == player.black) ||
           (!isHost.value && playersTurn == player.white)) {
-        print('reading doc state $gameId');
         var event = await dbController.readDocState();
         whenMatchStateChange(event);
       }
@@ -150,29 +143,27 @@ class MatchController extends GetxController with WidgetsBindingObserver {
     remoteTiles = event[MatchDom.TILES];
 
     if (remoteTiles.length > localTiles.length) {
-      print('remoteTiles.length ${remoteTiles.length}');
-      print('localTiles.length ${localTiles.length}');
       int startPosition = localTiles.length;
       localTiles = List.from(remoteTiles);
       if (remoteTiles.isNotEmpty) {
-        Tile tile = Tile.fromString(remoteTiles.last);
-        var playedTimeStamp = int.parse(remoteTiles.last.split(' ')[5]);
-        if (isFromGraveyard(tile)) {
-          play(gs.value!.myGraveyard.firstWhere((t) => t.char == tile.char), playedTimeStamp);
-        } else {
-          play(gs.value!.board[tile.j!][tile.i!], playedTimeStamp);
-        }
-        // for (int i = startPosition; i < remoteTiles.length; i++) {
-        //   Tile tile = Tile.fromString(remoteTiles[i]);
-        //   var playedTimeStamp = int.parse(remoteTiles[i].split(' ')[5]);
-        //   if (isFromGraveyard(tile)) {
-        //     await play(
-        //         gs.value!.myGraveyard.firstWhere((t) => t.char == tile.char),
-        //         playedTimeStamp);
-        //   } else {
-        //     await play(gs.value!.board[tile.j!][tile.i!], playedTimeStamp);
-        //   }
+        // Tile tile = Tile.fromString(remoteTiles.last);
+        // var playedTimeStamp = int.parse(remoteTiles.last.split(' ')[5]);
+        // if (isFromGraveyard(tile)) {
+        //   play(gs.value!.myGraveyard.firstWhere((t) => t.char == tile.char));
+        //   // blackClockState.setCountRemaining(remoteTiles)
+        //   // whiteClockState.setCountRemaining(remoteTiles)
+        // } else {
+        //   play(gs.value!.board[tile.j!][tile.i!]);
         // }
+        for (int i = startPosition; i < remoteTiles.length; i++) {
+          Tile tile = Tile.fromString(remoteTiles[i]);
+          if (isFromGraveyard(tile)) {
+            await play(
+                gs.value!.myGraveyard.firstWhere((t) => t.char == tile.char));
+          } else {
+            await play(gs.value!.board[tile.j!][tile.i!]);
+          }
+        }
       }
     }
     if (event[MatchDom.INVITEDPLAYERID] != null) {
@@ -201,43 +192,18 @@ class MatchController extends GetxController with WidgetsBindingObserver {
         'unknown', 'city', 'pass');
   }
 
-  void setTimersAndPlayers(int date) {
+  void setTimersAndPlayers() {
+    blackClockState.setCountRemaining(localTiles);
+    blackClockState.updateTexts();
+    whiteClockState.setCountRemaining(localTiles);
+    whiteClockState.updateTexts();
     if (playersTurn == player.white) {
       whiteClockState.stopTimer();
-
-      if (firstBlackTurnTime == null) {
-        firstBlackTurnTime = date;
-      } else {
-        currBlackTurnTime ??= date;
-      }
-      if (firstBlackTurnTime != null && currBlackTurnTime != null) {
-        blackClockState.setCountRemaining(
-            Duration(milliseconds: currBlackTurnTime! - firstBlackTurnTime!));
-      }
       blackClockState.startTimer();
     } else {
       blackClockState.stopTimer();
-
-      if (firstWhiteTurnTime == null) {
-        firstWhiteTurnTime = date;
-      } else {
-        currWhiteTurnTime ??= date;
-      }
-      if (firstWhiteTurnTime != null && currWhiteTurnTime != null) {
-        whiteClockState.setCountRemaining(
-            Duration(milliseconds: currWhiteTurnTime! - firstWhiteTurnTime!));
-      }
       whiteClockState.startTimer();
     }
-    print('turn $playersTurn');
-    print(
-        'init w ${DateTime.fromMillisecondsSinceEpoch(firstWhiteTurnTime ?? 0).toString()}');
-    print(
-        'init b ${DateTime.fromMillisecondsSinceEpoch(firstBlackTurnTime ?? 0).toString()}');
-    print(
-        'curr w ${DateTime.fromMillisecondsSinceEpoch(currWhiteTurnTime ?? 0).toString()}');
-    print(
-        'curr b ${DateTime.fromMillisecondsSinceEpoch(currBlackTurnTime ?? 0).toString()} \n');
   }
 
   void resetTimers() {
@@ -278,7 +244,7 @@ class MatchController extends GetxController with WidgetsBindingObserver {
     return true;
   }
 
-  play(Tile tile, [int? date]) async {
+  play(Tile tile) async {
     if (pausa.value) {
       return;
     }
@@ -293,7 +259,7 @@ class MatchController extends GetxController with WidgetsBindingObserver {
       if (checkIfValidMove(Move(selectedTile.value!, tile), gs.value!, true)) {
         isAnimating.value = true;
         recordHistory(tile);
-        setTimersAndPlayers(date ?? DateTime.now().millisecondsSinceEpoch);
+        setTimersAndPlayers();
         Move move = Move(selectedTile.value!, tile);
         if (homeController.withSound.value) {
           moveAudioPLayer.play(AssetSource('sounds/wind.mp3'), volume: 0.5);
@@ -514,21 +480,6 @@ class MatchController extends GetxController with WidgetsBindingObserver {
     return l.g(key);
   }
 
-  // playAudio(){
-  //   if (!homeController.withSound.value){
-  //     return;
-  //   }
-  //   audioPlayer = AudioPlayer();
-  //   audioPlayer.stop();
-  //   audioPlayer.play(AssetSource('sounds/battle.mp3'));
-  //   audioPlayer.setReleaseMode(ReleaseMode.loop);
-  //   fadeSound(1, 0, audioPlayer, 800);
-  // }
-
-  // stopAudio(){
-  //   fadeSound(0, 1, audioPlayer, 800);
-  // }
-
   @override
   void onInit() {
     super.onInit();
@@ -569,9 +520,6 @@ class MatchController extends GetxController with WidgetsBindingObserver {
     if (!isGameOver.value && gamemode == gameMode.training) {
       await playAsPc();
     }
-
-    // hostUser.value ??= createFakeUser();
-    // invitedUser.value ??= createFakeUser();
 
     super.onReady();
   }
