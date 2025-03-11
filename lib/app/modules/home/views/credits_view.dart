@@ -1,11 +1,8 @@
 import 'package:inti_the_inka_chess_game/app/modules/home/controllers/home_controller.dart';
 
-import '../../../routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../../data/enums.dart';
-import '../../../utils/utils.dart';
 import '../../language/controllers/language_controller.dart';
 
 class CreditsView extends GetView {
@@ -70,7 +67,7 @@ class CreditsView extends GetView {
                 const SizedBox(height: 20),
                 Text(l.g('Version:'), style: const TextStyle(fontSize: 16, color: Colors.white70)),
                 const SizedBox(height: 10),
-                Text(l.g('1.1.0'), style: const TextStyle(fontSize: 16, color: Colors.white)),
+                Text(l.g('1.2.0'), style: const TextStyle(fontSize: 16, color: Colors.white)),
               ],
             )
           ),

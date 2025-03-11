@@ -19,4 +19,5 @@ then run: "firebase deploy --only hosting"
 
 to build abb:
 1. Increrse version on pubspec.yaml
-2. Build>flutter>build app bundle
+2. increase version on credits_view.dart (To be enhanced)
+3. Build>flutter>build app bundle
