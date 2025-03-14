@@ -360,8 +360,8 @@ bool isFromGraveyard(Tile tile) {
 
 Future<bool> isConnected() async {
   var connectivityResult = await (Connectivity().checkConnectivity());
-  return connectivityResult == ConnectivityResult.mobile ||
-      connectivityResult == ConnectivityResult.wifi;
+  return connectivityResult.contains(ConnectivityResult.mobile)  ||
+      connectivityResult.contains(ConnectivityResult.wifi);
 }
 
 bool hardSearchMove(Move move, GameState gs, bool hard) {

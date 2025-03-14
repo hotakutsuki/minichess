@@ -88,7 +88,7 @@ class HallOfFameView extends GetView<HallOfFameController> {
                   l.g('HallOfFame'),
                   style: TextStyle(color: Colors.white70),
                 ),
-                backgroundColor: Colors.white10,
+                backgroundColor: Colors.white38,
                 centerTitle: true,
                 actions: [
                   FloatingActionButton(

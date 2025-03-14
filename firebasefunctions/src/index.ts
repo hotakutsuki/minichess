@@ -15,7 +15,7 @@ export const sendNewMatchNotification = functions.firestore
           .get();
 
       const user = userSnapshot.docs[0].data();
-      console.log(`user: ${user}`);
+      console.log(`user: ${JSON.stringify(user)}`);
       const payload: admin.messaging.MessagingPayload = {
         notification: {
           title: "New Challenge!",
@@ -29,7 +29,9 @@ export const sendNewMatchNotification = functions.firestore
           .docs
           .reduce((acc, cur) => [...acc, cur.data().token], [] as string[]);
       console.log(`listTokens: ${listTokens}`);
-      const response = fcm.sendToDevice(listTokens, payload);
-      console.log(`response: ${response}`);
-      return fcm.sendToTopic("newMatches", payload);
+      const response = await fcm.sendToDevice(listTokens, payload);
+      console.log(`response: ${JSON.stringify(response)}`);
+      const sendToTokenResponse = await fcm.sendToTopic("newMatches", payload);
+      console.log(`toTokenResponse: ${JSON.stringify(sendToTokenResponse)}`);
+      return;
     });

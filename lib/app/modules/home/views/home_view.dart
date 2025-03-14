@@ -124,7 +124,7 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
                                           decoration: BoxDecoration(
                                             borderRadius:
                                             const BorderRadius.horizontal(
-                                              right: Radius.circular(4),
+                                              right: Radius.circular(10),
                                             ),
                                             border: Border.all(
                                                 color: Colors.white54),

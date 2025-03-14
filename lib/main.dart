@@ -1,10 +1,10 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_notifications_handler/firebase_notifications_handler.dart';
-import 'package:inti_the_inka_chess_game/app/utils/utils.dart';
 import 'app/data/enums.dart';
 import 'app/modules/home/controllers/home_controller.dart';
 import 'app/modules/auth/controllers/auth_controller.dart';
@@ -19,7 +19,9 @@ import 'firebase_options.dart';
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
-  print("Handling a background message: ${message.messageId}");
+  if (kDebugMode) {
+    print("Handling a background message: ${message.messageId}");
+  }
 }
 
 void main() async {
@@ -53,7 +55,9 @@ void main() async {
       ?.createNotificationChannel(channel);
 
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-    print('recieven a message');
+    if (kDebugMode) {
+      print('reciving a message');
+    }
     RemoteNotification? notification = message.notification;
     AndroidNotification? android = message.notification?.android;
 
@@ -92,6 +96,26 @@ void main() async {
             colorScheme: ColorScheme.fromSwatch().copyWith(
               primary: brackgroundColor,
               secondary: brackgroundColor,
+            ),
+            elevatedButtonTheme: ElevatedButtonThemeData(
+              style: ButtonStyle(
+                backgroundColor: WidgetStateProperty.all<Color>(brackgroundColor),
+                foregroundColor: WidgetStateProperty.all<Color>(Colors.white),
+                shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                    RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                        side: const BorderSide(color: Colors.white38)
+                    )
+                ),
+              ),
+            ),
+            appBarTheme: const AppBarTheme(
+              // backgroundColor: brackgroundColor,
+              foregroundColor: Colors.white,
+            ),
+            floatingActionButtonTheme: FloatingActionButtonThemeData(
+              backgroundColor: brackgroundColor,
+              foregroundColor: Colors.white,
             ),
             scaffoldBackgroundColor: const Color(0xFFAAAAAA)
         ),

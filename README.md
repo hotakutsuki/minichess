@@ -11,13 +11,13 @@ https://hotakutsuki.github.io/minichess/
 to run debug:
 flutter run -d chrome --web-renderer canvaskit
 
-to deploy:
+To web deploy:
 run: "flutter build web --web-renderer canvaskit --release"
 copy /build/web => /docs.
 (you can overwrite index.html)
 then run: "firebase deploy --only hosting"
 
-to build abb:
-1. Increrse version on pubspec.yaml
+To build android app abb:
+1. increase version on pubspec.yaml
 2. increase version on credits_view.dart (To be enhanced)
 3. Build>flutter>build app bundle
