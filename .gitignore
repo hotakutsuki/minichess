@@ -45,7 +45,6 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
-*.cxx
 /android/app/.cxx/*
 
 /notificationserver/service-account.json
