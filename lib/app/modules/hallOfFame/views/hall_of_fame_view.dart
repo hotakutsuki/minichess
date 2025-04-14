@@ -12,7 +12,7 @@ class HallOfFameView extends GetView<HallOfFameController> {
   BackgroundController backgroundController = Get.find<BackgroundController>();
   LanguageController l = Get.find<LanguageController>();
 
-  Widget stremBuilder(query) {
+  Widget streamBuilder(query) {
     return StreamBuilder<QuerySnapshot>(
       stream: query,
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -53,7 +53,9 @@ class HallOfFameView extends GetView<HallOfFameController> {
                           idx.toString(),
                           textAlign: TextAlign.center,
                           style: const TextStyle(
-                              fontSize: 28, fontWeight: FontWeight.w500),
+                              fontSize: 24,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white),
                         ),
                       ),
                     ],
@@ -61,7 +63,8 @@ class HallOfFameView extends GetView<HallOfFameController> {
                   title: Text(data[User.NAME],
                       style: const TextStyle(color: Colors.white70)),
                   trailing: Text(data[User.SCORE].toString(),
-                      style: const TextStyle(color: Colors.white70)),
+                      style:
+                          const TextStyle(fontSize: 16, color: Colors.white70)),
                   subtitle: data[User.COUNTRYCODE] != null
                       ? Text(data[User.COUNTRYCODE],
                           style: const TextStyle(color: Colors.white70))
@@ -105,8 +108,8 @@ class HallOfFameView extends GetView<HallOfFameController> {
                     controller: controller.pageViewController,
                     physics: const NeverScrollableScrollPhysics(),
                     children: [
-                      stremBuilder(controller.globalUsersStream),
-                      stremBuilder(controller.localUsersStream.value),
+                      streamBuilder(controller.globalUsersStream),
+                      streamBuilder(controller.localUsersStream.value),
                     ]),
               ),
               if (controller.localUsersStream.value != null)

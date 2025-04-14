@@ -23,12 +23,22 @@ class LoginDialogView extends GetView<AuthController> {
   Widget build(BuildContext context) {
     return AlertDialog(
       backgroundColor: const Color.fromRGBO(255, 255, 255, .80),
+      contentTextStyle: const TextStyle(color: Colors.black),
       content: SizedBox(
         height: 450,
         width: 420,
         child: Obx(() {
-          return SingleChildScrollView(
-            child: getChild(),
+          final themeData = Theme.of(context);
+          return Theme(
+            data: themeData.copyWith(
+              textTheme: themeData.textTheme.apply(
+                bodyColor: Colors.black,
+                displayColor: Colors.black,
+              ),
+            ),
+            child: SingleChildScrollView(
+              child: getChild(),
+            ),
           );
         }),
       ),

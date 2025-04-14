@@ -44,7 +44,7 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyDPLBIy66w4VZi00U81tOWTE6UM9ESJVow',
+    apiKey: 'AIzaSyDqWGJsOL1K4mr6sze8wJWQcrJcQWN8tgA',
     appId: '1:733138640689:web:47d24419fd734df97cda10',
     messagingSenderId: '733138640689',
     projectId: 'minichess-34a02',
