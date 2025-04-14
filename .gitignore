@@ -45,6 +45,8 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+*.cxx
+/android/app/.cxx/*
 
 /notificationserver/service-account.json
 
@@ -58,3 +60,6 @@ app.*.map.json
 /ios/firebase_app_id_file.json
 /web/firebase-config.json
 /web/firebase-messaging-sw.js
+
+#junk
+/assets/oldideas

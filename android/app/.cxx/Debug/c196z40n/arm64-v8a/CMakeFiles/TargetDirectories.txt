@@ -1,2 +1,0 @@
-C:/Projects/flutter/minichess/android/app/.cxx/Debug/c196z40n/arm64-v8a/CMakeFiles/edit_cache.dir
-C:/Projects/flutter/minichess/android/app/.cxx/Debug/c196z40n/arm64-v8a/CMakeFiles/rebuild_cache.dir
