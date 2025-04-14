@@ -12,7 +12,7 @@ import '../controllers/language_controller.dart';
 class LanguageView extends GetView<LanguageController> {
   LanguageView({Key? key}) : super(key: key);
 
-  BackgroundController backgroundController = Get.find<BackgroundController>();
+  final BackgroundController backgroundController = Get.find<BackgroundController>();
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +72,7 @@ class LanguageView extends GetView<LanguageController> {
                           Text(controller.homeController.withSound.value
                               ? controller.g('WithSound') : controller.g(
                               'WithOutSound'),
-                            style: const TextStyle(fontSize: 14),),
+                            style: const TextStyle(fontSize: 14, color: Colors.black),),
                           const Divider(height: 50, color: Colors.transparent,),
                           SizedBox(
                             height: 40,
