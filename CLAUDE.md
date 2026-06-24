@@ -20,8 +20,11 @@ before scoping — do NOT start building features until the scope is agreed.
 - Board is a fixed **3×4 minichess**; pawn promotes to knight at `j==3` (`gameState.dart`).
 - AI in `ai_controller.dart` (minimax-ish eval). Note: `getPlay` returns early at the
   `return makeLocalDecision()` — the remote-play block below it is **dead/unreachable**.
-- Known bug: knight movement compares `possession` to `player` (always false) → `else`
-  branch always runs. NOT fixed yet (production); flagged for user decision.
+- Movement is now **data-driven** via `engine/rules.dart` `pieceOffsets()` (Stage 3).
+  This also fixed the old knight bug (it compared `possession` to `player`, so the enemy
+  knight's diagonals were mirrored wrong — only affected the AI's king-safety heuristic,
+  since this game has no check). The knight (an invented promoted-pawn piece) now mirrors
+  by owner like the pawn.
 
 ## Build / run
 - Emulator alias in user's zsh: **`celular`** → launches AVD `@Small_Phone`. Mobile-first,

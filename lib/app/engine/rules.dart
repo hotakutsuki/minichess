@@ -7,9 +7,8 @@ import '../utils/gameObjects/tile.dart';
 ///
 /// This library is intentionally free of Flutter / GetX / audio / IO imports so
 /// it can be unit-tested in isolation and reused by future game modes
-/// (rule modifiers, campaign/boss AI). Behaviour here is a verbatim extraction
-/// of the original logic that lived in `utils.dart` — see the characterization
-/// tests in `test/engine/` before changing any of it.
+/// (rule modifiers, campaign/boss AI). Movement is data-driven via
+/// [pieceOffsets]. See the characterization tests in `test/engine/`.
 
 bool isFromGraveyard(Tile tile) {
   return tile.i == null;
@@ -82,92 +81,76 @@ bool checkIfValidMove(Move m, GameState gs, [bool hard = false]) {
   }
 }
 
-bool isValidMovmentPerPiece(Move m, GameState gs, [bool hard = false]) {
-  switch (m.initialTile.char) {
+/// Relative `[di, dj]` steps a piece may take, from the perspective of its
+/// owner: `mine` advances toward +j, `enemy` toward -j, so direction-dependent
+/// pieces (pawn, knight) mirror automatically. The king's steps are gated
+/// separately by [hardSearchMove]; queen and empty have no moves.
+///
+/// This table is the single source of truth for movement — swap/extend it to
+/// add rule modifiers or new pieces.
+List<List<int>> pieceOffsets(chrt piece, possession owner) {
+  final fwd = owner == possession.mine ? 1 : -1;
+  switch (piece) {
     case chrt.pawn:
-      if (m.initialTile.owner == possession.mine) {
-        return m.initialTile.i! == m.finalTile.i &&
-            m.initialTile.j == (m.finalTile.j! - 1);
-      } else {
-        return m.initialTile.i! == m.finalTile.i &&
-            m.initialTile.j == (m.finalTile.j! + 1);
-      }
-    case chrt.king:
-      return (m.initialTile.i! + 1 == m.finalTile.i &&
-              m.initialTile.j! + 1 == m.finalTile.j &&
-              hardSearchMove(m, gs, hard)) ||
-          (m.initialTile.i! + 1 == m.finalTile.i &&
-              m.initialTile.j == m.finalTile.j &&
-              hardSearchMove(m, gs, hard)) ||
-          (m.initialTile.i! + 1 == m.finalTile.i &&
-              m.initialTile.j! - 1 == m.finalTile.j &&
-              hardSearchMove(m, gs, hard)) ||
-          (m.initialTile.i == m.finalTile.i &&
-              m.initialTile.j! + 1 == m.finalTile.j &&
-              hardSearchMove(m, gs, hard)) ||
-          (m.initialTile.i == m.finalTile.i &&
-              m.initialTile.j! - 1 == m.finalTile.j &&
-              hardSearchMove(m, gs, hard)) ||
-          (m.initialTile.i! - 1 == m.finalTile.i &&
-              m.initialTile.j! + 1 == m.finalTile.j &&
-              hardSearchMove(m, gs, hard)) ||
-          (m.initialTile.i! - 1 == m.finalTile.i &&
-              m.initialTile.j == m.finalTile.j &&
-              hardSearchMove(m, gs, hard)) ||
-          (m.initialTile.i! - 1 == m.finalTile.i &&
-              m.initialTile.j! - 1 == m.finalTile.j &&
-              hardSearchMove(m, gs, hard));
-    case chrt.bishop:
-      return (m.initialTile.i! + 1 == m.finalTile.i &&
-              m.initialTile.j! + 1 == m.finalTile.j) ||
-          (m.initialTile.i! + 1 == m.finalTile.i &&
-              m.initialTile.j! - 1 == m.finalTile.j) ||
-          (m.initialTile.i! - 1 == m.finalTile.i &&
-              m.initialTile.j! + 1 == m.finalTile.j) ||
-          (m.initialTile.i! - 1 == m.finalTile.i &&
-              m.initialTile.j! - 1 == m.finalTile.j);
-    case chrt.rock:
-      return (m.initialTile.i! + 1 == m.finalTile.i &&
-              m.initialTile.j == m.finalTile.j) ||
-          (m.initialTile.i == m.finalTile.i &&
-              m.initialTile.j! + 1 == m.finalTile.j) ||
-          (m.initialTile.i == m.finalTile.i &&
-              m.initialTile.j! - 1 == m.finalTile.j) ||
-          (m.initialTile.i! - 1 == m.finalTile.i &&
-              m.initialTile.j == m.finalTile.j);
+      return [
+        [0, fwd]
+      ];
     case chrt.knight:
-      if (m.initialTile.owner == player.white) {
-        return (m.initialTile.j! + 1 == m.finalTile.j &&
-                m.initialTile.i == m.finalTile.i) ||
-            (m.initialTile.j == m.finalTile.j &&
-                m.initialTile.i! + 1 == m.finalTile.i) ||
-            (m.initialTile.j == m.finalTile.j &&
-                m.initialTile.i! - 1 == m.finalTile.i) ||
-            (m.initialTile.j! - 1 == m.finalTile.j &&
-                m.initialTile.i == m.finalTile.i) ||
-            (m.initialTile.j! - 1 == m.finalTile.j &&
-                m.initialTile.i! + 1 == m.finalTile.i) ||
-            (m.initialTile.j! - 1 == m.finalTile.j &&
-                m.initialTile.i! - 1 == m.finalTile.i);
-      } else {
-        return (m.initialTile.j! + 1 == m.finalTile.j &&
-                m.initialTile.i == m.finalTile.i) ||
-            (m.initialTile.j == m.finalTile.j &&
-                m.initialTile.i! + 1 == m.finalTile.i) ||
-            (m.initialTile.j == m.finalTile.j &&
-                m.initialTile.i! - 1 == m.finalTile.i) ||
-            (m.initialTile.j! - 1 == m.finalTile.j &&
-                m.initialTile.i == m.finalTile.i) ||
-            (m.initialTile.j! + 1 == m.finalTile.j &&
-                m.initialTile.i! + 1 == m.finalTile.i) ||
-            (m.initialTile.j! + 1 == m.finalTile.j &&
-                m.initialTile.i! - 1 == m.finalTile.i);
-      }
+      // Invented piece (a promoted pawn): pushes forward — straight plus both
+      // forward diagonals — plus the two sides and a single step back.
+      return [
+        [0, fwd],
+        [1, 0],
+        [-1, 0],
+        [0, -fwd],
+        [1, fwd],
+        [-1, fwd],
+      ];
+    case chrt.bishop:
+      return const [
+        [1, 1],
+        [1, -1],
+        [-1, 1],
+        [-1, -1],
+      ];
+    case chrt.rock:
+      return const [
+        [1, 0],
+        [-1, 0],
+        [0, 1],
+        [0, -1],
+      ];
+    case chrt.king:
+      return const [
+        [1, 0],
+        [-1, 0],
+        [0, 1],
+        [0, -1],
+        [1, 1],
+        [1, -1],
+        [-1, 1],
+        [-1, -1],
+      ];
     case chrt.empty:
-      return false;
     case chrt.queen:
-      return false;
+      return const [];
   }
+}
+
+bool isValidMovmentPerPiece(Move m, GameState gs, [bool hard = false]) {
+  final di = m.finalTile.i! - m.initialTile.i!;
+  final dj = m.finalTile.j! - m.initialTile.j!;
+  final reachable = pieceOffsets(m.initialTile.char, m.initialTile.owner)
+      .any((o) => o[0] == di && o[1] == dj);
+  if (!reachable) return false;
+  // The king is the only piece whose move can be rejected — and only when
+  // `hard` is false (the AI's look-ahead, so it won't step its king onto a
+  // losing square). Every other piece may move into danger freely: this game
+  // has no check, you win by capturing the king.
+  if (m.initialTile.char == chrt.king) {
+    return hardSearchMove(m, gs, hard);
+  }
+  return true;
 }
 
 bool checkIfWin(Move move) {
