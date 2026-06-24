@@ -15,6 +15,7 @@ import '../../../services/database.dart';
 import '../../../utils/gameObjects/gameState.dart';
 import '../../../utils/gameObjects/move.dart';
 import '../../../utils/gameObjects/tile.dart';
+import '../../../utils/juice.dart';
 import '../../../utils/utils.dart';
 import '../../home/controllers/home_controller.dart';
 import '../../language/controllers/language_controller.dart';
@@ -252,6 +253,7 @@ class MatchController extends GetxController with WidgetsBindingObserver {
       if (tile.char != chrt.empty && tile.owner == possession.mine) {
         tile.isSelected = true;
         selectedTile.value = tile;
+        Juice.select();
         // print('selectedTile: $selectedTile');
         highlightAvailableOptions();
       }
@@ -261,9 +263,11 @@ class MatchController extends GetxController with WidgetsBindingObserver {
         recordHistory(tile);
         setTimersAndPlayers();
         Move move = Move(selectedTile.value!, tile);
+        final bool isCapture = tile.char != chrt.empty;
         if (homeController.withSound.value) {
           moveAudioPLayer.play(AssetSource('sounds/wind.mp3'), volume: 0.5);
         }
+        if (!isCapture) Juice.move();
         await animateTiles(move);
         if (checkIfWin(move)) {
           gameOver(playersTurn);
@@ -294,6 +298,8 @@ class MatchController extends GetxController with WidgetsBindingObserver {
       int length = gyController.getGraveyard(playersTurn).length;
       TileController takenTileController =
           Get.find<TileController>(tag: move.finalTile.toString());
+      takenTileController.flash();
+      Juice.capture();
       takenTileController.animateTile(
           move.finalTile.i!, -1 - move.finalTile.j!, null, null, length);
       gyController.animateGraveyard();
@@ -362,6 +368,7 @@ class MatchController extends GetxController with WidgetsBindingObserver {
   void gameOver(player p) async {
     winner = p;
     isGameOver.value = true;
+    Juice.gameOver();
     blackClockState.stopTimer();
     whiteClockState.stopTimer();
     if (p == player.white) {
