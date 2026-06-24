@@ -3,19 +3,26 @@ import 'package:inti_the_inka_chess_game/app/utils/gameObjects/tile.dart';
 
 import '../../data/enums.dart';
 
+import '../../engine/board_config.dart';
 import '../../engine/board_factory.dart';
 import '../../engine/rules.dart';
 import 'move.dart';
 
 class GameState {
-  GameState(this.board, this.myGraveyard, this.enemyGraveyard);
+  GameState(this.board, this.myGraveyard, this.enemyGraveyard,
+      {this.config = BoardConfig.classic});
 
-  GameState.named({board, myGraveyard, enemyGraveyard})
-      : this(board, myGraveyard, enemyGraveyard);
+  GameState.named(
+      {board,
+      myGraveyard,
+      enemyGraveyard,
+      BoardConfig config = BoardConfig.classic})
+      : this(board, myGraveyard, enemyGraveyard, config: config);
 
   List<List<Tile>> board;
   List<Tile> myGraveyard;
   List<Tile> enemyGraveyard;
+  final BoardConfig config;
 
   GameState changeGameState(Move move) {
     sendPieceToGrave(move);
@@ -24,8 +31,9 @@ class GameState {
   }
 
   transformPawn(Move move) {
-    if (move.finalTile.char == chrt.pawn && move.finalTile.j == 3) {
-      board[move.finalTile.j!][move.finalTile.i!].char = chrt.knight;
+    if (move.finalTile.char == chrt.pawn &&
+        move.finalTile.j == config.promotionRow) {
+      board[move.finalTile.j!][move.finalTile.i!].char = config.promotesTo;
     }
   }
 
@@ -75,6 +83,7 @@ class GameState {
       board: cloneBoard(gs.board),
       myGraveyard: [...gs.myGraveyard],
       enemyGraveyard: [...gs.enemyGraveyard],
+      config: gs.config,
     );
   }
 
