@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import '../../../data/enums.dart';
 import '../../../data/remoteRecord.dart';
-import '../../../utils/gameObjects/GameState.dart';
+import '../../../utils/gameObjects/gameState.dart';
 import '../../../utils/gameObjects/move.dart';
 import '../../../utils/gameObjects/tile.dart';
 import '../../../utils/utils.dart';

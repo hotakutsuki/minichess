@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:flutter/services.dart';
-import 'package:firebase_notifications_handler/firebase_notifications_handler.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'app/data/enums.dart';
 import 'app/modules/home/controllers/home_controller.dart';
 import 'app/modules/auth/controllers/auth_controller.dart';
@@ -63,10 +63,10 @@ void main() async {
 
     if (notification != null && android != null) {
       flutterLocalNotificationsPlugin.show(
-          notification.hashCode,
-          notification.title,
-          notification.body,
-          NotificationDetails(
+          id: notification.hashCode,
+          title: notification.title,
+          body: notification.body,
+          notificationDetails: NotificationDetails(
             android: AndroidNotificationDetails(
               channel.id,
               channel.name,

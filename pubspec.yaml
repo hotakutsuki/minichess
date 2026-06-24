@@ -3,36 +3,35 @@ version: 1.2.0+23
 publish_to: none
 description: "A mini board game"
 environment: 
-  sdk: '>=2.18.1 <3.0.0'
+  sdk: '>=3.0.0 <4.0.0'
 
 dependencies: 
   cupertino_icons: ^1.0.2
   flutter_launcher_icons: ^0.14.3
   http: ^1.3.0
-  connectivity_plus: ^6.1.3
-  firebase_core: ^3.12.1
-  firebase_analytics: ^11.4.4
-  firebase_auth: ^5.5.1
-  firebase_crashlytics: ^4.3.4
-  firebase_messaging: ^15.2.4
-  flutter_local_notifications: ^18.0.1
-  firebase_notifications_handler: ^2.0.2+1
-  firebase_storage: ^12.4.4
-  cloud_firestore: ^5.6.5
+  connectivity_plus: ^7.1.1
+  firebase_core: ^4.11.0
+  firebase_analytics: ^12.4.3
+  firebase_auth: ^6.5.4
+  firebase_crashlytics: ^5.2.4
+  firebase_messaging: ^16.4.1
+  flutter_local_notifications: ^22.0.1
+  firebase_storage: ^13.4.3
+  cloud_firestore: ^6.6.0
   #google_sign_in: ^6.0.2
   #google_sign_in_web: ^0.11.0+2
   get: ^4.7.2
   flutter: 
     sdk: flutter
   shared_preferences: ^2.2.0
-  file_picker: ^9.1.0
+  file_picker: ^11.0.2
   crypto: ^3.0.3
   url_launcher: ^6.1.11
   audioplayers: ^6.4.0
   lottie: ^3.3.1
 
 dev_dependencies: 
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
   flutter_test: 
     sdk: flutter
 

@@ -12,7 +12,7 @@ import '../../../data/usefullData.dart';
 import '../../../data/userDom.dart';
 import '../../../routes/app_pages.dart';
 import '../../../services/database.dart';
-import '../../../utils/gameObjects/GameState.dart';
+import '../../../utils/gameObjects/gameState.dart';
 import '../../../utils/gameObjects/move.dart';
 import '../../../utils/gameObjects/tile.dart';
 import '../../../utils/utils.dart';

@@ -11,7 +11,7 @@ import 'package:inti_the_inka_chess_game/app/modules/home/controllers/home_contr
 
 import '../data/enums.dart';
 import '../modules/match/controllers/ai_controller.dart';
-import 'gameObjects/GameState.dart';
+import 'gameObjects/gameState.dart';
 import 'gameObjects/move.dart';
 import 'gameObjects/tile.dart';
 
