@@ -127,11 +127,12 @@ void main() {
     });
   });
 
-  // KNOWN bug locked on purpose: the knight branch compares `owner` (a
-  // `possession`) against `player.white` (always false), so mine and enemy
-  // knights share the exact same 6-move set. Revisit when we decide to fix it.
-  group('knight movement (current/buggy behaviour)', () {
-    final targets = <List<int>>[
+  // The knight is an invented piece (a promoted pawn). Like the pawn, its
+  // direction depends on the owner: mine pushes toward +j, enemy toward -j.
+  // (Stage 3 fixed the old owner-comparison bug where both shared one set.)
+  group('knight movement (direction depends on owner)', () {
+    // From (i=1, j=1): forward straight + sides + back straight + 2 forward diagonals.
+    final mineTargets = <List<int>>[
       [1, 2],
       [2, 1],
       [0, 1],
@@ -139,19 +140,37 @@ void main() {
       [2, 2],
       [0, 2],
     ];
-    test('mine and enemy knights share the same 6 destinations', () {
-      for (final o in [possession.mine, possession.enemy]) {
-        for (final t in targets) {
-          expect(
-              isValidMovmentPerPiece(
-                  _move(chrt.knight, o, 1, 1, t[0], t[1]), gs, true),
-              isTrue,
-              reason: 'owner=$o target=$t should be valid');
-        }
+    // Vertical mirror for the enemy (forward is -j).
+    final enemyTargets = <List<int>>[
+      [1, 0],
+      [2, 1],
+      [0, 1],
+      [1, 2],
+      [2, 0],
+      [0, 0],
+    ];
+    test('mine knight uses +j (forward) diagonals', () {
+      for (final t in mineTargets) {
+        expect(
+            isValidMovmentPerPiece(
+                _move(chrt.knight, possession.mine, 1, 1, t[0], t[1]), gs, true),
+            isTrue,
+            reason: 'mine target=$t');
       }
-    });
-    test('a cell outside that set is invalid', () {
+      // an enemy-only destination is not reachable for mine
       expect(isValidMovmentPerPiece(_move(chrt.knight, possession.mine, 1, 1, 0, 0),
+          gs, true), isFalse);
+    });
+    test('enemy knight mirrors to -j (forward) diagonals', () {
+      for (final t in enemyTargets) {
+        expect(
+            isValidMovmentPerPiece(
+                _move(chrt.knight, possession.enemy, 1, 1, t[0], t[1]), gs, true),
+            isTrue,
+            reason: 'enemy target=$t');
+      }
+      // a mine-only forward diagonal is not reachable for enemy
+      expect(isValidMovmentPerPiece(_move(chrt.knight, possession.enemy, 1, 1, 2, 2),
           gs, true), isFalse);
     });
   });
