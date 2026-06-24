@@ -1,6 +1,6 @@
 import 'package:inti_the_inka_chess_game/app/utils/gameObjects/tile.dart';
 
-import '../utils.dart';
+import '../../engine/rules.dart';
 import '../../data/enums.dart';
 
 class Move {

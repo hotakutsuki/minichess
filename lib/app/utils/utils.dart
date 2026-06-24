@@ -10,90 +10,18 @@ import 'package:flutter/material.dart';
 import 'package:inti_the_inka_chess_game/app/modules/home/controllers/home_controller.dart';
 
 import '../data/enums.dart';
-import '../modules/match/controllers/ai_controller.dart';
-import 'gameObjects/gameState.dart';
-import 'gameObjects/move.dart';
-import 'gameObjects/tile.dart';
 
-// createNewBoard() {
-//   var matrix = [
-//     [
-//       Tile(chrt.empty, possession.none, 0, 0),
-//       Tile(chrt.empty, possession.none, 1, 0),
-//       Tile(chrt.empty, possession.none, 2, 0)
-//     ],
-//     [
-//       Tile(chrt.empty, possession.none, 0, 1),
-//       Tile(chrt.empty, possession.mine, 1, 1),
-//       Tile(chrt.empty, possession.none, 2, 1)
-//     ],
-//     [
-//       Tile(chrt.empty, possession.none, 0, 2),
-//       Tile(chrt.empty, possession.none, 1, 2),
-//       Tile(chrt.empty, possession.none, 2, 2)
-//     ],
-//     [
-//       Tile(chrt.empty, possession.none, 0, 3),
-//       Tile(chrt.empty, possession.none, 1, 3),
-//       Tile(chrt.empty, possession.none, 2, 3)
-//     ],
-//   ];
-//   return matrix;
-// }
-
-// createNewBoard() {
-//   var matrix = [
-//     [
-//       Tile(chrt.empty, possession.none, 0, 0),
-//       Tile(chrt.king, possession.mine, 1, 0),
-//       Tile(chrt.empty, possession.none, 2, 0)
-//     ],
-//     [
-//       Tile(chrt.pawn, possession.mine, 0, 1),
-//       Tile(chrt.empty, possession.none, 1, 1),
-//       Tile(chrt.empty, possession.none, 2, 1)
-//     ],
-//     [
-//       Tile(chrt.empty, possession.none, 0, 2),
-//       Tile(chrt.rock, possession.enemy, 1, 2),
-//       Tile(chrt.pawn, possession.enemy, 2, 2)
-//     ],
-//     [
-//       Tile(chrt.empty, possession.none, 0, 3),
-//       Tile(chrt.king, possession.enemy, 1, 3),
-//       Tile(chrt.empty, possession.none, 2, 3)
-//     ],
-//   ];
-//   return matrix;
-// }
-
-createNewBoard() {
-  var matrix = [
-    [
-      Tile(chrt.bishop, possession.mine, 0, 0),
-      Tile(chrt.king, possession.mine, 1, 0),
-      Tile(chrt.rock, possession.mine, 2, 0)
-    ],
-    [
-      Tile(chrt.empty, possession.none, 0, 1),
-      Tile(chrt.pawn, possession.mine, 1, 1),
-      Tile(chrt.empty, possession.none, 2, 1)
-    ],
-    [
-      Tile(chrt.empty, possession.none, 0, 2),
-      Tile(chrt.pawn, possession.enemy, 1, 2),
-      Tile(chrt.empty, possession.none, 2, 2)
-    ],
-    [
-      Tile(chrt.rock, possession.enemy, 0, 3),
-      Tile(chrt.king, possession.enemy, 1, 3),
-      Tile(chrt.bishop, possession.enemy, 2, 3)
-    ],
-  ];
-
-  // printMatrix(matrix);
-  return matrix;
-}
+// The pure rules engine now lives in app/engine. Re-exported here so existing
+// callers that import utils.dart keep seeing these symbols unchanged.
+export '../engine/rules.dart'
+    show
+        isFromGraveyard,
+        checkIfValidMove,
+        checkIfWin,
+        isProtecting,
+        hardSearchMove,
+        isValidMovmentPerPiece;
+export '../engine/board_factory.dart';
 
 RegExp emailRegExp = RegExp(
     r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$");
@@ -354,134 +282,8 @@ setIslandInTrue(i, j, matrix, orgMatrix) {
   return matrix;
 }
 
-bool isFromGraveyard(Tile tile) {
-  return tile.i == null;
-}
-
 Future<bool> isConnected() async {
   var connectivityResult = await (Connectivity().checkConnectivity());
   return connectivityResult.contains(ConnectivityResult.mobile)  ||
       connectivityResult.contains(ConnectivityResult.wifi);
-}
-
-bool hardSearchMove(Move move, GameState gs, bool hard) {
-  if (hard) {
-    return true;
-  }
-  GameState newGameState = GameState.clone(gs);
-  newGameState.changeGameState(move);
-  final aiController = Get.put(AiController());
-  return !aiController.isInCheck(newGameState);
-}
-
-bool isProtecting(Move m, GameState gs, bool hard) {
-  if (isFromGraveyard(m.initialTile) || m.initialTile.owner != m.finalTile.owner) {
-    return false;
-  }
-  return isValidMovmentPerPiece(m, gs, hard);
-}
-
-bool checkIfValidMove(Move m, GameState gs, [bool hard = false]) {
-  //TODO: Enhace: check if is players turn, and check of move have initial and final tile
-  if (isFromGraveyard(m.initialTile)) {
-    return m.finalTile.char == chrt.empty;
-  } else {
-    if (m.initialTile.owner == m.finalTile.owner) {
-      return false;
-    } else {
-      return isValidMovmentPerPiece(m, gs, hard);
-    }
-  }
-}
-
-bool isValidMovmentPerPiece(Move m, GameState gs, [bool hard = false]){
-  switch (m.initialTile.char) {
-    case chrt.pawn:
-      if (m.initialTile.owner == possession.mine) {
-        return m.initialTile.i! == m.finalTile.i &&
-            m.initialTile.j == (m.finalTile.j! - 1);
-      } else {
-        return m.initialTile.i! == m.finalTile.i &&
-            m.initialTile.j == (m.finalTile.j! + 1);
-      }
-    case chrt.king:
-      return (m.initialTile.i! + 1 == m.finalTile.i &&
-          m.initialTile.j! + 1 == m.finalTile.j &&
-          hardSearchMove(m, gs, hard)) ||
-          (m.initialTile.i! + 1 == m.finalTile.i &&
-              m.initialTile.j == m.finalTile.j &&
-              hardSearchMove(m, gs, hard)) ||
-          (m.initialTile.i! + 1 == m.finalTile.i &&
-              m.initialTile.j! - 1 == m.finalTile.j &&
-              hardSearchMove(m, gs, hard)) ||
-          (m.initialTile.i == m.finalTile.i &&
-              m.initialTile.j! + 1 == m.finalTile.j &&
-              hardSearchMove(m, gs, hard)) ||
-          (m.initialTile.i == m.finalTile.i &&
-              m.initialTile.j! - 1 == m.finalTile.j &&
-              hardSearchMove(m, gs, hard)) ||
-          (m.initialTile.i! - 1 == m.finalTile.i &&
-              m.initialTile.j! + 1 == m.finalTile.j &&
-              hardSearchMove(m, gs, hard)) ||
-          (m.initialTile.i! - 1 == m.finalTile.i &&
-              m.initialTile.j == m.finalTile.j &&
-              hardSearchMove(m, gs, hard)) ||
-          (m.initialTile.i! - 1 == m.finalTile.i &&
-              m.initialTile.j! - 1 == m.finalTile.j &&
-              hardSearchMove(m, gs, hard));
-    case chrt.bishop:
-      return (m.initialTile.i! + 1 == m.finalTile.i &&
-          m.initialTile.j! + 1 == m.finalTile.j) ||
-          (m.initialTile.i! + 1 == m.finalTile.i &&
-              m.initialTile.j! - 1 == m.finalTile.j) ||
-          (m.initialTile.i! - 1 == m.finalTile.i &&
-              m.initialTile.j! + 1 == m.finalTile.j) ||
-          (m.initialTile.i! - 1 == m.finalTile.i &&
-              m.initialTile.j! - 1 == m.finalTile.j);
-    case chrt.rock:
-      return (m.initialTile.i! + 1 == m.finalTile.i &&
-          m.initialTile.j == m.finalTile.j) ||
-          (m.initialTile.i == m.finalTile.i &&
-              m.initialTile.j! + 1 == m.finalTile.j) ||
-          (m.initialTile.i == m.finalTile.i &&
-              m.initialTile.j! - 1 == m.finalTile.j) ||
-          (m.initialTile.i! - 1 == m.finalTile.i &&
-              m.initialTile.j == m.finalTile.j);
-    case chrt.knight:
-      if (m.initialTile.owner == player.white) {
-        return (m.initialTile.j! + 1 == m.finalTile.j &&
-            m.initialTile.i == m.finalTile.i) ||
-            (m.initialTile.j == m.finalTile.j &&
-                m.initialTile.i! + 1 == m.finalTile.i) ||
-            (m.initialTile.j == m.finalTile.j &&
-                m.initialTile.i! - 1 == m.finalTile.i) ||
-            (m.initialTile.j! - 1 == m.finalTile.j &&
-                m.initialTile.i == m.finalTile.i) ||
-            (m.initialTile.j! - 1 == m.finalTile.j &&
-                m.initialTile.i! + 1 == m.finalTile.i) ||
-            (m.initialTile.j! - 1 == m.finalTile.j &&
-                m.initialTile.i! - 1 == m.finalTile.i);
-      } else {
-        return (m.initialTile.j! + 1 == m.finalTile.j &&
-            m.initialTile.i == m.finalTile.i) ||
-            (m.initialTile.j == m.finalTile.j &&
-                m.initialTile.i! + 1 == m.finalTile.i) ||
-            (m.initialTile.j == m.finalTile.j &&
-                m.initialTile.i! - 1 == m.finalTile.i) ||
-            (m.initialTile.j! - 1 == m.finalTile.j &&
-                m.initialTile.i == m.finalTile.i) ||
-            (m.initialTile.j! + 1 == m.finalTile.j &&
-                m.initialTile.i! + 1 == m.finalTile.i) ||
-            (m.initialTile.j! + 1 == m.finalTile.j &&
-                m.initialTile.i! - 1 == m.finalTile.i);
-      }
-    case chrt.empty:
-      return false;
-    case chrt.queen:
-      return false;
-  }
-}
-
-bool checkIfWin(Move move) {
-  return move.finalTile.char == chrt.king;
 }

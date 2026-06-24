@@ -57,6 +57,8 @@ before scoping — do NOT start building features until the scope is agreed.
 ## Workflow for changes (per user)
 - One `feature/*` branch per feature. Verify each step with `flutter analyze` + unit
   tests; do a full emulator build at milestones so the user can try it.
+- **Open a PR for changes; the user merges** (do NOT push straight to `main` — it has
+  branch protection requiring PRs).
 
 ## Notes
 - This is a live production app — be careful with anything touching Firestore rules,
