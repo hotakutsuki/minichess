@@ -3,7 +3,8 @@ import 'package:inti_the_inka_chess_game/app/utils/gameObjects/tile.dart';
 
 import '../../data/enums.dart';
 
-import '../utils.dart';
+import '../../engine/board_factory.dart';
+import '../../engine/rules.dart';
 import 'move.dart';
 
 class GameState {

@@ -54,9 +54,15 @@ before scoping — do NOT start building features until the scope is agreed.
 - ⚠️ **iOS/macOS**: config updated for the upgrade but **UNVERIFIED** — needs a Mac with
   Xcode + `pod install` to confirm. Cannot be built on this Linux machine.
 
-## Workflow for changes (per user)
-- One `feature/*` branch per feature. Verify each step with `flutter analyze` + unit
-  tests; do a full emulator build at milestones so the user can try it.
+## Workflow for changes (per user) — gitflow
+- Branching: `feature/*` → **`dev`** (integration) → **`main`** (production).
+  One `feature/*` branch per feature, branched off `dev`.
+- **Open a PR for every change; the user merges** (do NOT push straight to `main`/`dev`;
+  `main` has branch protection requiring PRs).
+- `main` is production: merging into it triggers the live Firebase Hosting deploy
+  (`inkachess.com`). Only release to `main` once everything is tested in `dev`.
+- Verify each step with `flutter analyze` + unit tests; full emulator/web build at
+  milestones so the user can try it.
 
 ## Notes
 - This is a live production app — be careful with anything touching Firestore rules,
