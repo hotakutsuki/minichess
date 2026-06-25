@@ -246,7 +246,7 @@ class MatchController extends GetxController with WidgetsBindingObserver {
     return true;
   }
 
-  play(Tile tile, {bool fromDrag = false}) async {
+  play(Tile tile) async {
     if (pausa.value) {
       return;
     }
@@ -269,7 +269,7 @@ class MatchController extends GetxController with WidgetsBindingObserver {
           moveAudioPLayer.play(AssetSource('sounds/wind.mp3'), volume: 0.5);
         }
         if (!isCapture) Juice.move();
-        await animateTiles(move, fromDrag: fromDrag);
+        await animateTiles(move);
         if (checkIfWin(move)) {
           gameOver(playersTurn);
         }
@@ -291,7 +291,7 @@ class MatchController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-  animateTiles(Move move, {bool fromDrag = false}) async {
+  animateTiles(Move move) async {
     if (gs.value!.board[move.finalTile.j!][move.finalTile.i!].char !=
         chrt.empty) {
       GraveyardController gyController =
@@ -316,9 +316,7 @@ class MatchController extends GetxController with WidgetsBindingObserver {
       await tileController.animateTile(
           null, null, move.finalTile.i, move.finalTile.j, idx);
     }
-    // A dragged piece is already where the player dropped it, so skip the long
-    // slide for it (captures + graveyard moves still animate above).
-    if (!fromDrag && !isFromGraveyard(move.initialTile)) {
+    if (!isFromGraveyard(move.initialTile)) {
       TileController tileController =
           Get.find<TileController>(tag: move.initialTile.toString());
       await tileController.animateTile(move.initialTile.i!, move.initialTile.j!,
@@ -326,7 +324,7 @@ class MatchController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-  onTapTile(Tile tile, {bool fromDrag = false}) async {
+  onTapTile(Tile tile) async {
     if (isAnimating.value) {
       return;
     }
@@ -335,7 +333,7 @@ class MatchController extends GetxController with WidgetsBindingObserver {
         localTiles.add(tile.toStingWithTimeStamp());
         dbController.updatePlayedHistory();
       }
-      play(tile, fromDrag: fromDrag);
+      play(tile);
     }
   }
 
@@ -362,7 +360,7 @@ class MatchController extends GetxController with WidgetsBindingObserver {
       selectForDrag(from);
     }
     if (selectedTile.value == null) return;
-    onTapTile(to, fromDrag: true);
+    onTapTile(to);
   }
 
   /// The dragged piece was dropped nowhere valid — clear the selection.
