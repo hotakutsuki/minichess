@@ -48,82 +48,114 @@ class ChessTile extends GetView {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 100,
-      height: 100,
+    final bool draggable =
+        tile.char != chrt.empty && tile.owner == possession.mine;
+
+    final Widget animatedPiece = AnimatedBuilder(
+      animation: tileController.animationController,
       child: Stack(
-        alignment: Alignment.center,
         children: [
-          InkWell(
-            onTap: () => matchController.onTapTile(tile),
-            child: RotatedBox(
-              quarterTurns: tile.owner == possession.mine ? 0 : 2,
-              child: AnimatedBuilder(
-                animation: tileController.animationController,
-                child: Stack(
-                  children: [
-                    Center(
-                      child: SizedBox(
-                        width: 80,
-                        height: 80,
-                        child: getBase(
-                            tile.owner == possession.none
-                                ? player.none
-                                : getbool(tile.owner == possession.mine)
-                                    ? player.white
-                                    : player.black,
-                            tile.isSelected),
-                      ),
-                    ),
-                    Center(
-                      child: SizedBox(
-                        width: 75,
-                        height: 75,
-                        child: _maybePulse(
-                          tile.isSelected,
-                          getCharAsset(
-                              tile.char,
-                              getbool(tile.owner == possession.mine)
-                                  ? player.white
-                                  : player.black,
-                              tile.isSelected),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                builder: (BuildContext context, Widget? child) {
-                  return Transform(
-                    origin: const Offset(50, 50),
-                    transform: Matrix4.compose(
-                      tileController.translation *
-                          tileController.animationController
-                              .drive(CurveTween(curve: Curves.easeInOutQuint))
-                              .value,
-                      math.Quaternion.euler(
-                          0,
-                          0,
-                          tileController.rotation *
-                              tileController.animationController
-                                  .drive(
-                                      CurveTween(curve: Curves.easeInOutQuint))
-                                  .value),
-                      math.Vector3.all(tileController.iScale +
-                          (tileController.fScale - tileController.iScale) *
-                              tileController.animationController
-                                  .drive(
-                                      CurveTween(curve: Curves.easeInOutQuint))
-                                  .value),
-                    ),
-                    child: child,
-                  );
-                },
+          Center(
+            child: SizedBox(
+              width: 80,
+              height: 80,
+              child: getBase(
+                  tile.owner == possession.none
+                      ? player.none
+                      : getbool(tile.owner == possession.mine)
+                          ? player.white
+                          : player.black,
+                  tile.isSelected),
+            ),
+          ),
+          Center(
+            child: SizedBox(
+              width: 75,
+              height: 75,
+              child: _maybePulse(
+                tile.isSelected,
+                getCharAsset(
+                    tile.char,
+                    getbool(tile.owner == possession.mine)
+                        ? player.white
+                        : player.black,
+                    tile.isSelected),
               ),
             ),
           ),
-          if (tile.isOption) _optionHint(),
-          _flashOverlay(),
         ],
+      ),
+      builder: (BuildContext context, Widget? child) {
+        return Transform(
+          origin: const Offset(50, 50),
+          transform: Matrix4.compose(
+            tileController.translation *
+                tileController.animationController
+                    .drive(CurveTween(curve: Curves.easeInOutQuint))
+                    .value,
+            math.Quaternion.euler(
+                0,
+                0,
+                tileController.rotation *
+                    tileController.animationController
+                        .drive(CurveTween(curve: Curves.easeInOutQuint))
+                        .value),
+            math.Vector3.all(tileController.iScale +
+                (tileController.fScale - tileController.iScale) *
+                    tileController.animationController
+                        .drive(CurveTween(curve: Curves.easeInOutQuint))
+                        .value),
+          ),
+          child: child,
+        );
+      },
+    );
+
+    final Widget interactive = InkWell(
+      onTap: () => matchController.onTapTile(tile),
+      child: RotatedBox(
+        quarterTurns: tile.owner == possession.mine ? 0 : 2,
+        child: draggable
+            ? Draggable<Tile>(
+                data: tile,
+                onDragStarted: () => matchController.selectForDrag(tile),
+                onDraggableCanceled: (_, __) =>
+                    matchController.cancelSelection(),
+                feedback: _dragFeedback(),
+                childWhenDragging: Opacity(opacity: 0.25, child: animatedPiece),
+                child: animatedPiece,
+              )
+            : animatedPiece,
+      ),
+    );
+
+    return DragTarget<Tile>(
+      onWillAcceptWithDetails: (_) => true,
+      onAcceptWithDetails: (d) => matchController.onDragDrop(d.data, tile),
+      builder: (context, candidate, rejected) => SizedBox(
+        width: 100,
+        height: 100,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            interactive,
+            if (tile.isOption) _optionHint(),
+            _flashOverlay(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // The piece image that follows the finger while dragging.
+  Widget _dragFeedback() {
+    return SizedBox(
+      width: 90,
+      height: 90,
+      child: getCharAsset(
+        tile.char,
+        getbool(tile.owner == possession.mine) ? player.white : player.black,
+        true,
       ),
     );
   }
