@@ -8,8 +8,11 @@ import '../../../data/enums.dart';
 import 'match_controller.dart';
 
 class TileController extends GetxController
-    with GetSingleTickerProviderStateMixin {
+    with GetTickerProviderStateMixin {
   late AnimationController animationController;
+
+  /// Quick gold flash played on the tile when its piece is captured.
+  late AnimationController flashController;
   late MatchController matchController;
   Vector3 translation = Vector3.zero();
   double iScale = 1;
@@ -45,6 +48,11 @@ class TileController extends GetxController
     animationController.reset();
   }
 
+  /// Trigger the capture flash on this tile.
+  void flash() {
+    flashController.forward(from: 0);
+  }
+
   @override
   void onInit() {
     super.onInit();
@@ -52,6 +60,10 @@ class TileController extends GetxController
     animationController = AnimationController(
       vsync: this,
       duration: Duration(milliseconds: matchController.gamemode == gameMode.training ? 100 : 800),
+    );
+    flashController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 380),
     );
   }
 
