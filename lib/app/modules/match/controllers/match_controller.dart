@@ -91,7 +91,8 @@ class MatchController extends GetxController with WidgetsBindingObserver {
       ans = await dbController.joinToAMatch();
     }
     // Start timeout to read the game document every 5 seconds
-    reFetchTimer = Timer.periodic(Duration(seconds: reFetchTime), (Timer t) async {
+    reFetchTimer =
+        Timer.periodic(Duration(seconds: reFetchTime), (Timer t) async {
       if ((isHost.value && playersTurn == player.black) ||
           (!isHost.value && playersTurn == player.white)) {
         var event = await dbController.readDocState();
@@ -324,7 +325,6 @@ class MatchController extends GetxController with WidgetsBindingObserver {
   }
 
   onTapTile(Tile tile) async {
-    // print('tapping tile: $tile');
     if (isAnimating.value) {
       return;
     }
@@ -334,6 +334,41 @@ class MatchController extends GetxController with WidgetsBindingObserver {
         dbController.updatePlayedHistory();
       }
       play(tile);
+    }
+  }
+
+  /// Select a piece because the player started dragging it.
+  void selectForDrag(Tile tile) {
+    if (isAnimating.value || pausa.value) return;
+    if (!isValidPlay(tile)) return;
+    if (tile.char == chrt.empty || tile.owner != possession.mine) return;
+    if (selectedTile.value == tile) return;
+    if (selectedTile.value != null) {
+      selectedTile.value!.isSelected = false;
+    }
+    tile.isSelected = true;
+    selectedTile.value = tile;
+    Juice.select();
+    highlightAvailableOptions();
+  }
+
+  /// Finish a drag: [from] was the dragged piece, [to] is where it was dropped.
+  /// Reuses the tap path, so an illegal or same-square drop just deselects.
+  void onDragDrop(Tile from, Tile to) {
+    if (isAnimating.value) return;
+    if (selectedTile.value != from) {
+      selectForDrag(from);
+    }
+    if (selectedTile.value == null) return;
+    onTapTile(to);
+  }
+
+  /// The dragged piece was dropped nowhere valid — clear the selection.
+  void cancelSelection() {
+    if (selectedTile.value != null) {
+      selectedTile.value!.isSelected = false;
+      selectedTile.value = null;
+      highlightAvailableOptions();
     }
   }
 
