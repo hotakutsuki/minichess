@@ -3,6 +3,9 @@
 Minichess game built in **Flutter**, published and **in production** at https://inkachess.com/.
 Repo: `github.com/hotakutsuki/minichess` · package name: `inti_the_inka_chess_game`.
 
+> **Workflow + feature roadmap (bosses, modifiers, story mode, …):** see
+> [`docs/PROJECT.md`](docs/PROJECT.md). This file is the technical/architecture reference.
+
 ## Stack
 - Flutter (Android, iOS, web, desktop targets present)
 - Firebase (Firestore, Functions in `firebasefunctions/`, Hosting)
