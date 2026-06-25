@@ -11,8 +11,10 @@ import '../../../services/database.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../../auth/views/login_dialog_view.dart';
 import '../../../utils/utils.dart';
+import 'tale_assets.dart';
 
-class HomeController extends GetxController with GetSingleTickerProviderStateMixin, WidgetsBindingObserver {
+class HomeController extends GetxController
+    with GetSingleTickerProviderStateMixin, WidgetsBindingObserver {
   late FirebaseMessaging messaging;
   var isOnline = false.obs;
   var isLoading = true.obs;
@@ -20,11 +22,15 @@ class HomeController extends GetxController with GetSingleTickerProviderStateMix
   final AuthController authController = Get.find<AuthController>();
   var withSound = false.obs;
   final player = AudioPlayer();
-  late final AnimationController logoController = AnimationController(vsync: this, duration: const Duration(seconds: 2))..repeat();
+  late final AnimationController logoController =
+      AnimationController(vsync: this, duration: const Duration(seconds: 2))
+        ..repeat();
   bool isVolumeZero = false;
   var firstTime = false.obs;
   var showTale = false.obs;
   var diff = difficult.normal.obs;
+  var taleProgress = 0.0.obs;
+  bool _homePrepared = false;
 
   void setMode(gameMode mode) async {
     isLoading.value = true;
@@ -70,7 +76,7 @@ class HomeController extends GetxController with GetSingleTickerProviderStateMix
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool(sharedPrefs.showTale.name, b);
   }
-  
+
   void setDifficult(difficult setDiff) async {
     diff.value = setDiff;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -80,13 +86,13 @@ class HomeController extends GetxController with GetSingleTickerProviderStateMix
   void getDifficult() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     var localDiff = prefs.getString(sharedPrefs.difficult.name);
-    if (localDiff == difficult.easy.name){
+    if (localDiff == difficult.easy.name) {
       diff.value = difficult.easy;
     }
-    if (localDiff == difficult.normal.name){
+    if (localDiff == difficult.normal.name) {
       diff.value = difficult.normal;
     }
-    if (localDiff == difficult.hard.name){
+    if (localDiff == difficult.hard.name) {
       diff.value = difficult.hard;
     }
   }
@@ -103,13 +109,13 @@ class HomeController extends GetxController with GetSingleTickerProviderStateMix
   }
 
   void resumeSong() async {
-    fadeSound(1,0,player,800);
+    fadeSound(1, 0, player, 800);
     isVolumeZero = false;
   }
 
   void stopTitleSong() {
-    if (!isVolumeZero){
-      fadeSound(0,1,player,800);
+    if (!isVolumeZero) {
+      fadeSound(0, 1, player, 800);
     }
     isVolumeZero = true;
   }
@@ -131,17 +137,36 @@ class HomeController extends GetxController with GetSingleTickerProviderStateMix
 
   toggleSound() {
     withSound.value = !withSound.value;
-    if(withSound.value) {
+    if (withSound.value) {
       playTitleSong();
     } else {
       stopTitleSong();
     }
-    final SharedPreferences prefs = SharedPreferences.getInstance() as SharedPreferences;
+    final SharedPreferences prefs =
+        SharedPreferences.getInstance() as SharedPreferences;
     prefs.setBool(sharedPrefs.withSound.name, withSound.value);
   }
 
-  removeLatcher() async {
-    await Future.delayed(const Duration(milliseconds: 500));
+  /// Show the loading splash only when meaningful: returning players who won't
+  /// see the intro story skip it; first-timers get a real precache of the tale
+  /// images with progress, dismissed exactly when they're ready.
+  Future<void> prepareHome(BuildContext context) async {
+    if (_homePrepared) return;
+    _homePrepared = true;
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final bool willShowTale = prefs.getBool(sharedPrefs.showTale.name) ?? true;
+    if (!willShowTale) {
+      isLoading.value = false;
+      return;
+    }
+    int done = 0;
+    for (final path in taleImagePaths) {
+      try {
+        await precacheImage(AssetImage(path), context);
+      } catch (_) {}
+      done++;
+      taleProgress.value = done / taleImagePaths.length;
+    }
     isLoading.value = false;
   }
 
@@ -169,12 +194,13 @@ class HomeController extends GetxController with GetSingleTickerProviderStateMix
       sound: true,
     );
     // print('User granted permission: ${settings.authorizationStatus}');
-    if(settings.authorizationStatus == AuthorizationStatus.authorized){
+    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
       String? token = await messaging.getToken(
-        vapidKey: "BMnLhmaBDEW0nIVy5544WoLoHt4UFgCZsi2RBKGOSy_8dJbyW0UVXwxpXvWcpCfzPRStgLOHvALVu34ZDb6CcmM",
+        vapidKey:
+            "BMnLhmaBDEW0nIVy5544WoLoHt4UFgCZsi2RBKGOSy_8dJbyW0UVXwxpXvWcpCfzPRStgLOHvALVu34ZDb6CcmM",
       );
       DatabaseController dbController = Get.find<DatabaseController>();
-      if (kIsWeb){
+      if (kIsWeb) {
         dbController.recordToken(token);
       } else {
         messaging.subscribeToTopic("newMatches");
@@ -196,10 +222,10 @@ class HomeController extends GetxController with GetSingleTickerProviderStateMix
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    if (state == AppLifecycleState.paused){
+    if (state == AppLifecycleState.paused) {
       stopTitleSong();
     }
-    if (state == AppLifecycleState.resumed && withSound.value){
+    if (state == AppLifecycleState.resumed && withSound.value) {
       resumeSong();
     }
   }

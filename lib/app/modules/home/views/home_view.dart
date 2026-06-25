@@ -40,7 +40,7 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    controller.removeLatcher();
+    controller.prepareHome(context);
     return Scaffold(
       body: SafeArea(
         child: SizedBox.expand(
@@ -97,8 +97,7 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
                                       Text(l.g('VsPc')),
                                       Obx(() {
                                         return Text(
-                                          '(${l.g(controller.diff.value
-                                              .name)})',
+                                          '(${l.g(controller.diff.value.name)})',
                                           style: const TextStyle(fontSize: 8),
                                         );
                                       }),
@@ -111,8 +110,7 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
                                     width: 30,
                                     height: 40,
                                     child: PopupMenuButton(
-                                      itemBuilder: (BuildContext context) =>
-                                      [
+                                      itemBuilder: (BuildContext context) => [
                                         PopupMenuItemG(difficult.easy),
                                         PopupMenuItemG(difficult.normal),
                                         PopupMenuItemG(difficult.hard),
@@ -123,7 +121,7 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
                                       child: Container(
                                           decoration: BoxDecoration(
                                             borderRadius:
-                                            const BorderRadius.horizontal(
+                                                const BorderRadius.horizontal(
                                               right: Radius.circular(10),
                                             ),
                                             border: Border.all(
@@ -147,8 +145,8 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
                                 playButtonSound();
                                 controller.setMode(gameMode.vs);
                               },
-                              child: Text(
-                                  l.g('2Players'), textAlign: TextAlign.center),
+                              child: Text(l.g('2Players'),
+                                  textAlign: TextAlign.center),
                             ),
                           ),
                           SizedBox(
@@ -157,13 +155,13 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
                             child: ElevatedButton(
                               onPressed: controller.isOnline.value
                                   ? () {
-                                authController.tryStartMultuplayer = true;
-                                playButtonSound();
-                                controller.tryMultiplayer();
-                              }
+                                      authController.tryStartMultuplayer = true;
+                                      playButtonSound();
+                                      controller.tryMultiplayer();
+                                    }
                                   : null,
-                              child: Text(
-                                  l.g('Online'), textAlign: TextAlign.center),
+                              child: Text(l.g('Online'),
+                                  textAlign: TextAlign.center),
                             ),
                           ),
                           if (kDebugMode)
@@ -180,8 +178,7 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
                             ),
                           Text(
                               authController.user.value != null
-                                  ? '${l.g('Score')}${authController.user.value
-                                  ?.score}'
+                                  ? '${l.g('Score')}${authController.user.value?.score}'
                                   : '',
                               style: const TextStyle(
                                   fontSize: 24,
@@ -201,7 +198,10 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
                           onPressed: () {
                             Get.toNamed(Routes.CREDITS);
                           },
-                          child: Text(l.g('credits'), style: const TextStyle(color: Colors.white54),),
+                          child: Text(
+                            l.g('credits'),
+                            style: const TextStyle(color: Colors.white54),
+                          ),
                         ),
                       ),
                     );
@@ -211,241 +211,254 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
             ),
             if (kIsWeb)
               Obx(
-                    () =>
-                    AnimatedPositioned(
-                      bottom: 30,
-                      left: (controller.isOnline.value) ? 10 : -60,
-                      duration: const Duration(milliseconds: 500),
-                      curve: Curves.easeInOutExpo,
-                      child: Column(
-                        children: [
-                          Row(
-                            children: [
-                              FloatingActionButton(
-                                heroTag: 'gplay',
-                                mini: true,
-                                onPressed: () {
-                                  controller.goToUrl(
-                                      'https://play.google.com/store/apps/details?id=com.hotakutsuki.minichess');
-                                },
-                                backgroundColor: Colors.black87,
-                                child: SizedBox(
-                                    width: 25,
-                                    height: 25,
-                                    child: Image.asset(
-                                        'assets/images/gplay.png')),
-                              ),
-                              const SizedBox(width: 10),
-                              FloatingActionButton(
-                                heroTag: 'appstore',
-                                mini: true,
-                                onPressed: () {
-                                  controller.goToUrl(
-                                      'https://apps.apple.com/ec/app/inti-the-inka-chess-game/id6468368257');
-                                },
-                                backgroundColor: Colors.black87,
-                                child: SizedBox(
-                                    width: 25,
-                                    height: 25,
-                                    child: Image.asset(
-                                        'assets/images/appstorelogo.png')),
-                              ),
-                            ],
-                          ),
-                          Text(l.g('SenpaiNoticeMe')),
-                        ],
-                      ),
-                    ),
-              ),
-            Obx(
-                  () =>
-                  AnimatedPositioned(
-                    top: 40,
-                    right: controller.isOnline.value ? 10 : -60,
-                    duration: const Duration(milliseconds: 500),
-                    curve: Curves.easeInOutExpo,
-                    child: Obx(() {
-                      return Column(
+                () => AnimatedPositioned(
+                  bottom: 30,
+                  left: (controller.isOnline.value) ? 10 : -60,
+                  duration: const Duration(milliseconds: 500),
+                  curve: Curves.easeInOutExpo,
+                  child: Column(
+                    children: [
+                      Row(
                         children: [
                           FloatingActionButton(
-                              heroTag: 'person',
-                              mini: true,
-                              child: authController.loading.value
-                                  ? const CircularProgressIndicator(
-                                color: Colors.white,
-                              )
-                                  : authController.user.value == null
+                            heroTag: 'gplay',
+                            mini: true,
+                            onPressed: () {
+                              controller.goToUrl(
+                                  'https://play.google.com/store/apps/details?id=com.hotakutsuki.minichess');
+                            },
+                            backgroundColor: Colors.black87,
+                            child: SizedBox(
+                                width: 25,
+                                height: 25,
+                                child: Image.asset('assets/images/gplay.png')),
+                          ),
+                          const SizedBox(width: 10),
+                          FloatingActionButton(
+                            heroTag: 'appstore',
+                            mini: true,
+                            onPressed: () {
+                              controller.goToUrl(
+                                  'https://apps.apple.com/ec/app/inti-the-inka-chess-game/id6468368257');
+                            },
+                            backgroundColor: Colors.black87,
+                            child: SizedBox(
+                                width: 25,
+                                height: 25,
+                                child: Image.asset(
+                                    'assets/images/appstorelogo.png')),
+                          ),
+                        ],
+                      ),
+                      Text(l.g('SenpaiNoticeMe')),
+                    ],
+                  ),
+                ),
+              ),
+            Obx(
+              () => AnimatedPositioned(
+                top: 40,
+                right: controller.isOnline.value ? 10 : -60,
+                duration: const Duration(milliseconds: 500),
+                curve: Curves.easeInOutExpo,
+                child: Obx(() {
+                  return Column(
+                    children: [
+                      FloatingActionButton(
+                          heroTag: 'person',
+                          mini: true,
+                          child: authController.loading.value
+                              ? const CircularProgressIndicator(
+                                  color: Colors.white,
+                                )
+                              : authController.user.value == null
                                   ? const Icon(CupertinoIcons.person)
                                   : CircleAvatar(
-                                backgroundColor: brackgroundColor,
-                                backgroundImage:
-                                authController.user.value?.photoUrl ==
-                                    null
-                                    ? null
-                                    : Image
-                                    .network(authController
-                                    .user.value!.photoUrl!)
-                                    .image,
-                                radius: 30,
-                                child: authController
-                                    .user.value?.photoUrl ==
-                                    null
-                                    ? Text(
-                                  authController.user.value!.name[0]
-                                      .toUpperCase(),
-                                  style:
-                                  const TextStyle(fontSize: 30),
-                                )
-                                    : null,
-                              ),
-                              onPressed: () {
-                                authController.tryStartMultuplayer = false;
-                                controller.showAuthDialog();
-                              }),
-                          Text(authController.user.value?.name ??
-                              l.g('Account')),
-                        ],
-                      );
-                    }),
-                  ),
+                                      backgroundColor: brackgroundColor,
+                                      backgroundImage:
+                                          authController.user.value?.photoUrl ==
+                                                  null
+                                              ? null
+                                              : Image.network(authController
+                                                      .user.value!.photoUrl!)
+                                                  .image,
+                                      radius: 30,
+                                      child: authController
+                                                  .user.value?.photoUrl ==
+                                              null
+                                          ? Text(
+                                              authController.user.value!.name[0]
+                                                  .toUpperCase(),
+                                              style:
+                                                  const TextStyle(fontSize: 30),
+                                            )
+                                          : null,
+                                    ),
+                          onPressed: () {
+                            authController.tryStartMultuplayer = false;
+                            controller.showAuthDialog();
+                          }),
+                      Text(authController.user.value?.name ?? l.g('Account')),
+                    ],
+                  );
+                }),
+              ),
             ),
             Obx(
-                  () =>
-                  AnimatedPositioned(
-                    top: controller.firstTime.value
-                        ? 10
-                        : -MediaQuery
-                        .of(context)
-                        .size
-                        .height,
-                    left: 5,
-                    curve: Curves.easeOutExpo,
-                    duration: const Duration(milliseconds: 500),
-                    child: WelcomeView(),
-                  ),
+              () => AnimatedPositioned(
+                top: controller.firstTime.value
+                    ? 10
+                    : -MediaQuery.of(context).size.height,
+                left: 5,
+                curve: Curves.easeOutExpo,
+                duration: const Duration(milliseconds: 500),
+                child: WelcomeView(),
+              ),
             ),
-            Obx(() =>
-                AnimatedPositioned(
-                  top: controller.showTale.value ? 0
-                      : -MediaQuery
-                      .of(context)
-                      .size
-                      .height,
+            Obx(() => AnimatedPositioned(
+                  top: controller.showTale.value
+                      ? 0
+                      : -MediaQuery.of(context).size.height,
                   curve: Curves.easeOutExpo,
                   duration: const Duration(milliseconds: 500),
                   child: IntroTaleView(),
                 )),
             Obx(
-                  () =>
-                  AnimatedPositioned(
-                    top: controller.isLoading.value
-                        ? 10
-                        : -MediaQuery
-                        .of(context)
-                        .size
-                        .height,
-                    left: 5,
-                    curve: Curves.easeOutExpo,
-                    duration: const Duration(milliseconds: 500),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        color: brackgroundColorSolid,
-                      ),
-                      width: MediaQuery
-                          .of(context)
-                          .size
-                          .width - 10,
-                      height: MediaQuery
-                          .of(context)
-                          .size
-                          .height - 20,
-                      child: Center(
-                          child: SizedBox(
-                              height: 25,
-                              child:
-                              Image.asset('assets/images/pieces/wkingd.png'))),
+              () => AnimatedPositioned(
+                top: controller.isLoading.value
+                    ? 10
+                    : -MediaQuery.of(context).size.height,
+                left: 5,
+                curve: Curves.easeOutExpo,
+                duration: const Duration(milliseconds: 500),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    color: brackgroundColorSolid,
+                  ),
+                  width: MediaQuery.of(context).size.width - 10,
+                  height: MediaQuery.of(context).size.height - 20,
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                            height: 60,
+                            child:
+                                Image.asset('assets/images/pieces/wkingd.png')),
+                        const SizedBox(height: 24),
+                        Obx(() {
+                          final p = controller.taleProgress.value;
+                          if (p <= 0 || p >= 1) {
+                            return const SizedBox.shrink();
+                          }
+                          return SizedBox(
+                            width: 180,
+                            child: Column(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: LinearProgressIndicator(
+                                    value: p,
+                                    minHeight: 8,
+                                    backgroundColor: Colors.white24,
+                                    valueColor:
+                                        const AlwaysStoppedAnimation<Color>(
+                                            Color(0xFFCCAC4B)),
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text('${(p * 100).round()}%',
+                                    style: const TextStyle(
+                                        color: Colors.white70, fontSize: 12)),
+                              ],
+                            ),
+                          );
+                        }),
+                      ],
                     ),
                   ),
+                ),
+              ),
             ),
           ]),
         ),
       ),
       floatingActionButton: Stack(children: [
         Obx(
-              () =>
-              AnimatedPositioned(
-                right: controller.isLoading.value ||
-                    controller.firstTime.value || controller.showTale.value
-                    ? -100
-                    : 0,
-                bottom: 0,
-                curve: Curves.easeOutExpo,
-                duration: const Duration(milliseconds: 500),
-                child: SizedBox(
-                  height: 320,
-                  child: Column(
+          () => AnimatedPositioned(
+            right: controller.isLoading.value ||
+                    controller.firstTime.value ||
+                    controller.showTale.value
+                ? -100
+                : 0,
+            bottom: 0,
+            curve: Curves.easeOutExpo,
+            duration: const Duration(milliseconds: 500),
+            child: SizedBox(
+              height: 320,
+              child: Column(
+                children: [
+                  Column(
                     children: [
-                      Column(
-                        children: [
-                          FloatingActionButton(
-                              heroTag: 'Story',
-                              mini: true,
-                              onPressed: taleController.showTale,
-                              child: const Icon(Icons.movie_creation_outlined)),
-                          Text(l.g('Story')),
-                        ],
-                      ),
-                      const SizedBox(
-                        height: 16,
-                      ),
-                      Column(
-                        children: [
-                          FloatingActionButton(
-                              heroTag: 'sound',
-                              mini: true,
-                              onPressed: controller.toggleSound,
-                              child: controller.withSound.value
-                                  ? const Icon(Icons.volume_up)
-                                  : const Icon(CupertinoIcons.volume_off)),
-                          Text(l.g('Sound')),
-                        ],
-                      ),
-                      const SizedBox(
-                        height: 16,
-                      ),
-                      if (controller.isOnline.value)
-                        Column(
-                          children: [
-                            FloatingActionButton(
-                                heroTag: 'records',
-                                mini: true,
-                                child: const Icon(Icons.stacked_bar_chart),
-                                onPressed: () {
-                                  Get.toNamed(Routes.HALL_OF_FAME);
-                                }),
-                            Text(l.g('Fame')),
-                          ],
-                        ),
-                      const SizedBox(
-                        height: 16,
-                      ),
-                      Column(
-                        children: [
-                          FloatingActionButton(
-                              heroTag: 'tutorial',
-                              mini: true,
-                              child: const Icon(CupertinoIcons.question),
-                              onPressed: () {
-                                Get.toNamed(Routes.TUTORIAL);
-                              }),
-                          Text(l.g('HowToPlay')),
-                        ],
-                      ),
+                      FloatingActionButton(
+                          heroTag: 'Story',
+                          mini: true,
+                          onPressed: taleController.showTale,
+                          child: const Icon(Icons.movie_creation_outlined)),
+                      Text(l.g('Story')),
                     ],
                   ),
-                ),
+                  const SizedBox(
+                    height: 16,
+                  ),
+                  Column(
+                    children: [
+                      FloatingActionButton(
+                          heroTag: 'sound',
+                          mini: true,
+                          onPressed: controller.toggleSound,
+                          child: controller.withSound.value
+                              ? const Icon(Icons.volume_up)
+                              : const Icon(CupertinoIcons.volume_off)),
+                      Text(l.g('Sound')),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 16,
+                  ),
+                  if (controller.isOnline.value)
+                    Column(
+                      children: [
+                        FloatingActionButton(
+                            heroTag: 'records',
+                            mini: true,
+                            child: const Icon(Icons.stacked_bar_chart),
+                            onPressed: () {
+                              Get.toNamed(Routes.HALL_OF_FAME);
+                            }),
+                        Text(l.g('Fame')),
+                      ],
+                    ),
+                  const SizedBox(
+                    height: 16,
+                  ),
+                  Column(
+                    children: [
+                      FloatingActionButton(
+                          heroTag: 'tutorial',
+                          mini: true,
+                          child: const Icon(CupertinoIcons.question),
+                          onPressed: () {
+                            Get.toNamed(Routes.TUTORIAL);
+                          }),
+                      Text(l.g('HowToPlay')),
+                    ],
+                  ),
+                ],
               ),
+            ),
+          ),
         )
       ]),
     );
