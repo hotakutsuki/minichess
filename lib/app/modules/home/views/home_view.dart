@@ -338,16 +338,20 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
                   ),
                   width: MediaQuery.of(context).size.width - 10,
                   height: MediaQuery.of(context).size.height - 20,
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SizedBox(
-                            height: 60,
-                            child:
-                                Image.asset('assets/images/pieces/wkingd.png')),
-                        const SizedBox(height: 24),
-                        Obx(() {
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // Keep the sun dead-centre so it lines up exactly with the
+                      // match curtain's lit sun (same size + position = no jump
+                      // when switching screens).
+                      SizedBox(
+                          height: 60,
+                          child:
+                              Image.asset('assets/images/pieces/wkingd.png')),
+                      // Precache progress floats below the sun without shifting it.
+                      Align(
+                        alignment: const Alignment(0, 0.25),
+                        child: Obx(() {
                           final p = controller.taleProgress.value;
                           if (p <= 0 || p >= 1) {
                             return const SizedBox.shrink();
@@ -355,6 +359,7 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
                           return SizedBox(
                             width: 180,
                             child: Column(
+                              mainAxisSize: MainAxisSize.min,
                               children: [
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(8),
@@ -375,8 +380,8 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
                             ),
                           );
                         }),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),
