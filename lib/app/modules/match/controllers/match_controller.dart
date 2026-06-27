@@ -473,6 +473,14 @@ class MatchController extends GetxController with WidgetsBindingObserver {
       dbController.closeMatch();
     }
     Get.offAndToNamed(Routes.HOME);
+    // setMode() left the menu curtain down underneath the match. Let the home
+    // screen mount with that curtain still covering it, then lift it so the menu
+    // is revealed with the same slide-up animation used when entering a match
+    // (setting it false immediately skips the animation and the curtain just
+    // vanishes). The lift itself uses the same 500ms easeOutExpo as every other
+    // curtain; this pause just lets it rest a beat before rising, like on entry.
+    await Future.delayed(const Duration(milliseconds: 500));
+    homeController.isLoading.value = false;
   }
 
   initBoardState() {

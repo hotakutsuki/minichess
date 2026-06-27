@@ -168,7 +168,7 @@ class MatchView extends GetView<MatchController> {
           height: MediaQuery.of(context).size.height - 20,
           child: Center(
               child: SizedBox(
-                  height: 25,
+                  height: 60,
                   child: Image.asset('assets/images/pieces/wkings.png'))),
         ),
       ),
