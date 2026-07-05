@@ -1,7 +1,7 @@
 import '../../data/enums.dart';
 
 class Tile {
-  Tile(this.char, this.owner, this.i, this.j);
+  Tile(this.char, this.owner, this.i, this.j, {this.idleTurns = 0});
 
   Tile.fromTile(Tile otherTile) :
         char = otherTile.char,
@@ -26,6 +26,11 @@ class Tile {
   late int? j;
   bool isSelected = false;
   bool isOption = false;
+
+  /// Consecutive turns this piece's owner has left it unmoved. Used by the
+  /// "Marchitar" rule modifier; carried across board copies/rotations, reset to
+  /// 0 when the piece moves.
+  int idleTurns = 0;
 
   @override
   String toString() {

@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:inti_the_inka_chess_game/app/data/enums.dart';
 import 'package:inti_the_inka_chess_game/app/engine/board_config.dart';
+import 'package:inti_the_inka_chess_game/app/engine/board_factory.dart';
 import 'package:inti_the_inka_chess_game/app/utils/gameObjects/gameState.dart';
 import 'package:inti_the_inka_chess_game/app/utils/gameObjects/move.dart';
 import 'package:inti_the_inka_chess_game/app/utils/gameObjects/tile.dart';
@@ -18,6 +19,30 @@ void main() {
     });
     test('promotionRow is the far rank (height - 1)', () {
       expect(const BoardConfig(width: 5, height: 6).promotionRow, 5);
+    });
+    test('bossFinal is a wider 5x4 board', () {
+      expect(BoardConfig.bossFinal.width, 5);
+      expect(BoardConfig.bossFinal.height, 4);
+      expect(BoardConfig.bossFinal.promotesTo, chrt.knight);
+    });
+  });
+
+  group('createBossFinalBoard', () {
+    final board = createBossFinalBoard();
+    test('is 4 rows x 5 cols', () {
+      expect(board.length, 4);
+      expect(board.every((r) => r.length == 5), isTrue);
+    });
+    test('back ranks are rock, bishop, king, bishop, rock (king centered)', () {
+      expect(board[0].map((t) => t.char).toList(),
+          [chrt.rock, chrt.bishop, chrt.king, chrt.bishop, chrt.rock]);
+      expect(board[0].every((t) => t.owner == possession.mine), isTrue);
+      expect(board[3][2].char, chrt.king);
+      expect(board[3].every((t) => t.owner == possession.enemy), isTrue);
+    });
+    test('each side has a full pawn row', () {
+      expect(board[1].every((t) => t.char == chrt.pawn), isTrue);
+      expect(board[2].every((t) => t.char == chrt.pawn), isTrue);
     });
   });
 

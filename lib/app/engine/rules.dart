@@ -71,15 +71,39 @@ bool isProtecting(Move m, GameState gs, bool hard) {
 
 bool checkIfValidMove(Move m, GameState gs, [bool hard = false]) {
   //TODO: Enhace: check if is players turn, and check of move have initial and final tile
+  final bool base;
   if (isFromGraveyard(m.initialTile)) {
-    return m.finalTile.char == chrt.empty;
+    base = m.finalTile.char == chrt.empty;
+  } else if (m.initialTile.owner == m.finalTile.owner) {
+    base = false;
   } else {
-    if (m.initialTile.owner == m.finalTile.owner) {
-      return false;
-    } else {
-      return isValidMovmentPerPiece(m, gs, hard);
+    base = isValidMovmentPerPiece(m, gs, hard);
+  }
+  if (!base) return false;
+  // Modifiers may veto an otherwise-legal move (e.g. felled tiles).
+  for (final mod in gs.modifiers) {
+    if (!mod.allowsMove(m, gs)) return false;
+  }
+  return true;
+}
+
+/// Whether the side to move (`mine`) is checkmated: its king is attacked and no
+/// legal move escapes. The base game has no check — you win by capturing the
+/// king — so this powers only the "jaque mate real" campaign win condition.
+bool isCheckmate(GameState gs) {
+  if (!isInCheck(gs)) return false;
+  for (final piece in getMyPieces(gs)) {
+    for (final row in gs.board) {
+      for (final tile in row) {
+        final m = Move(piece, tile);
+        if (!checkIfValidMove(m, gs, true)) continue;
+        final next = GameState.clone(gs);
+        next.changeGameState(m);
+        if (!isInCheck(next)) return false; // an escape exists
+      }
     }
   }
+  return true;
 }
 
 /// Relative `[di, dj]` steps a piece may take, from the perspective of its
@@ -145,7 +169,9 @@ List<List<int>> pieceOffsets(chrt piece, possession owner) {
 List<List<int>> effectiveOffsets(chrt piece, possession owner, GameState gs) {
   var offsets = pieceOffsets(piece, owner);
   for (final m in gs.modifiers) {
-    offsets = m.transformOffsets(piece, owner, offsets);
+    if (m.appliesTo(owner, gs)) {
+      offsets = m.transformOffsets(piece, owner, offsets);
+    }
   }
   return offsets;
 }

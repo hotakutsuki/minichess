@@ -59,20 +59,32 @@ void main() {
           _move(chrt.rock, possession.mine, 1, 1, 1, 3), gs, true), isFalse);
     });
 
-    test('side=mine leaves the enemy untouched', () {
-      final gs = _stateWith(const [DoubleStepModifier(side: possession.mine)]);
-      // mine gets the two-step...
+    test('side=protagonist leaves the enemy untouched', () {
+      final gs =
+          _stateWith(const [DoubleStepModifier(side: ModifierSide.protagonist)]);
+      // the protagonist (mine, in a default state) gets the two-step...
       expect(isValidMovmentPerPiece(
           _move(chrt.rock, possession.mine, 1, 1, 1, 3), gs, true), isTrue);
-      // ...the enemy does not.
+      // ...the antagonist (enemy) does not.
       expect(isValidMovmentPerPiece(
           _move(chrt.rock, possession.enemy, 1, 3, 1, 1), gs, true), isFalse);
+    });
+
+    test('stable targeting follows the protagonist across a rotation', () {
+      final gs =
+          _stateWith(const [DoubleStepModifier(side: ModifierSide.protagonist)]);
+      gs.rotate(); // now `mine` is the antagonist, `enemy` is the protagonist
+      // the protagonist is now the ENEMY-owned pieces -> they get the two-step.
+      expect(isValidMovmentPerPiece(
+          _move(chrt.rock, possession.enemy, 1, 1, 1, 3), gs, true), isTrue);
+      expect(isValidMovmentPerPiece(
+          _move(chrt.rock, possession.mine, 1, 1, 1, 3), gs, true), isFalse);
     });
   });
 
   group('TransformAllPiecesModifier (all become knights/osos)', () {
     final gs = _stateWith(
-        const [TransformAllPiecesModifier(side: possession.mine)]);
+        const [TransformAllPiecesModifier(side: ModifierSide.protagonist)]);
 
     test('a bishop moves like a knight (straight forward, normally illegal)',
         () {
@@ -92,7 +104,7 @@ void main() {
           pieceOffsets(chrt.king, possession.mine));
     });
 
-    test('the enemy side is untouched (side=mine)', () {
+    test('the enemy side is untouched (side=protagonist)', () {
       expect(effectiveOffsets(chrt.bishop, possession.enemy, gs),
           pieceOffsets(chrt.bishop, possession.enemy));
     });
@@ -218,6 +230,67 @@ void main() {
       expect(b[2][1].char, chrt.pawn);
       expect(b[1][1].char, chrt.empty);
       expect(gs.myGraveyard, isEmpty); // nobody blown off
+    });
+  });
+
+  group('WitherModifier (Marchitar)', () {
+    test('a piece unmoved for `turns` turns withers to the graveyard', () {
+      final b = _emptyBoard();
+      b[1][1] = Tile(chrt.bishop, possession.mine, 1, 1);
+      final gs = _boardStateWith(b, const [WitherModifier(turns: 2)]);
+      gs.applyTurnStart(); // idle 1
+      expect(b[1][1].char, chrt.bishop);
+      gs.applyTurnStart(); // idle 2 -> withers
+      expect(b[1][1].char, chrt.empty);
+      expect(gs.myGraveyard.length, 1);
+      expect(gs.myGraveyard.first.char, chrt.bishop);
+    });
+
+    test('moving a piece resets its wither clock', () {
+      final b = _emptyBoard();
+      b[1][1] = Tile(chrt.rock, possession.mine, 1, 1);
+      final gs = _boardStateWith(b, const [WitherModifier(turns: 2)]);
+      gs.applyTurnStart(); // idle 1
+      gs.changeGameState(Move(b[1][1], b[2][1])); // move (1,1)->(1,2): resets
+      gs.applyTurnStart(); // idle 1 again (on the new tile)
+      expect(b[2][1].char, chrt.rock); // still alive
+      expect(gs.myGraveyard, isEmpty);
+    });
+
+    test('the king never withers', () {
+      final b = _emptyBoard();
+      b[1][1] = Tile(chrt.king, possession.mine, 1, 1);
+      final gs = _boardStateWith(b, const [WitherModifier(turns: 1)]);
+      gs.applyTurnStart();
+      gs.applyTurnStart();
+      expect(b[1][1].char, chrt.king);
+    });
+  });
+
+  group('FelledTilesModifier (Tala el tablero)', () {
+    test('the protagonist cannot enter a felled tile; the antagonist can', () {
+      // (1,2) is felled. A rock at (1,1) wants to step onto it.
+      final felled = [
+        [1, 2]
+      ];
+      final gs = _boardStateWith(
+          _emptyBoard(), [FelledTilesModifier(felled)]); // side: protagonist
+      // protagonist == mine in a default state -> blocked.
+      expect(checkIfValidMove(
+          _move(chrt.rock, possession.mine, 1, 1, 1, 2), gs, true), isFalse);
+      // the antagonist (enemy) may still enter it.
+      expect(checkIfValidMove(
+          _move(chrt.rock, possession.enemy, 1, 1, 1, 2), gs, true), isTrue);
+    });
+
+    test('a non-felled tile stays reachable', () {
+      final gs = _boardStateWith(_emptyBoard(), [
+        FelledTilesModifier(const [
+          [0, 0]
+        ])
+      ]);
+      expect(checkIfValidMove(
+          _move(chrt.rock, possession.mine, 1, 1, 1, 2), gs, true), isTrue);
     });
   });
 }

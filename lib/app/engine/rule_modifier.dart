@@ -4,79 +4,82 @@ import '../utils/gameObjects/move.dart';
 import '../utils/gameObjects/tile.dart';
 import 'rules.dart';
 
+/// Whom a [RuleModifier] targets. Unlike [possession] (which is frame-relative —
+/// the mover is always `mine` because the board rotates every turn), these are
+/// STABLE identities, resolved via [GameState.mineIsProtagonist], so a boss-only
+/// power keeps hitting the boss across turns.
+enum ModifierSide { both, protagonist, antagonist }
+
 /// A rule change carried by a [GameState] and applied at defined engine hook
 /// points. Boss powers (campaign) and player jokers are both [RuleModifier]s;
-/// [side] marks who it affects.
+/// [side] marks who it affects (stably — see [ModifierSide]).
 ///
 /// Every hook defaults to a no-op, so an **empty modifier list == vanilla
-/// rules** — the engine behaves exactly as before unless a match opts in. This
-/// is the single extension seam the campaign/joker systems build on. Modifiers
-/// must be immutable: a [GameState] is cloned constantly by the AI look-ahead
-/// and only the reference to the modifier list is copied.
+/// rules**. Modifiers must be immutable: a [GameState] is cloned constantly by
+/// the AI look-ahead and only the reference to the modifier list is copied.
 ///
-/// PR 1 shipped the movement hook ([transformOffsets]); PR 2 adds the capture
-/// hooks ([returnsCapturedToOwner], [extraCaptures]). Later hooks (per-turn
-/// ticks, win condition) will be added the same way — each defaulting to a
-/// no-op so existing modifiers keep compiling.
-///
-/// SIDE CAVEAT: at capture time the mover is always [possession.mine] (the board
-/// rotates each turn), so for the capture hooks [side] is frame-relative ("the
-/// side to move"), not a stable player/boss identity. Durable player-vs-boss
-/// targeting is a known follow-up (the [GameState] must carry which frame is the
-/// protagonist's).
+/// Hooks: [transformOffsets] (movement), [allowsMove] (move legality),
+/// [returnsCapturedToOwner] + [extraCaptures] (capture resolution),
+/// [onTurnStart] (per-turn effects). The engine gates each by [appliesTo].
 abstract class RuleModifier {
   const RuleModifier();
 
-  /// Which side the modifier affects. [possession.none] means both sides.
-  possession get side => possession.none;
+  /// Stable target side. Default: both.
+  ModifierSide get side => ModifierSide.both;
 
-  bool appliesTo(possession owner) =>
-      side == possession.none || side == owner;
+  /// Whether this modifier affects a piece/move owned by [owner] in [gs]'s
+  /// current frame — mapping the stable [side] onto the rotating `mine`/`enemy`.
+  bool appliesTo(possession owner, GameState gs) {
+    switch (side) {
+      case ModifierSide.both:
+        return true;
+      case ModifierSide.protagonist:
+        return (owner == possession.mine) == gs.mineIsProtagonist;
+      case ModifierSide.antagonist:
+        return (owner == possession.mine) != gs.mineIsProtagonist;
+    }
+  }
 
-  /// Movement hook. Given a piece's [base] relative offsets (from
-  /// [pieceOffsets]), return the offsets it may actually use. Default: the
-  /// offsets are returned unchanged. Implementations must return a **new** list
-  /// and never mutate [base] (some base tables are `const`).
+  /// Movement hook. Transform a piece's [base] relative offsets (from
+  /// [pieceOffsets]). Called by [effectiveOffsets] only when [appliesTo] the
+  /// piece's owner. Must return a **new** list, never mutate [base].
   List<List<int>> transformOffsets(
           chrt piece, possession owner, List<List<int>> base) =>
       base;
 
+  /// Legality hook. Return false to veto an otherwise-legal [move] (e.g. a tile
+  /// the protagonist may not enter). Default: allowed.
+  bool allowsMove(Move move, GameState gs) => true;
+
   /// Capture hook — disposition. If true, a piece captured by the current mover
-  /// is **not** claimed by the captor (the vanilla, Shogi-style drop); it
-  /// returns to its original owner instead. The first applicable modifier wins.
+  /// is **not** claimed by the captor (the vanilla Shogi-style drop); it returns
+  /// to its original owner instead. The first applicable modifier wins.
   bool returnsCapturedToOwner() => false;
 
   /// Capture hook — side effects. Extra board tiles (`[i, j]` pairs) cleared as
-  /// a consequence of a capturing [move] (e.g. the Oso's "Embestida" area hit).
-  /// Off-board or non-enemy tiles in the result are ignored by the engine.
-  /// Default: none.
+  /// a consequence of a capturing [move] (e.g. the Oso's "Embestida"). Off-board
+  /// or non-enemy tiles in the result are ignored by the engine. Default: none.
   List<List<int>> extraCaptures(Move move, GameState gs) => const [];
 
   /// Per-turn hook. Runs once at the start of the side-to-move's turn (the mover
-  /// is [possession.mine] in the current frame), letting a modifier mutate the
-  /// board outside of a normal move — spawn reinforcements, wither idle pieces,
-  /// blow a wind across the board. Default: no-op.
-  ///
-  /// Frame-relative like the capture hooks (see the SIDE CAVEAT above).
+  /// is `mine`), letting a modifier mutate the board outside a normal move —
+  /// spawn reinforcements, wither idle pieces, blow a wind. Default: no-op.
   void onTurnStart(GameState gs) {}
 }
 
 /// Joker "doble paso": the affected side's pieces gain a **2-square** option in
 /// each direction they can already move, on top of their normal 1-square moves.
-///
-/// The board has no path/blocking logic (every base move is a single exact
-/// step), so a 2-step move simply reaches a farther exact square — consistent
-/// with how the engine already models movement.
+/// The board has no path/blocking logic (every base move is one exact step), so
+/// a 2-step move simply reaches a farther exact square.
 class DoubleStepModifier extends RuleModifier {
-  const DoubleStepModifier({this.side = possession.none});
+  const DoubleStepModifier({this.side = ModifierSide.both});
 
   @override
-  final possession side;
+  final ModifierSide side;
 
   @override
   List<List<int>> transformOffsets(
       chrt piece, possession owner, List<List<int>> base) {
-    if (!appliesTo(owner)) return base;
     return [
       ...base,
       for (final o in base) [o[0] * 2, o[1] * 2],
@@ -86,40 +89,35 @@ class DoubleStepModifier extends RuleModifier {
 
 /// Boss power (Oso, life 2) "todas se vuelven osos": every one of the affected
 /// side's pieces moves like [target] (default the knight/oso), regardless of
-/// what it actually is.
-///
-/// The **king is left untouched** — its move is gated specially by the engine
-/// (king-safety look-ahead) and it is the win target, so transforming it would
-/// change unrelated rules. Empty tiles are likewise ignored (they never move).
+/// what it actually is. The **king is left untouched** (its move is gated
+/// specially and it is the win target); empty tiles are ignored.
 class TransformAllPiecesModifier extends RuleModifier {
   const TransformAllPiecesModifier(
-      {this.target = chrt.knight, this.side = possession.none});
+      {this.target = chrt.knight, this.side = ModifierSide.both});
 
   final chrt target;
 
   @override
-  final possession side;
+  final ModifierSide side;
 
   @override
   List<List<int>> transformOffsets(
       chrt piece, possession owner, List<List<int>> base) {
-    if (!appliesTo(owner) || piece == chrt.king || piece == chrt.empty) {
-      return base;
-    }
-    // Resolve the target's offsets for THIS owner so direction-dependent
-    // targets (like the knight) still mirror correctly.
+    if (piece == chrt.king || piece == chrt.empty) return base;
+    // Resolve the target's offsets for THIS owner so direction-dependent targets
+    // (like the knight) still mirror correctly.
     return pieceOffsets(target, owner);
   }
 }
 
 /// Rule "invertir posesión de captura": captured pieces are never claimed by the
-/// captor — they return to their original owner (no Shogi-style drops from your
-/// own graveyard of the pieces you took).
+/// captor — they return to their original owner (no drops from the pieces you
+/// took).
 class ReturnCapturedModifier extends RuleModifier {
-  const ReturnCapturedModifier({this.side = possession.none});
+  const ReturnCapturedModifier({this.side = ModifierSide.both});
 
   @override
-  final possession side;
+  final ModifierSide side;
 
   @override
   bool returnsCapturedToOwner() => true;
@@ -128,10 +126,10 @@ class ReturnCapturedModifier extends RuleModifier {
 /// Oso "Embestida" (also a candidate joker): a capturing move also clears the
 /// orthogonally-adjacent enemy pieces around the square the mover lands on.
 class AreaCaptureModifier extends RuleModifier {
-  const AreaCaptureModifier({this.side = possession.none});
+  const AreaCaptureModifier({this.side = ModifierSide.both});
 
   @override
-  final possession side;
+  final ModifierSide side;
 
   @override
   List<List<int>> extraCaptures(Move move, GameState gs) {
@@ -147,15 +145,15 @@ class AreaCaptureModifier extends RuleModifier {
 }
 
 /// Llama boss (life 2) "Rebrote": each turn a fresh [piece] of the mover's side
-/// sprouts on the board. Placement is the first empty tile scanning from the
-/// mover's home rank (j=0) outward; if the board is full, nothing spawns.
+/// sprouts on the first empty tile (scanning from the home rank outward); a full
+/// board spawns nothing.
 class SpawnModifier extends RuleModifier {
-  const SpawnModifier({this.piece = chrt.pawn, this.side = possession.none});
+  const SpawnModifier({this.piece = chrt.pawn, this.side = ModifierSide.both});
 
   final chrt piece;
 
   @override
-  final possession side;
+  final ModifierSide side;
 
   @override
   void onTurnStart(GameState gs) {
@@ -174,17 +172,17 @@ class SpawnModifier extends RuleModifier {
 /// Cóndor boss (life 2) "Viento": every piece is pushed one step by `[di, dj]`.
 /// A piece blown off the board is removed to its own owner's graveyard. Because
 /// the push is a rigid translation, distinct pieces never collide; processing
-/// the frontier (pieces nearest the push edge) first keeps each destination
-/// free before the next piece arrives.
+/// the frontier (pieces nearest the push edge) first keeps each destination free
+/// before the next piece arrives.
 class WindModifier extends RuleModifier {
   const WindModifier(
-      {required this.di, required this.dj, this.side = possession.none});
+      {required this.di, required this.dj, this.side = ModifierSide.both});
 
   final int di;
   final int dj;
 
   @override
-  final possession side;
+  final ModifierSide side;
 
   @override
   void onTurnStart(GameState gs) {
@@ -196,7 +194,6 @@ class WindModifier extends RuleModifier {
         for (final t in row)
           if (t.char != chrt.empty) t
     ];
-    // Frontier first: highest projection onto the push vector moves first.
     pieces.sort((a, b) =>
         (b.i! * di + b.j! * dj).compareTo(a.i! * di + a.j! * dj));
 
@@ -208,7 +205,6 @@ class WindModifier extends RuleModifier {
       t.char = chrt.empty;
       t.owner = possession.none;
       if (nj < 0 || nj >= height || ni < 0 || ni >= width) {
-        // Blown off the board -> removed to its owner's graveyard.
         if (owner == possession.mine) {
           gs.myGraveyard.add(Tile(char, possession.mine, null, null));
         } else {
@@ -220,5 +216,59 @@ class WindModifier extends RuleModifier {
         dest.owner = owner;
       }
     }
+  }
+}
+
+/// Cóndor boss (life 1) "Marchitar": a piece the mover leaves unmoved for
+/// [turns] of its own turns withers and dies (removed to its owner's graveyard).
+/// The king never withers. Ages the mover's pieces each turn; moving a piece
+/// resets its age (see [GameState.rewritePosition]).
+class WitherModifier extends RuleModifier {
+  const WitherModifier({this.turns = 3, this.side = ModifierSide.both});
+
+  final int turns;
+
+  @override
+  final ModifierSide side;
+
+  @override
+  void onTurnStart(GameState gs) {
+    for (final row in gs.board) {
+      for (final t in row) {
+        if (t.owner != possession.mine ||
+            t.char == chrt.empty ||
+            t.char == chrt.king) {
+          continue;
+        }
+        t.idleTurns++;
+        if (t.idleTurns >= turns) {
+          gs.myGraveyard.add(Tile(t.char, possession.mine, null, null));
+          t.char = chrt.empty;
+          t.owner = possession.none;
+          t.idleTurns = 0;
+        }
+      }
+    }
+  }
+}
+
+/// Leñador boss (life 1) "Tala el tablero": the [felled] tiles (`[i, j]` pairs)
+/// may not be entered by the side this modifier applies to (default the
+/// protagonist) — the leñador itself may still step on them.
+class FelledTilesModifier extends RuleModifier {
+  const FelledTilesModifier(this.felled, {this.side = ModifierSide.protagonist});
+
+  final List<List<int>> felled;
+
+  @override
+  final ModifierSide side;
+
+  @override
+  bool allowsMove(Move move, GameState gs) {
+    if (!appliesTo(move.initialTile.owner, gs)) return true;
+    for (final c in felled) {
+      if (c[0] == move.finalTile.i && c[1] == move.finalTile.j) return false;
+    }
+    return true;
   }
 }

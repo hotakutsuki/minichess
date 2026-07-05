@@ -24,6 +24,9 @@ class BoardConfig {
   /// The current game: a 3×4 board, pawn promotes to a knight.
   static const BoardConfig classic = BoardConfig(width: 3, height: 4);
 
+  /// The final-boss stage: a wider 5×4 board (pawn still promotes to a knight).
+  static const BoardConfig bossFinal = BoardConfig(width: 5, height: 4);
+
   /// Row a `mine` pawn promotes on (the far rank).
   int get promotionRow => height - 1;
 }

@@ -29,3 +29,20 @@ List<List<Tile>> createNewBoard() {
     ],
   ];
 }
+
+/// Builds the 5×4 final-boss board ([BoardConfig.bossFinal]): a wider back rank
+/// (rock, bishop, king, bishop, rock) and a full pawn row each side — more
+/// pieces than the classic board. Point-symmetric, so the per-turn 180°
+/// rotation stays fair.
+List<List<Tile>> createBossFinalBoard() {
+  const back = [chrt.rock, chrt.bishop, chrt.king, chrt.bishop, chrt.rock];
+  final board = List.generate(4,
+      (j) => List.generate(5, (i) => Tile(chrt.empty, possession.none, i, j)));
+  for (var i = 0; i < 5; i++) {
+    board[0][i] = Tile(back[i], possession.mine, i, 0);
+    board[1][i] = Tile(chrt.pawn, possession.mine, i, 1);
+    board[2][i] = Tile(chrt.pawn, possession.enemy, i, 2);
+    board[3][i] = Tile(back[i], possession.enemy, i, 3);
+  }
+  return board;
+}
