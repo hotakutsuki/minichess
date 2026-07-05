@@ -176,6 +176,17 @@ List<List<int>> effectiveOffsets(chrt piece, possession owner, GameState gs) {
   return offsets;
 }
 
+/// The character to DISPLAY for [tile] after modifiers (e.g. a piece transformed
+/// to move like the oso also shows the oso sprite). Rendering-only; does not
+/// affect movement or rules.
+chrt effectiveChar(Tile tile, GameState gs) {
+  var c = tile.char;
+  for (final m in gs.modifiers) {
+    if (m.appliesTo(tile.owner, gs)) c = m.displayChar(c, tile.owner);
+  }
+  return c;
+}
+
 bool isValidMovmentPerPiece(Move m, GameState gs, [bool hard = false]) {
   final di = m.finalTile.i! - m.initialTile.i!;
   final dj = m.finalTile.j! - m.initialTile.j!;

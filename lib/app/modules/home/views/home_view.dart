@@ -6,6 +6,7 @@ import 'package:inti_the_inka_chess_game/app/modules/home/views/welcome_view.dar
 import 'dart:math';
 import '../../../data/enums.dart';
 import '../../../engine/modifier_catalog.dart';
+import '../../../engine/rule_modifier.dart';
 import '../../../routes/app_pages.dart';
 import '../../../utils/gameObjects/BackgroundController.dart';
 import '../../../utils/utils.dart';
@@ -52,7 +53,7 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
             SimpleDialogOption(
               onPressed: () {
                 Get.back();
-                controller.startSandbox(info.sample());
+                _pickSandboxSide(info);
               },
               child: ListTile(
                 title: Text(info.name,
@@ -62,6 +63,36 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
                     '${info.source == null ? '' : ' — ${info.source}'}',
                     style: const TextStyle(color: Colors.white54)),
                 isThreeLine: true,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// Second step: choose which side the picked modifier applies to.
+  void _pickSandboxSide(ModifierInfo info) {
+    const options = {
+      'Tú (protagonista)': ModifierSide.protagonist,
+      'Enemigo (IA)': ModifierSide.antagonist,
+      'Ambos': ModifierSide.both,
+    };
+    Get.dialog(
+      SimpleDialog(
+        backgroundColor: brackgroundColorSolid,
+        title: Text('${info.name} — aplicar a',
+            style: const TextStyle(color: Colors.white)),
+        children: [
+          for (final entry in options.entries)
+            SimpleDialogOption(
+              onPressed: () {
+                Get.back();
+                controller.startSandbox(info.build(entry.value));
+              },
+              child: Text(
+                entry.key +
+                    (entry.value == info.defaultSide ? '  ★' : ''),
+                style: const TextStyle(color: Colors.white),
               ),
             ),
         ],

@@ -47,6 +47,11 @@ abstract class RuleModifier {
           chrt piece, possession owner, List<List<int>> base) =>
       base;
 
+  /// Display hook (rendering only). The character to SHOW for a piece — may
+  /// differ from its stored [chrt] so a piece transformed to move like the oso
+  /// also looks like one. Default: unchanged.
+  chrt displayChar(chrt piece, possession owner) => piece;
+
   /// Legality hook. Return false to veto an otherwise-legal [move] (e.g. a tile
   /// the protagonist may not enter). Default: allowed.
   bool allowsMove(Move move, GameState gs) => true;
@@ -108,6 +113,10 @@ class TransformAllPiecesModifier extends RuleModifier {
     // (like the knight) still mirror correctly.
     return pieceOffsets(target, owner);
   }
+
+  @override
+  chrt displayChar(chrt piece, possession owner) =>
+      (piece == chrt.king || piece == chrt.empty) ? piece : target;
 }
 
 /// Rule "invertir posesión de captura": captured pieces are never claimed by the
@@ -144,19 +153,34 @@ class AreaCaptureModifier extends RuleModifier {
   }
 }
 
-/// Llama boss (life 2) "Rebrote": each turn a fresh [piece] of the mover's side
-/// sprouts on the first empty tile (scanning from the home rank outward); a full
-/// board spawns nothing.
+/// Llama boss (life 2) "Rebrote": every [everyTurns] of the affected side's turns
+/// a fresh [piece] sprouts on the first empty tile scanning from that side's home
+/// rank (j=0) outward — i.e. on its own back line first. A full board spawns
+/// nothing.
+///
+/// Holds a small countdown; [onTurnStart] is only ever called by the real match
+/// loop (never the AI look-ahead), so this mutable state is safe.
 class SpawnModifier extends RuleModifier {
-  const SpawnModifier({this.piece = chrt.pawn, this.side = ModifierSide.both});
+  SpawnModifier(
+      {this.piece = chrt.pawn,
+      this.everyTurns = 2,
+      this.side = ModifierSide.both});
 
   final chrt piece;
+  final int everyTurns;
 
   @override
   final ModifierSide side;
 
+  int _untilNext = 1; // first spawn on the first eligible turn, then every N
+
+  /// Turns until the next spawn (for UI); 1 means it sprouts this turn.
+  int get turnsUntilNext => _untilNext.clamp(0, everyTurns);
+
   @override
   void onTurnStart(GameState gs) {
+    if (--_untilNext > 0) return;
+    _untilNext = everyTurns;
     for (final row in gs.board) {
       for (final t in row) {
         if (t.char == chrt.empty) {
@@ -169,30 +193,45 @@ class SpawnModifier extends RuleModifier {
   }
 }
 
-/// Cóndor boss (life 2) "Viento": every piece is pushed one step by `[di, dj]`.
-/// A piece blown off the board is removed to its own owner's graveyard. Because
-/// the push is a rigid translation, distinct pieces never collide; processing
-/// the frontier (pieces nearest the push edge) first keeps each destination free
-/// before the next piece arrives.
+/// Cóndor boss (life 2) "Viento": every [everyTurns] of the affected side's turns
+/// a gust pushes every piece one step by `[di, dj]`. A piece blown off the board
+/// is removed to its own owner's graveyard. **Kings are anchored** — the wind
+/// never moves or removes a king (so the sun can't be blown away). Because the
+/// push is a rigid translation, distinct pieces never collide; processing the
+/// frontier (pieces nearest the push edge) first keeps each destination free.
+///
+/// Holds a countdown for the next gust (real-loop only, safe — see [SpawnModifier]).
 class WindModifier extends RuleModifier {
-  const WindModifier(
-      {required this.di, required this.dj, this.side = ModifierSide.both});
+  WindModifier(
+      {required this.di,
+      required this.dj,
+      this.everyTurns = 5,
+      this.side = ModifierSide.both});
 
   final int di;
   final int dj;
+  final int everyTurns;
 
   @override
   final ModifierSide side;
 
+  late int _untilNext = everyTurns; // gust after `everyTurns` turns, then repeat
+
+  /// Turns until the next gust (for UI).
+  int get turnsUntilNext => _untilNext.clamp(0, everyTurns);
+
   @override
   void onTurnStart(GameState gs) {
+    if (--_untilNext > 0) return;
+    _untilNext = everyTurns;
+
     final height = gs.board.length;
     final width = gs.board.isEmpty ? 0 : gs.board[0].length;
 
     final pieces = <Tile>[
       for (final row in gs.board)
         for (final t in row)
-          if (t.char != chrt.empty) t
+          if (t.char != chrt.empty && t.char != chrt.king) t
     ];
     pieces.sort((a, b) =>
         (b.i! * di + b.j! * dj).compareTo(a.i! * di + a.j! * dj));
@@ -252,23 +291,69 @@ class WitherModifier extends RuleModifier {
   }
 }
 
-/// Leñador boss (life 1) "Tala el tablero": the [felled] tiles (`[i, j]` pairs)
-/// may not be entered by the side this modifier applies to (default the
-/// protagonist) — the leñador itself may still step on them.
+/// Leñador boss (life 1) "Tala el tablero": a spreading hazard. On each of the
+/// affected side's turns one new square — adjacent to an already-felled one, or
+/// the board centre if none are felled — is felled for [duration] turns, while
+/// existing felled squares count down back to normal. The affected side (default
+/// the protagonist) may not enter a felled square; felling never removes pieces.
+///
+/// State lives on the tiles ([Tile.felledTurns]), so it travels with the board
+/// through rotation.
 class FelledTilesModifier extends RuleModifier {
-  const FelledTilesModifier(this.felled, {this.side = ModifierSide.protagonist});
+  const FelledTilesModifier(
+      {this.side = ModifierSide.protagonist, this.duration = 2});
 
-  final List<List<int>> felled;
+  final int duration;
 
   @override
   final ModifierSide side;
 
   @override
+  void onTurnStart(GameState gs) {
+    for (final row in gs.board) {
+      for (final t in row) {
+        if (t.felledTurns > 0) t.felledTurns--;
+      }
+    }
+    final height = gs.board.length;
+    final width = gs.board.isEmpty ? 0 : gs.board[0].length;
+    final felled = <Tile>[
+      for (final row in gs.board)
+        for (final t in row)
+          if (t.felledTurns > 0) t
+    ];
+    if (felled.isEmpty) {
+      gs.board[height ~/ 2][width ~/ 2].felledTurns = duration; // seed
+      return;
+    }
+    const dirs = [
+      [1, 0],
+      [-1, 0],
+      [0, 1],
+      [0, -1]
+    ];
+    for (final t in felled) {
+      for (final d in dirs) {
+        final ni = t.i! + d[0];
+        final nj = t.j! + d[1];
+        if (nj < 0 || nj >= height || ni < 0 || ni >= width) continue;
+        final n = gs.board[nj][ni];
+        if (n.felledTurns == 0) {
+          n.felledTurns = duration; // spread to a fresh neighbour
+          return;
+        }
+      }
+    }
+  }
+
+  @override
   bool allowsMove(Move move, GameState gs) {
     if (!appliesTo(move.initialTile.owner, gs)) return true;
-    for (final c in felled) {
-      if (c[0] == move.finalTile.i && c[1] == move.finalTile.j) return false;
-    }
-    return true;
+    final fi = move.finalTile.i;
+    final fj = move.finalTile.j;
+    if (fi == null || fj == null) return true;
+    // Read the actual board tile (the move's finalTile may be a lightweight
+    // destination without the felled state).
+    return gs.board[fj][fi].felledTurns == 0;
   }
 }

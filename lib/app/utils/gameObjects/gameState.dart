@@ -103,7 +103,11 @@ class GameState {
           continue;
         }
         final t = board[j][i];
-        if (t.owner == possession.enemy && t.char != chrt.empty) {
+        // Never let a side-effect capture remove a king — that would end the
+        // game with no winner detected. Kings only fall to a direct capture.
+        if (t.owner == possession.enemy &&
+            t.char != chrt.empty &&
+            t.char != chrt.king) {
           _sendToGrave(t.char, t.owner);
           t.char = chrt.empty;
           t.owner = possession.none;
@@ -140,7 +144,8 @@ class GameState {
     for (var r in board){
       List<Tile> row = [];
       for(var t in r) {
-        row.add(Tile(t.char, t.owner, t.i, t.j, idleTurns: t.idleTurns));
+        row.add(Tile(t.char, t.owner, t.i, t.j,
+            idleTurns: t.idleTurns, felledTurns: t.felledTurns));
       }
       newBoard.add(row);
     }
@@ -178,7 +183,7 @@ class GameState {
       int j = 0;
       for (var v in row.reversed) {
         revRow.add(Tile(v.char, toggleOwner(v.owner), j, i,
-            idleTurns: v.idleTurns));
+            idleTurns: v.idleTurns, felledTurns: v.felledTurns));
         j++;
       }
       reversedBoard.add(revRow);
