@@ -8,8 +8,10 @@ import 'package:inti_the_inka_chess_game/app/modules/match/controllers/tile_cont
 
 import '../../../data/enums.dart';
 import '../../../data/matchDom.dart';
+import '../../../data/sandbox_config.dart';
 import '../../../data/usefullData.dart';
 import '../../../data/userDom.dart';
+import '../../../engine/rule_modifier.dart';
 import '../../../routes/app_pages.dart';
 import '../../../services/database.dart';
 import '../../../utils/gameObjects/gameState.dart';
@@ -29,7 +31,14 @@ class MatchController extends GetxController with WidgetsBindingObserver {
   LanguageController l = Get.find<LanguageController>();
 
   final homeController = Get.find<HomeController>();
-  final gameMode gamemode = Get.arguments ?? gameMode.vs;
+
+  // The match route argument is normally a [gameMode]. A [SandboxConfig] instead
+  // launches a solo match with rule modifiers active (debug tool).
+  late final gameMode gamemode =
+      Get.arguments is SandboxConfig ? gameMode.solo : (Get.arguments ?? gameMode.vs);
+  late final List<RuleModifier> _modifiers = Get.arguments is SandboxConfig
+      ? (Get.arguments as SandboxConfig).modifiers
+      : const [];
 
   Rx<int> wScore = 0.obs, bScore = 0.obs;
   final selectedTile = Rxn<Tile>();
@@ -276,6 +285,7 @@ class MatchController extends GetxController with WidgetsBindingObserver {
         gs.update((val) => val!.changeGameState(move));
         gs.value!.rotate();
         togglePlayersTurn();
+        _runTurnTick(); // apply per-turn modifier effects for the new mover
       }
       restarSelected(tile);
       highlightAvailableOptions();
@@ -489,7 +499,17 @@ class MatchController extends GetxController with WidgetsBindingObserver {
       enemyGraveyard: <Tile>[],
       // enemyGraveyard: <Tile>[Tile(chrt.pawn, possession.enemy, null, null)],
       myGraveyard: <Tile>[],
+      modifiers: _modifiers,
     );
+  }
+
+  // Runs the active modifiers' per-turn effects (spawn/wither/wind) at the start
+  // of the side-to-move's turn, then repaints the board. No-op without modifiers,
+  // so vanilla matches are untouched.
+  void _runTurnTick() {
+    if (gs.value!.modifiers.isEmpty) return;
+    gs.value!.applyTurnStart();
+    gs.update((val) => val);
   }
 
   void startTimer() {

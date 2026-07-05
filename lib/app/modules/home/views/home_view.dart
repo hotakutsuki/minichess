@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:inti_the_inka_chess_game/app/modules/home/views/welcome_view.dart';
 import 'dart:math';
 import '../../../data/enums.dart';
+import '../../../engine/modifier_catalog.dart';
 import '../../../routes/app_pages.dart';
 import '../../../utils/gameObjects/BackgroundController.dart';
 import '../../../utils/utils.dart';
@@ -36,6 +37,36 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
             child: Obx(() {
               return Text(l.g(diff.name));
             })));
+  }
+
+  /// Debug-only launcher: pick a modifier from the catalog and start a sandbox
+  /// match with it active. Never shown in release builds.
+  void showSandboxPicker() {
+    Get.dialog(
+      SimpleDialog(
+        backgroundColor: brackgroundColorSolid,
+        title: const Text('Sandbox — probar modificador',
+            style: TextStyle(color: Colors.white)),
+        children: [
+          for (final info in modifierCatalog)
+            SimpleDialogOption(
+              onPressed: () {
+                Get.back();
+                controller.startSandbox(info.sample());
+              },
+              child: ListTile(
+                title: Text(info.name,
+                    style: const TextStyle(color: Colors.white)),
+                subtitle: Text(
+                    '${info.description}\n[${info.uses.map((u) => u.name).join(', ')}]'
+                    '${info.source == null ? '' : ' — ${info.source}'}',
+                    style: const TextStyle(color: Colors.white54)),
+                isThreeLine: true,
+              ),
+            ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -390,6 +421,17 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
         ),
       ),
       floatingActionButton: Stack(children: [
+        if (kDebugMode)
+          Positioned(
+            left: 0,
+            bottom: 0,
+            child: FloatingActionButton.small(
+              heroTag: 'sandbox',
+              backgroundColor: brackgroundColor,
+              onPressed: showSandboxPicker,
+              child: const Icon(Icons.science, color: Colors.white),
+            ),
+          ),
         Obx(
           () => AnimatedPositioned(
             right: controller.isLoading.value ||
