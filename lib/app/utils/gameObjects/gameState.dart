@@ -11,16 +11,21 @@ import 'move.dart';
 
 class GameState {
   GameState(this.board, this.myGraveyard, this.enemyGraveyard,
-      {this.config = BoardConfig.classic, this.modifiers = const []});
+      {this.config = BoardConfig.classic,
+      this.modifiers = const [],
+      this.mineIsProtagonist = true});
 
   GameState.named(
       {board,
       myGraveyard,
       enemyGraveyard,
       BoardConfig config = BoardConfig.classic,
-      List<RuleModifier> modifiers = const []})
+      List<RuleModifier> modifiers = const [],
+      bool mineIsProtagonist = true})
       : this(board, myGraveyard, enemyGraveyard,
-            config: config, modifiers: modifiers);
+            config: config,
+            modifiers: modifiers,
+            mineIsProtagonist: mineIsProtagonist);
 
   List<List<Tile>> board;
   List<Tile> myGraveyard;
@@ -30,6 +35,12 @@ class GameState {
   /// Active rule changes (boss powers / jokers). Empty == vanilla rules.
   /// Modifiers are immutable, so [clone] copies the list reference.
   final List<RuleModifier> modifiers;
+
+  /// Whether the current `mine` frame belongs to the protagonist (the human /
+  /// campaign hero). The board rotates each turn, so `mine`/`enemy` flip owners;
+  /// this stable flag lets a [RuleModifier] target the protagonist or antagonist
+  /// durably (see [RuleModifier.appliesTo]). Flipped by [rotate].
+  bool mineIsProtagonist;
 
   GameState changeGameState(Move move) {
     // `move.finalTile` aliases the board tile, which `rewritePosition` overwrites
@@ -46,7 +57,7 @@ class GameState {
   // engine; the match loop decides when to invoke it. No-op with no modifiers.
   void applyTurnStart() {
     for (final m in modifiers) {
-      if (m.appliesTo(possession.mine)) {
+      if (m.appliesTo(possession.mine, this)) {
         m.onTurnStart(this);
       }
     }
@@ -70,8 +81,8 @@ class GameState {
   // it to its original owner. At this point the captor is always `mine`, so the
   // captured piece's [owner] is `enemy`.
   void _sendToGrave(chrt char, possession owner) {
-    final returnToOwner = modifiers
-        .any((m) => m.appliesTo(possession.mine) && m.returnsCapturedToOwner());
+    final returnToOwner = modifiers.any(
+        (m) => m.appliesTo(possession.mine, this) && m.returnsCapturedToOwner());
     if (returnToOwner) {
       enemyGraveyard.add(Tile(char, owner, null, null));
     } else {
@@ -84,7 +95,7 @@ class GameState {
   // enemy-occupied, on-board tiles are affected.
   void applyExtraCaptures(Move move) {
     for (final m in modifiers) {
-      if (!m.appliesTo(possession.mine)) continue;
+      if (!m.appliesTo(possession.mine, this)) continue;
       for (final c in m.extraCaptures(move, this)) {
         final i = c[0];
         final j = c[1];
@@ -104,6 +115,7 @@ class GameState {
   rewritePosition(Move move) {
     board[move.finalTile.j!][move.finalTile.i!].char = move.initialTile.char;
     board[move.finalTile.j!][move.finalTile.i!].owner = move.initialTile.owner;
+    board[move.finalTile.j!][move.finalTile.i!].idleTurns = 0; // moving resets wither
     transformPawn(move);
     if (isFromGraveyard(move.initialTile)) {
       int idxRemove = myGraveyard.indexWhere((t) => t.char == move.initialTile.char);
@@ -128,7 +140,7 @@ class GameState {
     for (var r in board){
       List<Tile> row = [];
       for(var t in r) {
-        row.add(Tile(t.char, t.owner, t.i, t.j));
+        row.add(Tile(t.char, t.owner, t.i, t.j, idleTurns: t.idleTurns));
       }
       newBoard.add(row);
     }
@@ -142,6 +154,7 @@ class GameState {
       enemyGraveyard: [...gs.enemyGraveyard],
       config: gs.config,
       modifiers: gs.modifiers,
+      mineIsProtagonist: gs.mineIsProtagonist,
     );
   }
 
@@ -164,7 +177,8 @@ class GameState {
       List<Tile> revRow = [];
       int j = 0;
       for (var v in row.reversed) {
-        revRow.add(Tile(v.char, toggleOwner(v.owner), j, i));
+        revRow.add(Tile(v.char, toggleOwner(v.owner), j, i,
+            idleTurns: v.idleTurns));
         j++;
       }
       reversedBoard.add(revRow);
@@ -175,6 +189,7 @@ class GameState {
 
   rotate() {
     board = getReversedBoard();
+    mineIsProtagonist = !mineIsProtagonist; // `mine` now refers to the other side
     var aux = myGraveyard.map((e) {
       e.owner = possession.enemy;
       return e;

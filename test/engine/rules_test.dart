@@ -205,4 +205,31 @@ void main() {
       expect(isInCheck(_stateWith(b)), isTrue);
     });
   });
+
+  group('isCheckmate', () {
+    test('the initial position is not checkmate', () {
+      expect(isCheckmate(_stateWith(createNewBoard())), isFalse);
+    });
+
+    // My king cornered at (0,0): rock A at (0,1) gives check; rock B at (1,1)
+    // covers both escape squares and recaptures on either rook, so no move
+    // escapes -> mate.
+    List<List<Tile>> _matePosition() {
+      final b = _emptyBoard();
+      b[0][0] = Tile(chrt.king, possession.mine, 0, 0);
+      b[1][0] = Tile(chrt.rock, possession.enemy, 0, 1); // rook A
+      b[1][1] = Tile(chrt.rock, possession.enemy, 1, 1); // rook B
+      return b;
+    }
+
+    test('a cornered, inescapable king is checkmate', () {
+      expect(isCheckmate(_stateWith(_matePosition())), isTrue);
+    });
+
+    test('with only the checking rook, the king escapes (not mate)', () {
+      final b = _matePosition();
+      b[1][1] = Tile(chrt.empty, possession.none, 1, 1); // remove rook B
+      expect(isCheckmate(_stateWith(b)), isFalse);
+    });
+  });
 }
