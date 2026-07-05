@@ -41,6 +41,17 @@ class GameState {
     return this;
   }
 
+  // Runs every active modifier's per-turn effect (spawn, wither, wind...). Call
+  // once when a side's turn begins, with that side as `mine`. Pure w.r.t. the
+  // engine; the match loop decides when to invoke it. No-op with no modifiers.
+  void applyTurnStart() {
+    for (final m in modifiers) {
+      if (m.appliesTo(possession.mine)) {
+        m.onTurnStart(this);
+      }
+    }
+  }
+
   transformPawn(Move move) {
     if (move.finalTile.char == chrt.pawn &&
         move.finalTile.j == config.promotionRow) {
