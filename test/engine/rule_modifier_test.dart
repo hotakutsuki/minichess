@@ -154,4 +154,70 @@ void main() {
       expect(gs.myGraveyard, isEmpty);
     });
   });
+
+  group('applyTurnStart with no modifiers', () {
+    test('does nothing', () {
+      final b = _emptyBoard();
+      b[0][0] = Tile(chrt.rock, possession.mine, 0, 0);
+      final gs = _boardStateWith(b, const []);
+      gs.applyTurnStart();
+      expect(b[0][0].char, chrt.rock);
+      final occupied =
+          b.expand((r) => r).where((t) => t.char != chrt.empty).length;
+      expect(occupied, 1);
+    });
+  });
+
+  group('SpawnModifier (Rebrote)', () {
+    test('sprouts a piece on the first empty tile each turn', () {
+      final b = _emptyBoard();
+      b[0][0] = Tile(chrt.rock, possession.mine, 0, 0); // occupies the very first tile
+      final gs = _boardStateWith(b, const [SpawnModifier(piece: chrt.pawn)]);
+      gs.applyTurnStart();
+      // first empty scanning j=0,i=0.. is (i=1, j=0) == board[0][1]
+      expect(b[0][1].char, chrt.pawn);
+      expect(b[0][1].owner, possession.mine);
+    });
+
+    test('a full board spawns nothing', () {
+      final b = List.generate(
+          4,
+          (j) => List.generate(
+              3, (i) => Tile(chrt.pawn, possession.mine, i, j)));
+      final gs = _boardStateWith(b, const [SpawnModifier()]);
+      gs.applyTurnStart(); // must not throw or overwrite
+      expect(b.expand((r) => r).every((t) => t.char == chrt.pawn), isTrue);
+    });
+  });
+
+  group('WindModifier (Viento)', () {
+    test('pushes pieces one step; those blown off go to the graveyard', () {
+      final b = _emptyBoard();
+      b[1][1] = Tile(chrt.pawn, possession.mine, 1, 1); // -> (1,2)
+      b[3][0] = Tile(chrt.rock, possession.enemy, 0, 3); // top row -> off board
+      final gs = _boardStateWith(b, const [WindModifier(di: 0, dj: 1)]);
+      gs.applyTurnStart();
+      // pushed +j
+      expect(b[2][1].char, chrt.pawn);
+      expect(b[2][1].owner, possession.mine);
+      expect(b[1][1].char, chrt.empty); // origin cleared
+      // rock blown off the far edge -> enemy graveyard, origin cleared
+      expect(b[3][0].char, chrt.empty);
+      expect(gs.enemyGraveyard.length, 1);
+      expect(gs.enemyGraveyard.first.char, chrt.rock);
+      expect(gs.enemyGraveyard.first.owner, possession.enemy);
+    });
+
+    test('adjacent pieces shift without colliding', () {
+      final b = _emptyBoard();
+      b[1][1] = Tile(chrt.pawn, possession.mine, 1, 1); // -> (1,2)
+      b[2][1] = Tile(chrt.bishop, possession.mine, 1, 2); // -> (1,3), moves first
+      final gs = _boardStateWith(b, const [WindModifier(di: 0, dj: 1)]);
+      gs.applyTurnStart();
+      expect(b[3][1].char, chrt.bishop);
+      expect(b[2][1].char, chrt.pawn);
+      expect(b[1][1].char, chrt.empty);
+      expect(gs.myGraveyard, isEmpty); // nobody blown off
+    });
+  });
 }

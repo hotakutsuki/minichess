@@ -1,6 +1,7 @@
 import '../data/enums.dart';
 import '../utils/gameObjects/gameState.dart';
 import '../utils/gameObjects/move.dart';
+import '../utils/gameObjects/tile.dart';
 import 'rules.dart';
 
 /// A rule change carried by a [GameState] and applied at defined engine hook
@@ -50,6 +51,14 @@ abstract class RuleModifier {
   /// Off-board or non-enemy tiles in the result are ignored by the engine.
   /// Default: none.
   List<List<int>> extraCaptures(Move move, GameState gs) => const [];
+
+  /// Per-turn hook. Runs once at the start of the side-to-move's turn (the mover
+  /// is [possession.mine] in the current frame), letting a modifier mutate the
+  /// board outside of a normal move — spawn reinforcements, wither idle pieces,
+  /// blow a wind across the board. Default: no-op.
+  ///
+  /// Frame-relative like the capture hooks (see the SIDE CAVEAT above).
+  void onTurnStart(GameState gs) {}
 }
 
 /// Joker "doble paso": the affected side's pieces gain a **2-square** option in
@@ -134,5 +143,82 @@ class AreaCaptureModifier extends RuleModifier {
       [i, j + 1],
       [i, j - 1],
     ];
+  }
+}
+
+/// Llama boss (life 2) "Rebrote": each turn a fresh [piece] of the mover's side
+/// sprouts on the board. Placement is the first empty tile scanning from the
+/// mover's home rank (j=0) outward; if the board is full, nothing spawns.
+class SpawnModifier extends RuleModifier {
+  const SpawnModifier({this.piece = chrt.pawn, this.side = possession.none});
+
+  final chrt piece;
+
+  @override
+  final possession side;
+
+  @override
+  void onTurnStart(GameState gs) {
+    for (final row in gs.board) {
+      for (final t in row) {
+        if (t.char == chrt.empty) {
+          t.char = piece;
+          t.owner = possession.mine;
+          return;
+        }
+      }
+    }
+  }
+}
+
+/// Cóndor boss (life 2) "Viento": every piece is pushed one step by `[di, dj]`.
+/// A piece blown off the board is removed to its own owner's graveyard. Because
+/// the push is a rigid translation, distinct pieces never collide; processing
+/// the frontier (pieces nearest the push edge) first keeps each destination
+/// free before the next piece arrives.
+class WindModifier extends RuleModifier {
+  const WindModifier(
+      {required this.di, required this.dj, this.side = possession.none});
+
+  final int di;
+  final int dj;
+
+  @override
+  final possession side;
+
+  @override
+  void onTurnStart(GameState gs) {
+    final height = gs.board.length;
+    final width = gs.board.isEmpty ? 0 : gs.board[0].length;
+
+    final pieces = <Tile>[
+      for (final row in gs.board)
+        for (final t in row)
+          if (t.char != chrt.empty) t
+    ];
+    // Frontier first: highest projection onto the push vector moves first.
+    pieces.sort((a, b) =>
+        (b.i! * di + b.j! * dj).compareTo(a.i! * di + a.j! * dj));
+
+    for (final t in pieces) {
+      final ni = t.i! + di;
+      final nj = t.j! + dj;
+      final char = t.char;
+      final owner = t.owner;
+      t.char = chrt.empty;
+      t.owner = possession.none;
+      if (nj < 0 || nj >= height || ni < 0 || ni >= width) {
+        // Blown off the board -> removed to its owner's graveyard.
+        if (owner == possession.mine) {
+          gs.myGraveyard.add(Tile(char, possession.mine, null, null));
+        } else {
+          gs.enemyGraveyard.add(Tile(char, possession.enemy, null, null));
+        }
+      } else {
+        final dest = gs.board[nj][ni];
+        dest.char = char;
+        dest.owner = owner;
+      }
+    }
   }
 }
