@@ -2,6 +2,7 @@ import '../data/enums.dart';
 import '../utils/gameObjects/gameState.dart';
 import '../utils/gameObjects/move.dart';
 import '../utils/gameObjects/tile.dart';
+import 'rule_modifier.dart';
 
 /// Pure minichess rules engine.
 ///
@@ -137,10 +138,22 @@ List<List<int>> pieceOffsets(chrt piece, possession owner) {
   }
 }
 
+/// The offsets a piece may actually use, after folding in the [GameState]'s
+/// active [RuleModifier]s. With no modifiers this returns [pieceOffsets]
+/// verbatim, so vanilla matches are unaffected. This is the seam every
+/// movement-changing boss power / joker routes through.
+List<List<int>> effectiveOffsets(chrt piece, possession owner, GameState gs) {
+  var offsets = pieceOffsets(piece, owner);
+  for (final m in gs.modifiers) {
+    offsets = m.transformOffsets(piece, owner, offsets);
+  }
+  return offsets;
+}
+
 bool isValidMovmentPerPiece(Move m, GameState gs, [bool hard = false]) {
   final di = m.finalTile.i! - m.initialTile.i!;
   final dj = m.finalTile.j! - m.initialTile.j!;
-  final reachable = pieceOffsets(m.initialTile.char, m.initialTile.owner)
+  final reachable = effectiveOffsets(m.initialTile.char, m.initialTile.owner, gs)
       .any((o) => o[0] == di && o[1] == dj);
   if (!reachable) return false;
   // The king is the only piece whose move can be rejected — and only when
