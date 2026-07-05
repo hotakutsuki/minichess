@@ -1,4 +1,6 @@
 import '../data/enums.dart';
+import '../utils/gameObjects/gameState.dart';
+import '../utils/gameObjects/move.dart';
 import 'rules.dart';
 
 /// A rule change carried by a [GameState] and applied at defined engine hook
@@ -11,9 +13,16 @@ import 'rules.dart';
 /// must be immutable: a [GameState] is cloned constantly by the AI look-ahead
 /// and only the reference to the modifier list is copied.
 ///
-/// PR 1 ships only the movement hook ([transformOffsets]); later hooks (capture
-/// resolution, per-turn ticks, win condition) will be added as more methods
-/// here, each defaulting to a no-op so existing modifiers keep compiling.
+/// PR 1 shipped the movement hook ([transformOffsets]); PR 2 adds the capture
+/// hooks ([returnsCapturedToOwner], [extraCaptures]). Later hooks (per-turn
+/// ticks, win condition) will be added the same way — each defaulting to a
+/// no-op so existing modifiers keep compiling.
+///
+/// SIDE CAVEAT: at capture time the mover is always [possession.mine] (the board
+/// rotates each turn), so for the capture hooks [side] is frame-relative ("the
+/// side to move"), not a stable player/boss identity. Durable player-vs-boss
+/// targeting is a known follow-up (the [GameState] must carry which frame is the
+/// protagonist's).
 abstract class RuleModifier {
   const RuleModifier();
 
@@ -30,6 +39,17 @@ abstract class RuleModifier {
   List<List<int>> transformOffsets(
           chrt piece, possession owner, List<List<int>> base) =>
       base;
+
+  /// Capture hook — disposition. If true, a piece captured by the current mover
+  /// is **not** claimed by the captor (the vanilla, Shogi-style drop); it
+  /// returns to its original owner instead. The first applicable modifier wins.
+  bool returnsCapturedToOwner() => false;
+
+  /// Capture hook — side effects. Extra board tiles (`[i, j]` pairs) cleared as
+  /// a consequence of a capturing [move] (e.g. the Oso's "Embestida" area hit).
+  /// Off-board or non-enemy tiles in the result are ignored by the engine.
+  /// Default: none.
+  List<List<int>> extraCaptures(Move move, GameState gs) => const [];
 }
 
 /// Joker "doble paso": the affected side's pieces gain a **2-square** option in
@@ -80,5 +100,39 @@ class TransformAllPiecesModifier extends RuleModifier {
     // Resolve the target's offsets for THIS owner so direction-dependent
     // targets (like the knight) still mirror correctly.
     return pieceOffsets(target, owner);
+  }
+}
+
+/// Rule "invertir posesión de captura": captured pieces are never claimed by the
+/// captor — they return to their original owner (no Shogi-style drops from your
+/// own graveyard of the pieces you took).
+class ReturnCapturedModifier extends RuleModifier {
+  const ReturnCapturedModifier({this.side = possession.none});
+
+  @override
+  final possession side;
+
+  @override
+  bool returnsCapturedToOwner() => true;
+}
+
+/// Oso "Embestida" (also a candidate joker): a capturing move also clears the
+/// orthogonally-adjacent enemy pieces around the square the mover lands on.
+class AreaCaptureModifier extends RuleModifier {
+  const AreaCaptureModifier({this.side = possession.none});
+
+  @override
+  final possession side;
+
+  @override
+  List<List<int>> extraCaptures(Move move, GameState gs) {
+    final i = move.finalTile.i!;
+    final j = move.finalTile.j!;
+    return [
+      [i + 1, j],
+      [i - 1, j],
+      [i, j + 1],
+      [i, j - 1],
+    ];
   }
 }

@@ -32,8 +32,12 @@ class GameState {
   final List<RuleModifier> modifiers;
 
   GameState changeGameState(Move move) {
+    // `move.finalTile` aliases the board tile, which `rewritePosition` overwrites
+    // with the mover — so decide whether this was a capture up front.
+    final wasCapture = move.finalTile.char != chrt.empty;
     sendPieceToGrave(move);
     rewritePosition(move);
+    if (wasCapture) applyExtraCaptures(move);
     return this;
   }
 
@@ -46,8 +50,43 @@ class GameState {
 
   sendPieceToGrave(Move move) {
     if (move.finalTile.char != chrt.empty) {
-      myGraveyard.add(Tile(
-          move.finalTile.char, toggleOwner(move.finalTile.owner), null, null));
+      _sendToGrave(move.finalTile.char, move.finalTile.owner);
+    }
+  }
+
+  // A captured piece normally becomes the captor's (redeployable from its
+  // graveyard, Shogi-style). The "invertir posesión" modifier instead returns
+  // it to its original owner. At this point the captor is always `mine`, so the
+  // captured piece's [owner] is `enemy`.
+  void _sendToGrave(chrt char, possession owner) {
+    final returnToOwner = modifiers
+        .any((m) => m.appliesTo(possession.mine) && m.returnsCapturedToOwner());
+    if (returnToOwner) {
+      enemyGraveyard.add(Tile(char, owner, null, null));
+    } else {
+      myGraveyard.add(Tile(char, toggleOwner(owner), null, null));
+    }
+  }
+
+  // Side-effect captures (e.g. Oso "Embestida"), applied by [changeGameState]
+  // only when the move was a capture, after the mover has been placed. Only
+  // enemy-occupied, on-board tiles are affected.
+  void applyExtraCaptures(Move move) {
+    for (final m in modifiers) {
+      if (!m.appliesTo(possession.mine)) continue;
+      for (final c in m.extraCaptures(move, this)) {
+        final i = c[0];
+        final j = c[1];
+        if (j < 0 || j >= board.length || i < 0 || i >= board[j].length) {
+          continue;
+        }
+        final t = board[j][i];
+        if (t.owner == possession.enemy && t.char != chrt.empty) {
+          _sendToGrave(t.char, t.owner);
+          t.char = chrt.empty;
+          t.owner = possession.none;
+        }
+      }
     }
   }
 
