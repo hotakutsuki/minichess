@@ -5,24 +5,31 @@ import '../../data/enums.dart';
 
 import '../../engine/board_config.dart';
 import '../../engine/board_factory.dart';
+import '../../engine/rule_modifier.dart';
 import '../../engine/rules.dart';
 import 'move.dart';
 
 class GameState {
   GameState(this.board, this.myGraveyard, this.enemyGraveyard,
-      {this.config = BoardConfig.classic});
+      {this.config = BoardConfig.classic, this.modifiers = const []});
 
   GameState.named(
       {board,
       myGraveyard,
       enemyGraveyard,
-      BoardConfig config = BoardConfig.classic})
-      : this(board, myGraveyard, enemyGraveyard, config: config);
+      BoardConfig config = BoardConfig.classic,
+      List<RuleModifier> modifiers = const []})
+      : this(board, myGraveyard, enemyGraveyard,
+            config: config, modifiers: modifiers);
 
   List<List<Tile>> board;
   List<Tile> myGraveyard;
   List<Tile> enemyGraveyard;
   final BoardConfig config;
+
+  /// Active rule changes (boss powers / jokers). Empty == vanilla rules.
+  /// Modifiers are immutable, so [clone] copies the list reference.
+  final List<RuleModifier> modifiers;
 
   GameState changeGameState(Move move) {
     sendPieceToGrave(move);
@@ -84,6 +91,7 @@ class GameState {
       myGraveyard: [...gs.myGraveyard],
       enemyGraveyard: [...gs.enemyGraveyard],
       config: gs.config,
+      modifiers: gs.modifiers,
     );
   }
 
