@@ -83,11 +83,24 @@ class GameState {
   void _sendToGrave(chrt char, possession owner) {
     final returnToOwner = modifiers.any(
         (m) => m.appliesTo(possession.mine, this) && m.returnsCapturedToOwner());
+    final buried = graveChar(char, owner);
     if (returnToOwner) {
-      enemyGraveyard.add(Tile(char, owner, null, null));
+      enemyGraveyard.add(Tile(buried, owner, null, null));
     } else {
-      myGraveyard.add(Tile(char, toggleOwner(owner), null, null));
+      myGraveyard.add(Tile(buried, toggleOwner(owner), null, null));
     }
+  }
+
+  /// The character a piece is buried as when it dies. Folds the modifiers'
+  /// display transforms so a piece turned into an oso ("todas se vuelven osos")
+  /// also *dies* as an oso — and redeploys from the graveyard as a real one —
+  /// rather than reverting to its original sprite. No-op without modifiers.
+  chrt graveChar(chrt char, possession owner) {
+    var c = char;
+    for (final m in modifiers) {
+      if (m.appliesTo(owner, this)) c = m.displayChar(c, owner);
+    }
+    return c;
   }
 
   // Side-effect captures (e.g. Oso "Embestida"), applied by [changeGameState]

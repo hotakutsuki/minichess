@@ -74,8 +74,8 @@ abstract class RuleModifier {
 
 /// Joker "doble paso": the affected side's pieces gain a **2-square** option in
 /// each direction they can already move, on top of their normal 1-square moves.
-/// The board has no path/blocking logic (every base move is one exact step), so
-/// a 2-step move simply reaches a farther exact square.
+/// Unlike a bare offset, the 2-step is **blocked by a piece in between** — the
+/// leap needs a clear midpoint, so it can't jump over anything (see [allowsMove]).
 class DoubleStepModifier extends RuleModifier {
   const DoubleStepModifier({this.side = ModifierSide.both});
 
@@ -89,6 +89,26 @@ class DoubleStepModifier extends RuleModifier {
       ...base,
       for (final o in base) [o[0] * 2, o[1] * 2],
     ];
+  }
+
+  @override
+  bool allowsMove(Move move, GameState gs) {
+    if (isFromGraveyard(move.initialTile)) return true;
+    if (!appliesTo(move.initialTile.owner, gs)) return true;
+    final ii = move.initialTile.i, ij = move.initialTile.j;
+    final fi = move.finalTile.i, fj = move.finalTile.j;
+    if (ii == null || ij == null || fi == null || fj == null) return true;
+    final di = fi - ii, dj = fj - ij;
+    // Base moves are single steps (components in -1..1): only a doubled move has
+    // both components even. Anything else isn't a leap, so never blocked here.
+    if (di.isOdd || dj.isOdd) return true;
+    final hi = di ~/ 2, hj = dj ~/ 2;
+    if (hi == 0 && hj == 0) return true;
+    final isLeap = pieceOffsets(move.initialTile.char, move.initialTile.owner)
+        .any((o) => o[0] == hi && o[1] == hj);
+    if (!isLeap) return true;
+    // The square the piece leaps over must be empty.
+    return gs.board[ij + hj][ii + hi].char == chrt.empty;
   }
 }
 
@@ -193,23 +213,22 @@ class SpawnModifier extends RuleModifier {
   }
 }
 
-/// Cóndor boss (life 2) "Viento": every [everyTurns] of the affected side's turns
-/// a gust pushes every piece one step by `[di, dj]`. A piece blown off the board
-/// is removed to its own owner's graveyard. **Kings are anchored** — the wind
-/// never moves or removes a king (so the sun can't be blown away). Because the
-/// push is a rigid translation, distinct pieces never collide; processing the
-/// frontier (pieces nearest the push edge) first keeps each destination free.
+/// Cóndor boss (life 2) "Viento": every [everyTurns] of the caster's turns a gust
+/// blows the **opponent's** pieces one row back — toward their home edge (`+j` in
+/// the caster's frame) and, from the last row, off the board into their own
+/// graveyard. The caster's own pieces are untouched. A piece moves only if the
+/// square ahead is empty; otherwise it stays (so a column shuffles toward the
+/// edge, and anything jammed behind another piece holds). **Kings are anchored** —
+/// never moved, never blown off — so the sun can't be swept away, and a king also
+/// dams the pieces behind it.
+///
+/// The frontier row (highest `j`) is processed first so each freed square opens up
+/// for the piece behind it, letting a packed column cascade a single step.
 ///
 /// Holds a countdown for the next gust (real-loop only, safe — see [SpawnModifier]).
 class WindModifier extends RuleModifier {
-  WindModifier(
-      {required this.di,
-      required this.dj,
-      this.everyTurns = 5,
-      this.side = ModifierSide.both});
+  WindModifier({this.everyTurns = 5, this.side = ModifierSide.both});
 
-  final int di;
-  final int dj;
   final int everyTurns;
 
   @override
@@ -226,33 +245,32 @@ class WindModifier extends RuleModifier {
     _untilNext = everyTurns;
 
     final height = gs.board.length;
-    final width = gs.board.isEmpty ? 0 : gs.board[0].length;
+    if (height == 0) return;
+    final width = gs.board[0].length;
 
-    final pieces = <Tile>[
-      for (final row in gs.board)
-        for (final t in row)
-          if (t.char != chrt.empty && t.char != chrt.king) t
-    ];
-    pieces.sort((a, b) =>
-        (b.i! * di + b.j! * dj).compareTo(a.i! * di + a.j! * dj));
-
-    for (final t in pieces) {
-      final ni = t.i! + di;
-      final nj = t.j! + dj;
-      final char = t.char;
-      final owner = t.owner;
-      t.char = chrt.empty;
-      t.owner = possession.none;
-      if (nj < 0 || nj >= height || ni < 0 || ni >= width) {
-        if (owner == possession.mine) {
-          gs.myGraveyard.add(Tile(char, possession.mine, null, null));
+    for (int j = height - 1; j >= 0; j--) {
+      for (int i = 0; i < width; i++) {
+        final t = gs.board[j][i];
+        if (t.owner != possession.enemy) continue; // only the opponent's pieces
+        if (t.char == chrt.empty || t.char == chrt.king) continue; // king anchored
+        final nj = j + 1;
+        if (nj >= height) {
+          // blown off the back edge -> its own graveyard
+          gs.enemyGraveyard
+              .add(Tile(gs.graveChar(t.char, t.owner), possession.enemy, null, null));
+          t.char = chrt.empty;
+          t.owner = possession.none;
+          t.idleTurns = 0;
         } else {
-          gs.enemyGraveyard.add(Tile(char, possession.enemy, null, null));
+          final dest = gs.board[nj][i];
+          if (dest.char != chrt.empty) continue; // blocked -> holds position
+          dest.char = t.char;
+          dest.owner = t.owner;
+          dest.idleTurns = t.idleTurns;
+          t.char = chrt.empty;
+          t.owner = possession.none;
+          t.idleTurns = 0;
         }
-      } else {
-        final dest = gs.board[nj][ni];
-        dest.char = char;
-        dest.owner = owner;
       }
     }
   }
@@ -281,7 +299,8 @@ class WitherModifier extends RuleModifier {
         }
         t.idleTurns++;
         if (t.idleTurns >= turns) {
-          gs.myGraveyard.add(Tile(t.char, possession.mine, null, null));
+          gs.myGraveyard.add(
+              Tile(gs.graveChar(t.char, t.owner), possession.mine, null, null));
           t.char = chrt.empty;
           t.owner = possession.none;
           t.idleTurns = 0;

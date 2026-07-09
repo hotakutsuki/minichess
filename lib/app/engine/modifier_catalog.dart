@@ -110,12 +110,13 @@ final List<ModifierInfo> modifierCatalog = [
     id: 'wind',
     name: 'Viento',
     description:
-        'Cada 5 turnos una ventisca empuja todas las fichas un paso; las que '
-        'salen del tablero van al cementerio. El rey queda anclado.',
+        'Cada 5 turnos una ventisca empuja las fichas del rival un paso hacia '
+        'atrás; las que salen del tablero van al cementerio. El rey queda anclado '
+        'y frena a las fichas detrás de él.',
     uses: {ModifierUse.bossPower},
     source: 'Cóndor · vida 2',
     defaultSide: ModifierSide.antagonist,
-    build: (side) => WindModifier(di: 0, dj: 1, everyTurns: 5, side: side),
+    build: (side) => WindModifier(everyTurns: 5, side: side),
   ),
   ModifierInfo(
     id: 'wither',

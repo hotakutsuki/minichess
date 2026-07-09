@@ -304,9 +304,18 @@ class MatchController extends GetxController with WidgetsBindingObserver {
   animateTiles(Move move) async {
     if (gs.value!.board[move.finalTile.j!][move.finalTile.i!].char !=
         chrt.empty) {
+      // "Invertir posesión": the captured piece returns to its owner, so it
+      // lands in the OPPONENT's graveyard — animate that one's reveal, not the
+      // captor's, otherwise the wrong panel opens.
+      final bool returnsToOwner = gs.value!.modifiers.any((m) =>
+          m.appliesTo(possession.mine, gs.value!) &&
+          m.returnsCapturedToOwner());
+      final player receiver = returnsToOwner
+          ? (playersTurn == player.white ? player.black : player.white)
+          : playersTurn;
       GraveyardController gyController =
-          Get.find<GraveyardController>(tag: playersTurn.name);
-      int length = gyController.getGraveyard(playersTurn).length;
+          Get.find<GraveyardController>(tag: receiver.name);
+      int length = gyController.getGraveyard(receiver).length;
       TileController takenTileController =
           Get.find<TileController>(tag: move.finalTile.toString());
       takenTileController.flash();
@@ -314,6 +323,7 @@ class MatchController extends GetxController with WidgetsBindingObserver {
       takenTileController.animateTile(
           move.finalTile.i!, -1 - move.finalTile.j!, null, null, length);
       gyController.animateGraveyard();
+      _flashAreaCaptures(move);
     }
     if (isFromGraveyard(move.initialTile)) {
       GraveyardController gyController =
@@ -331,6 +341,31 @@ class MatchController extends GetxController with WidgetsBindingObserver {
           Get.find<TileController>(tag: move.initialTile.toString());
       await tileController.animateTile(move.initialTile.i!, move.initialTile.j!,
           move.finalTile.i, move.finalTile.j);
+    }
+  }
+
+  // Give the "Embestida" (area capture) the same gold-ring flash as a normal
+  // capture, on every enemy piece the strike will also clear — so they don't
+  // just silently vanish. Purely cosmetic; the engine does the actual clearing.
+  void _flashAreaCaptures(Move move) {
+    final g = gs.value!;
+    for (final m in g.modifiers) {
+      if (!m.appliesTo(possession.mine, g)) continue;
+      for (final c in m.extraCaptures(move, g)) {
+        final i = c[0], j = c[1];
+        if (j < 0 || j >= g.board.length || i < 0 || i >= g.board[j].length) {
+          continue;
+        }
+        final t = g.board[j][i];
+        if (t.owner != possession.enemy ||
+            t.char == chrt.empty ||
+            t.char == chrt.king) {
+          continue;
+        }
+        if (Get.isRegistered<TileController>(tag: t.toString())) {
+          Get.find<TileController>(tag: t.toString()).flash();
+        }
+      }
     }
   }
 

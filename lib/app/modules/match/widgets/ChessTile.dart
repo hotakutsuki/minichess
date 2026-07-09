@@ -150,6 +150,7 @@ class ChessTile extends GetView {
             if (tile.felledTurns > 0) _felledOverlay(),
             interactive,
             if (tile.isOption) _optionHint(),
+            _spawnHint(),
             _witherBadge(),
             _flashOverlay(),
           ],
@@ -191,6 +192,9 @@ class ChessTile extends GetView {
       );
 
   // Small badge counting down the turns until this piece withers ("Marchitar").
+  // The whole board is rotated 180° on the opponent's turn, so the badge flips
+  // its anchor corner AND counter-rotates to stay screen-upright and in a
+  // consistent screen position instead of tumbling around each turn.
   Widget _witherBadge() {
     final gs = matchController.gs.value;
     if (gs == null || tile.char == chrt.empty || tile.char == chrt.king) {
@@ -200,25 +204,77 @@ class ChessTile extends GetView {
       if (m is WitherModifier && m.appliesTo(tile.owner, gs)) {
         final left = m.turns - tile.idleTurns;
         if (left <= 0) continue;
+        final bool flip = playersTurn != player.white;
         return Positioned(
-          top: 6,
-          right: 6,
+          top: flip ? null : 6,
+          bottom: flip ? 6 : null,
+          right: flip ? null : 6,
+          left: flip ? 6 : null,
           child: IgnorePointer(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: Colors.brown.withOpacity(0.9),
-                shape: BoxShape.circle,
+            child: RotatedBox(
+              quarterTurns: flip ? 2 : 0,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.brown.withOpacity(0.9),
+                  shape: BoxShape.circle,
+                ),
+                child: Text('$left',
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold)),
               ),
-              child: Text('$left',
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold)),
             ),
           ),
         );
       }
+    }
+    return const SizedBox.shrink();
+  }
+
+  // A hint on the empty tile where the next "Rebrote" will sprout, so the spawn
+  // isn't a surprise. Shown only in the caster's own frame (where the spawn's
+  // first-empty scan is exact), with a small countdown to the next sprout.
+  Widget _spawnHint() {
+    final gs = matchController.gs.value;
+    if (gs == null || tile.char != chrt.empty) return const SizedBox.shrink();
+    for (final m in gs.modifiers) {
+      if (m is! SpawnModifier) continue;
+      if (!m.appliesTo(possession.mine, gs)) continue;
+      // The modifier fills the first empty tile in board order; only mark THAT
+      // tile so the whole board doesn't light up.
+      Tile? firstEmpty;
+      outer:
+      for (final row in gs.board) {
+        for (final t in row) {
+          if (t.char == chrt.empty) {
+            firstEmpty = t;
+            break outer;
+          }
+        }
+      }
+      if (firstEmpty == null || firstEmpty.i != tile.i || firstEmpty.j != tile.j) {
+        continue;
+      }
+      final bool flip = playersTurn != player.white;
+      return IgnorePointer(
+        child: RotatedBox(
+          quarterTurns: flip ? 2 : 0,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.eco,
+                  color: Colors.lightGreen.withOpacity(0.85), size: 28),
+              Text('${m.turnsUntilNext}',
+                  style: TextStyle(
+                      color: Colors.lightGreen.withOpacity(0.95),
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold)),
+            ],
+          ),
+        ),
+      );
     }
     return const SizedBox.shrink();
   }
