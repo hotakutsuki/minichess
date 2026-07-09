@@ -63,6 +63,19 @@ class GameState {
     }
   }
 
+  // The piece movements the next [applyTurnStart] will perform, gathered before
+  // any mutation so the UI can animate them (see [RuleModifier.planTurnStart]).
+  // Pure: does not touch the board or advance any modifier's cadence.
+  List<TickMove> planTurnStart() {
+    final moves = <TickMove>[];
+    for (final m in modifiers) {
+      if (m.appliesTo(possession.mine, this)) {
+        moves.addAll(m.planTurnStart(this));
+      }
+    }
+    return moves;
+  }
+
   transformPawn(Move move) {
     if (move.finalTile.char == chrt.pawn &&
         move.finalTile.j == config.promotionRow) {

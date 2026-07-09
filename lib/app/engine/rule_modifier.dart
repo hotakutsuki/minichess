@@ -10,6 +10,21 @@ import 'rules.dart';
 /// power keeps hitting the boss across turns.
 enum ModifierSide { both, protagonist, antagonist }
 
+/// A single piece movement a per-turn modifier effect will perform (e.g. a
+/// Viento gust shoving a piece one row). Reported by [RuleModifier.planTurnStart]
+/// *before* the board is mutated, so the UI can slide the piece from
+/// `(fromI, fromJ)` to `(toI, toJ)` with the normal move animation and only then
+/// commit the change. A `toJ` past the last row means the piece is blown off the
+/// board (into the graveyard) — the slide just carries it off the edge.
+class TickMove {
+  const TickMove(this.fromI, this.fromJ, this.toI, this.toJ);
+
+  final int fromI;
+  final int fromJ;
+  final int toI;
+  final int toJ;
+}
+
 /// A rule change carried by a [GameState] and applied at defined engine hook
 /// points. Boss powers (campaign) and player jokers are both [RuleModifier]s;
 /// [side] marks who it affects (stably — see [ModifierSide]).
@@ -70,6 +85,13 @@ abstract class RuleModifier {
   /// is `mine`), letting a modifier mutate the board outside a normal move —
   /// spawn reinforcements, wither idle pieces, blow a wind. Default: no-op.
   void onTurnStart(GameState gs) {}
+
+  /// The piece movements [onTurnStart] will perform this tick, reported *before*
+  /// the mutation so the UI can animate them. Called on the un-mutated board and
+  /// must NOT change state (nor advance any cadence counter) — it only predicts.
+  /// Must match what [onTurnStart] then does. Default: none (effects that don't
+  /// slide pieces, like spawn/wither, animate elsewhere).
+  List<TickMove> planTurnStart(GameState gs) => const [];
 }
 
 /// Joker "doble paso": the affected side's pieces gain a **2-square** option in
@@ -239,15 +261,20 @@ class WindModifier extends RuleModifier {
   /// Turns until the next gust (for UI).
   int get turnsUntilNext => _untilNext.clamp(0, everyTurns);
 
-  @override
-  void onTurnStart(GameState gs) {
-    if (--_untilNext > 0) return;
-    _untilNext = everyTurns;
+  /// Whether the gust fires on this tick (i.e. the next [onTurnStart] will blow).
+  bool _gustsNow() => _untilNext == 1;
 
+  /// The moves the gust performs, computed purely on [gs] without mutating it —
+  /// the single source of truth for both the animation ([planTurnStart]) and the
+  /// commit ([onTurnStart]). Simulates the frontier-first cascade on a scratch
+  /// occupancy grid so blocked pieces and freed squares resolve identically.
+  List<TickMove> _gustMoves(GameState gs) {
     final height = gs.board.length;
-    if (height == 0) return;
+    if (height == 0) return const [];
     final width = gs.board[0].length;
-
+    final occupied = List.generate(height,
+        (j) => List.generate(width, (i) => gs.board[j][i].char != chrt.empty));
+    final moves = <TickMove>[];
     for (int j = height - 1; j >= 0; j--) {
       for (int i = 0; i < width; i++) {
         final t = gs.board[j][i];
@@ -255,22 +282,48 @@ class WindModifier extends RuleModifier {
         if (t.char == chrt.empty || t.char == chrt.king) continue; // king anchored
         final nj = j + 1;
         if (nj >= height) {
-          // blown off the back edge -> its own graveyard
-          gs.enemyGraveyard
-              .add(Tile(gs.graveChar(t.char, t.owner), possession.enemy, null, null));
-          t.char = chrt.empty;
-          t.owner = possession.none;
-          t.idleTurns = 0;
-        } else {
-          final dest = gs.board[nj][i];
-          if (dest.char != chrt.empty) continue; // blocked -> holds position
-          dest.char = t.char;
-          dest.owner = t.owner;
-          dest.idleTurns = t.idleTurns;
-          t.char = chrt.empty;
-          t.owner = possession.none;
-          t.idleTurns = 0;
+          moves.add(TickMove(i, j, i, nj)); // blown off the back edge
+          occupied[j][i] = false;
+        } else if (!occupied[nj][i]) {
+          moves.add(TickMove(i, j, i, nj));
+          occupied[nj][i] = true;
+          occupied[j][i] = false;
         }
+        // else blocked -> holds position, no move
+      }
+    }
+    return moves;
+  }
+
+  @override
+  List<TickMove> planTurnStart(GameState gs) =>
+      _gustsNow() ? _gustMoves(gs) : const [];
+
+  @override
+  void onTurnStart(GameState gs) {
+    if (--_untilNext > 0) return;
+    _untilNext = everyTurns;
+
+    final height = gs.board.length;
+    // Apply the same frontier-first moves the plan reported. Destinations are
+    // freed before their occupants arrive (frontier processed first), so a
+    // clear-source-then-set-dest pass commits each move without collisions.
+    for (final mv in _gustMoves(gs)) {
+      final t = gs.board[mv.fromJ][mv.fromI];
+      final char = t.char;
+      final owner = t.owner;
+      final idle = t.idleTurns;
+      t.char = chrt.empty;
+      t.owner = possession.none;
+      t.idleTurns = 0;
+      if (mv.toJ >= height) {
+        gs.enemyGraveyard
+            .add(Tile(gs.graveChar(char, owner), possession.enemy, null, null));
+      } else {
+        final dest = gs.board[mv.toJ][mv.toI];
+        dest.char = char;
+        dest.owner = owner;
+        dest.idleTurns = idle;
       }
     }
   }

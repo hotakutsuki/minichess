@@ -285,7 +285,7 @@ class MatchController extends GetxController with WidgetsBindingObserver {
         gs.update((val) => val!.changeGameState(move));
         gs.value!.rotate();
         togglePlayersTurn();
-        _runTurnTick(); // apply per-turn modifier effects for the new mover
+        await _runTurnTick(); // animate + apply per-turn effects for the new mover
       }
       restarSelected(tile);
       highlightAvailableOptions();
@@ -540,11 +540,38 @@ class MatchController extends GetxController with WidgetsBindingObserver {
 
   // Runs the active modifiers' per-turn effects (spawn/wither/wind) at the start
   // of the side-to-move's turn, then repaints the board. No-op without modifiers,
-  // so vanilla matches are untouched.
-  void _runTurnTick() {
+  // so vanilla matches are untouched. Any piece the effect moves (e.g. a Viento
+  // gust) is first slid with the normal move animation, then committed — so it
+  // never just teleports.
+  Future<void> _runTurnTick() async {
     if (gs.value!.modifiers.isEmpty) return;
+    await _animateTickMoves(gs.value!.planTurnStart());
     gs.value!.applyTurnStart();
     gs.update((val) => val);
+  }
+
+  // Slides every piece a per-turn effect is about to move from its current tile
+  // to the destination, using the same translate animation as an ordinary move,
+  // then returns so the state change can be committed. Wind pieces are enemy-
+  // owned, whose tile is drawn inside a 180° RotatedBox, so the translation is
+  // fed reversed (destination→source) to cancel that rotation.
+  Future<void> _animateTickMoves(List<TickMove> moves) async {
+    if (moves.isEmpty) return;
+    // Let the just-rotated board finish building so each source tile's
+    // TileController is registered before we look it up.
+    await WidgetsBinding.instance.endOfFrame;
+    final futures = <Future>[];
+    for (final mv in moves) {
+      final t = gs.value!.board[mv.fromJ][mv.fromI];
+      final tag = t.toString();
+      if (!Get.isRegistered<TileController>(tag: tag)) continue;
+      final tc = Get.find<TileController>(tag: tag);
+      final bool enemy = t.owner == possession.enemy;
+      futures.add(enemy
+          ? tc.animateTile(mv.toI, mv.toJ, mv.fromI, mv.fromJ)
+          : tc.animateTile(mv.fromI, mv.fromJ, mv.toI, mv.toJ));
+    }
+    await Future.wait(futures);
   }
 
   void startTimer() {
