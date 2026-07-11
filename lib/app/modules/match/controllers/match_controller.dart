@@ -306,7 +306,8 @@ class MatchController extends GetxController with WidgetsBindingObserver {
         chrt.empty) {
       // "Invertir posesión": the captured piece returns to its owner, so it
       // lands in the OPPONENT's graveyard — animate that one's reveal, not the
-      // captor's, otherwise the wrong panel opens.
+      // captor's, otherwise the wrong panel opens, and fly the piece to the far
+      // graveyard instead of the captor's.
       final bool returnsToOwner = gs.value!.modifiers.any((m) =>
           m.appliesTo(possession.mine, gs.value!) &&
           m.returnsCapturedToOwner());
@@ -315,15 +316,20 @@ class MatchController extends GetxController with WidgetsBindingObserver {
           : playersTurn;
       GraveyardController gyController =
           Get.find<GraveyardController>(tag: receiver.name);
-      int length = gyController.getGraveyard(receiver).length;
-      TileController takenTileController =
-          Get.find<TileController>(tag: move.finalTile.toString());
-      takenTileController.flash();
+      int slot = gyController.getGraveyard(receiver).length;
       Juice.capture();
-      takenTileController.animateTile(
-          move.finalTile.i!, -1 - move.finalTile.j!, null, null, length);
+      // The piece the mover landed on.
+      _flyCapturedToGrave(move.finalTile.toString(), move.finalTile.i!,
+          move.finalTile.j!, slot, far: returnsToOwner);
+      // "Embestida": the extra pieces the strike clears fly to the same
+      // graveyard, stacking on the following slots (matching the order the
+      // engine buries them in [GameState.applyExtraCaptures]).
+      for (final c in _areaCaptureTiles(move)) {
+        slot++;
+        _flyCapturedToGrave(gs.value!.board[c[1]][c[0]].toString(), c[0], c[1],
+            slot, far: returnsToOwner);
+      }
       gyController.animateGraveyard();
-      _flashAreaCaptures(move);
     }
     if (isFromGraveyard(move.initialTile)) {
       GraveyardController gyController =
@@ -344,11 +350,15 @@ class MatchController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-  // Give the "Embestida" (area capture) the same gold-ring flash as a normal
-  // capture, on every enemy piece the strike will also clear — so they don't
-  // just silently vanish. Purely cosmetic; the engine does the actual clearing.
-  void _flashAreaCaptures(Move move) {
+  // The board tiles an "Embestida" (area capture) will also clear as `[i, j]`
+  // pairs, in the exact order the engine buries them
+  // ([GameState.applyExtraCaptures]): each active modifier's [extraCaptures],
+  // keeping only on-board enemy non-king tiles, de-duplicated (the engine skips
+  // an already-cleared square). Used to fly them to the graveyard.
+  List<List<int>> _areaCaptureTiles(Move move) {
     final g = gs.value!;
+    final tiles = <List<int>>[];
+    final seen = <String>{};
     for (final m in g.modifiers) {
       if (!m.appliesTo(possession.mine, g)) continue;
       for (final c in m.extraCaptures(move, g)) {
@@ -362,11 +372,24 @@ class MatchController extends GetxController with WidgetsBindingObserver {
             t.char == chrt.king) {
           continue;
         }
-        if (Get.isRegistered<TileController>(tag: t.toString())) {
-          Get.find<TileController>(tag: t.toString()).flash();
-        }
+        if (seen.add('$i,$j')) tiles.add([i, j]);
       }
     }
+    return tiles;
+  }
+
+  // Flash a captured (enemy) tile gold and fly it to the graveyard with the same
+  // slide+shrink as a normal capture. [far] sends it to the OPPONENT's graveyard
+  // (used by "invertir posesión"): the captured piece is drawn 180°-rotated, so
+  // the near graveyard is reached with a downward `-1 - j`; the far one needs an
+  // upward target instead.
+  void _flyCapturedToGrave(String tag, int i, int j, int slot,
+      {required bool far}) {
+    if (!Get.isRegistered<TileController>(tag: tag)) return;
+    final tc = Get.find<TileController>(tag: tag);
+    tc.flash();
+    final int ij = far ? (gs.value!.board.length - j) : (-1 - j);
+    tc.animateTile(i, ij, null, null, slot);
   }
 
   onTapTile(Tile tile) async {
@@ -550,23 +573,36 @@ class MatchController extends GetxController with WidgetsBindingObserver {
     gs.update((val) => val);
   }
 
-  // Slides every piece a per-turn effect is about to move from its current tile
-  // to the destination, using the same translate animation as an ordinary move,
-  // then returns so the state change can be committed. Wind pieces are enemy-
-  // owned, whose tile is drawn inside a 180° RotatedBox, so the translation is
-  // fed reversed (destination→source) to cancel that rotation.
+  // Animates every piece a per-turn effect is about to move, then returns so the
+  // state change can be committed — so nothing ever teleports. A board slide
+  // reuses the ordinary-move translate; a [TickMove.toGrave] death flies to the
+  // owner's graveyard with the capture animation. Wind pieces are enemy-owned,
+  // whose tile is drawn inside a 180° RotatedBox, so a slide is fed reversed
+  // (destination→source) to cancel that rotation.
   Future<void> _animateTickMoves(List<TickMove> moves) async {
     if (moves.isEmpty) return;
     // Let the just-rotated board finish building so each source tile's
     // TileController is registered before we look it up.
     await WidgetsBinding.instance.endOfFrame;
     final futures = <Future>[];
+    // Deaths stack onto the graveyard's current end, in report order.
+    int mineGrave = gs.value!.myGraveyard.length;
+    int enemyGrave = gs.value!.enemyGraveyard.length;
     for (final mv in moves) {
       final t = gs.value!.board[mv.fromJ][mv.fromI];
       final tag = t.toString();
       if (!Get.isRegistered<TileController>(tag: tag)) continue;
       final tc = Get.find<TileController>(tag: tag);
       final bool enemy = t.owner == possession.enemy;
+      if (mv.toGrave) {
+        // Marchitar (and any future in-place death): fly to the piece's own
+        // graveyard. `-1 - j` targets the near graveyard; the friendly-piece
+        // flag pre-negates for the missing tile rotation.
+        final int slot = enemy ? enemyGrave++ : mineGrave++;
+        futures.add(tc.animateTile(
+            mv.fromI, -1 - mv.fromJ, null, null, slot, !enemy));
+        continue;
+      }
       futures.add(enemy
           ? tc.animateTile(mv.toI, mv.toJ, mv.fromI, mv.fromJ)
           : tc.animateTile(mv.fromI, mv.fromJ, mv.toI, mv.toJ));

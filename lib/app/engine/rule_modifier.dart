@@ -16,13 +16,27 @@ enum ModifierSide { both, protagonist, antagonist }
 /// `(fromI, fromJ)` to `(toI, toJ)` with the normal move animation and only then
 /// commit the change. A `toJ` past the last row means the piece is blown off the
 /// board (into the graveyard) — the slide just carries it off the edge.
+///
+/// [toGrave] marks a movement whose destination is a graveyard, not a board
+/// square (e.g. a Marchitar death): the UI flies the piece to the graveyard
+/// with the capture animation instead of a board-to-board slide.
 class TickMove {
-  const TickMove(this.fromI, this.fromJ, this.toI, this.toJ);
+  const TickMove(this.fromI, this.fromJ, this.toI, this.toJ)
+      : toGrave = false;
+
+  /// A piece leaving the board for its graveyard (no board destination).
+  const TickMove.toGrave(int i, int j)
+      : fromI = i,
+        fromJ = j,
+        toI = i,
+        toJ = j,
+        toGrave = true;
 
   final int fromI;
   final int fromJ;
   final int toI;
   final int toJ;
+  final bool toGrave;
 }
 
 /// A rule change carried by a [GameState] and applied at defined engine hook
@@ -240,9 +254,13 @@ class SpawnModifier extends RuleModifier {
 /// the caster's frame) and, from the last row, off the board into their own
 /// graveyard. The caster's own pieces are untouched. A piece moves only if the
 /// square ahead is empty; otherwise it stays (so a column shuffles toward the
-/// edge, and anything jammed behind another piece holds). **Kings are anchored** —
-/// never moved, never blown off — so the sun can't be swept away, and a king also
-/// dams the pieces behind it.
+/// edge, and anything jammed behind another piece holds).
+///
+/// The **sun (king) is blown like any other piece — except it can never fall off
+/// the board**: on the last row it stays put (the sun can't be swept away), and
+/// because it holds that square it also dams whatever piece is right behind it
+/// (that piece is "retained" by the king). Everywhere else the king shifts one
+/// row back normally.
 ///
 /// The frontier row (highest `j`) is processed first so each freed square opens up
 /// for the piece behind it, letting a packed column cascade a single step.
@@ -279,17 +297,21 @@ class WindModifier extends RuleModifier {
       for (int i = 0; i < width; i++) {
         final t = gs.board[j][i];
         if (t.owner != possession.enemy) continue; // only the opponent's pieces
-        if (t.char == chrt.empty || t.char == chrt.king) continue; // king anchored
+        if (t.char == chrt.empty) continue;
         final nj = j + 1;
         if (nj >= height) {
+          // Back edge: ordinary pieces are blown into the graveyard; the sun
+          // (king) alone can't fall, so it stays put — and, still occupying its
+          // square, it dams the piece right behind it (processed next).
+          if (t.char == chrt.king) continue;
           moves.add(TickMove(i, j, i, nj)); // blown off the back edge
           occupied[j][i] = false;
         } else if (!occupied[nj][i]) {
-          moves.add(TickMove(i, j, i, nj));
+          moves.add(TickMove(i, j, i, nj)); // shifts one row back (king included)
           occupied[nj][i] = true;
           occupied[j][i] = false;
         }
-        // else blocked -> holds position, no move
+        // else blocked (by a piece or an anchored king ahead) -> holds position
       }
     }
     return moves;
@@ -340,6 +362,27 @@ class WitherModifier extends RuleModifier {
 
   @override
   final ModifierSide side;
+
+  /// Report the pieces that will wither *this* tick (their idle clock is one turn
+  /// short of [turns]), so the UI can fly them to the graveyard before the commit.
+  /// Pure — mirrors the aging [onTurnStart] does without mutating.
+  @override
+  List<TickMove> planTurnStart(GameState gs) {
+    final deaths = <TickMove>[];
+    for (final row in gs.board) {
+      for (final t in row) {
+        if (t.owner != possession.mine ||
+            t.char == chrt.empty ||
+            t.char == chrt.king) {
+          continue;
+        }
+        if (t.idleTurns + 1 >= turns) {
+          deaths.add(TickMove.toGrave(t.i!, t.j!));
+        }
+      }
+    }
+    return deaths;
+  }
 
   @override
   void onTurnStart(GameState gs) {

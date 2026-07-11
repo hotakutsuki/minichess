@@ -111,8 +111,9 @@ final List<ModifierInfo> modifierCatalog = [
     name: 'Viento',
     description:
         'Cada 5 turnos una ventisca empuja las fichas del rival un paso hacia '
-        'atrás; las que salen del tablero van al cementerio. El rey queda anclado '
-        'y frena a las fichas detrás de él.',
+        'atrás; las que salen del tablero van al cementerio. El sol también se '
+        'mueve, pero nunca cae: en la última fila se queda y frena a la ficha '
+        'que tiene detrás.',
     uses: {ModifierUse.bossPower},
     source: 'Cóndor · vida 2',
     defaultSide: ModifierSide.antagonist,

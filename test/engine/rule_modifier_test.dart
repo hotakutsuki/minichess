@@ -317,6 +317,33 @@ void main() {
       expect(b[3][0].char, chrt.king); // still there
       expect(gs.enemyGraveyard, isEmpty);
     });
+
+    test('a king NOT on the back edge is blown one row back like any piece', () {
+      final b = _emptyBoard();
+      b[1][0] = Tile(chrt.king, possession.enemy, 0, 1); // room ahead at (0,2)
+      final gs = _boardStateWith(b, [WindModifier(everyTurns: 1)]);
+      gs.applyTurnStart();
+      expect(b[2][0].char, chrt.king); // shifted back
+      expect(b[1][0].char, chrt.empty);
+      expect(gs.enemyGraveyard, isEmpty); // never falls off
+    });
+
+    test('the gust is reported by planTurnStart before it mutates', () {
+      final b = _emptyBoard();
+      b[1][1] = Tile(chrt.pawn, possession.enemy, 1, 1); // -> (1,2)
+      b[3][2] = Tile(chrt.rock, possession.enemy, 2, 3); // -> off the back edge
+      final gs = _boardStateWith(b, [WindModifier(everyTurns: 1)]);
+      final planned = gs.planTurnStart();
+      // Two shoves reported, board still untouched (pure).
+      expect(planned.length, 2);
+      expect(b[1][1].char, chrt.pawn);
+      expect(b[3][2].char, chrt.rock);
+      // the off-edge shove is a normal board slide carrying the piece past the
+      // last row (toJ == height), not a toGrave flight.
+      final offEdge = planned.firstWhere((m) => m.fromJ == 3);
+      expect(offEdge.toJ, gs.board.length);
+      expect(offEdge.toGrave, isFalse);
+    });
   });
 
   group('WitherModifier (Marchitar)', () {
@@ -341,6 +368,21 @@ void main() {
       gs.applyTurnStart(); // idle 1 again (on the new tile)
       expect(b[2][1].char, chrt.rock); // still alive
       expect(gs.myGraveyard, isEmpty);
+    });
+
+    test('planTurnStart reports the piece about to wither (as a toGrave move)',
+        () {
+      final b = _emptyBoard();
+      b[1][1] = Tile(chrt.bishop, possession.mine, 1, 1)..idleTurns = 1;
+      final gs = _boardStateWith(b, const [WitherModifier(turns: 2)]);
+      // idle is 1, turns is 2 -> next tick it dies; the plan announces it now,
+      // without touching the board.
+      final planned = gs.planTurnStart();
+      expect(planned.length, 1);
+      expect(planned.first.toGrave, isTrue);
+      expect(planned.first.fromI, 1);
+      expect(planned.first.fromJ, 1);
+      expect(b[1][1].char, chrt.bishop); // pure: not yet dead
     });
 
     test('the king never withers', () {
