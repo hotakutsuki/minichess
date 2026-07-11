@@ -27,12 +27,6 @@ class _GraveyardFlightSandboxState extends State<GraveyardFlightSandbox>
   late final List<List<GlobalKey>> _cellKeys = List.generate(
       _rows, (_) => List.generate(_cols, (_) => GlobalKey()));
 
-  // Curtain-reveal controllers, one per graveyard (mirrors GraveyardController).
-  late final AnimationController _topReveal =
-      AnimationController(vsync: this, duration: const Duration(milliseconds: 400));
-  late final AnimationController _bottomReveal =
-      AnimationController(vsync: this, duration: const Duration(milliseconds: 400));
-
   final List<chrt> _topBuried = [];
   final List<chrt> _bottomBuried = [];
 
@@ -54,39 +48,25 @@ class _GraveyardFlightSandboxState extends State<GraveyardFlightSandbox>
     chrt.king,
   ];
 
-  @override
-  void dispose() {
-    _topReveal.dispose();
-    _bottomReveal.dispose();
-    super.dispose();
-  }
-
-  Future<void> _revealCurtain(AnimationController c) async {
-    await c.forward();
-    await Future.delayed(const Duration(milliseconds: 400));
-    await c.reverse();
-    c.reset();
-  }
-
   Future<void> _fly(int i, int j) async {
     final bool toEnemy = _toEnemyGrave;
-    final fromKey = _cellKeys[j][i];
     final toKey = toEnemy ? _topGraveKey : _bottomGraveKey;
-    final reveal = toEnemy ? _topReveal : _bottomReveal;
     // The piece is shown in the destination graveyard's colour.
     final gravePlayer = toEnemy ? player.black : player.white;
+    final piece = _selected;
 
     await flyToGraveyard(
       context,
-      fromKey: fromKey,
+      fromKey: _cellKeys[j][i],
       toKey: toKey,
-      piece: getCharAsset(_selected, gravePlayer, false),
+      piece: getCharAsset(piece, gravePlayer, false),
       rotate: _rotateOverride,
-      onLaunch: () => _revealCurtain(reveal),
+      // Commit the piece while it's hidden behind the curtain.
+      onArrive: () {
+        if (!mounted) return;
+        setState(() => (toEnemy ? _topBuried : _bottomBuried).add(piece));
+      },
     );
-
-    if (!mounted) return;
-    setState(() => (toEnemy ? _topBuried : _bottomBuried).add(_selected));
   }
 
   @override
@@ -102,13 +82,13 @@ class _GraveyardFlightSandboxState extends State<GraveyardFlightSandbox>
           child: Column(
             children: [
               const SizedBox(height: 12),
-              _graveStrip(_topGraveKey, _topReveal, _topBuried, player.black,
+              _graveStrip(_topGraveKey, _topBuried, player.black,
                   'Cementerio enemigo (arriba)'),
               const SizedBox(height: 24),
               _board(),
               const SizedBox(height: 24),
-              _graveStrip(_bottomGraveKey, _bottomReveal, _bottomBuried,
-                  player.white, 'Cementerio propio (abajo)'),
+              _graveStrip(_bottomGraveKey, _bottomBuried, player.white,
+                  'Cementerio propio (abajo)'),
               const SizedBox(height: 24),
               _controls(),
               const SizedBox(height: 24),
@@ -163,58 +143,36 @@ class _GraveyardFlightSandboxState extends State<GraveyardFlightSandbox>
     );
   }
 
-  // A graveyard strip that matches the real one's dimensions + curtain reveal.
-  Widget _graveStrip(GlobalKey key, AnimationController reveal,
-      List<chrt> buried, player p, String label) {
+  // A graveyard strip that matches the real one's dimensions. The reveal curtain
+  // is drawn by flyToGraveyard (in the overlay, above the flying piece).
+  Widget _graveStrip(
+      GlobalKey key, List<chrt> buried, player p, String label) {
     return Column(
       children: [
         Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12)),
         const SizedBox(height: 4),
-        SizedBox(
+        Container(
           key: key,
           width: graveyardTileWide,
           height: graveyardHeight,
-          child: Stack(
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: brackgroundColor),
-                  color: brackgroundColor,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: RotatedBox(
-                  quarterTurns: p == player.white ? 0 : 2,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    children: [
-                      for (final c in buried)
-                        SizedBox(
-                          width: graveyardHeight,
-                          height: graveyardHeight,
-                          child: getCharAsset(c, p, false),
-                        ),
-                    ],
+          decoration: BoxDecoration(
+            border: Border.all(color: brackgroundColor),
+            color: brackgroundColor,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: RotatedBox(
+            quarterTurns: p == player.white ? 0 : 2,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: [
+                for (final c in buried)
+                  SizedBox(
+                    width: graveyardHeight,
+                    height: graveyardHeight,
+                    child: getCharAsset(c, p, false),
                   ),
-                ),
-              ),
-              // The curtain that hides the strip while a piece lands.
-              Center(
-                child: AnimatedBuilder(
-                  animation: reveal,
-                  builder: (context, _) => Transform.scale(
-                    scaleY: reveal.value,
-                    child: Container(
-                      width: graveyardTileWide - 4,
-                      height: graveyardHeight - 4,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                        color: brackgroundColorSolid,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ],
