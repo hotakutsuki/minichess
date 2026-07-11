@@ -40,6 +40,12 @@ class _GraveyardFlightSandboxState extends State<GraveyardFlightSandbox>
   bool _toEnemyGrave = true; // target: top (enemy) vs bottom (own)
   bool _rotateOverride = true; // pre-checked to match "enemy grave -> flip"
 
+  // A neutral board-like palette, kept clearly distinct from the (blue)
+  // graveyard so the flying piece and the curtain reveal stay visible.
+  static const Color _pageBg = Color(0xFF2B2622); // dark warm wood
+  static const Color _lightSquare = Color(0xFFEED9B6);
+  static const Color _darkSquare = Color(0xFFB58863);
+
   static const List<chrt> _pieces = [
     chrt.pawn,
     chrt.knight,
@@ -86,7 +92,7 @@ class _GraveyardFlightSandboxState extends State<GraveyardFlightSandbox>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: brackgroundColorSolid,
+      backgroundColor: _pageBg,
       appBar: AppBar(
         backgroundColor: brackgroundColor,
         title: const Text('Sandbox — vuelo al cementerio'),
@@ -114,17 +120,27 @@ class _GraveyardFlightSandboxState extends State<GraveyardFlightSandbox>
   }
 
   Widget _board() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        for (int j = _rows - 1; j >= 0; j--) // draw top row (high j) first
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              for (int i = 0; i < _cols; i++) _boardCell(i, j),
-            ],
-          ),
-      ],
+    return Container(
+      padding: const EdgeInsets.all(6),
+      decoration: BoxDecoration(
+        color: const Color(0xFF6B4A32), // wooden frame
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(2),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (int j = _rows - 1; j >= 0; j--) // draw top row (high j) first
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (int i = 0; i < _cols; i++) _boardCell(i, j),
+                ],
+              ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -135,12 +151,8 @@ class _GraveyardFlightSandboxState extends State<GraveyardFlightSandbox>
         key: _cellKeys[j][i],
         width: _cell,
         height: _cell,
-        margin: const EdgeInsets.all(1),
         decoration: BoxDecoration(
-          color: (i + j).isEven
-              ? brackgroundColor
-              : brackgroundColorLight.withOpacity(0.25),
-          borderRadius: BorderRadius.circular(6),
+          color: (i + j).isEven ? _darkSquare : _lightSquare,
         ),
         child: Padding(
           padding: const EdgeInsets.all(6),
