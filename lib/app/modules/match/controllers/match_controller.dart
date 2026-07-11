@@ -584,16 +584,11 @@ class MatchController extends GetxController with WidgetsBindingObserver {
   // never just teleports.
   Future<void> _runTurnTick() async {
     if (gs.value!.modifiers.isEmpty) return;
-    try {
-      final reveals = await _animateTickMoves(gs.value!.planTurnStart());
-      gs.value!.applyTurnStart(); // commit while any death curtain is up
-      gs.update((val) => val);
-      await Future.wait(reveals); // let the graveyard reveals finish
-    } finally {
-      // Never leave a piece hidden (its flight may have failed) — that would
-      // strand the sprite and, upstream, keep isAnimating stuck.
-      _clearHiddenTiles();
-    }
+    final reveals = await _animateTickMoves(gs.value!.planTurnStart());
+    gs.value!.applyTurnStart(); // commit while any death curtain is up
+    gs.update((val) => val);
+    await Future.wait(reveals); // let the graveyard reveals finish
+    _clearHiddenTiles();
   }
 
   // Animates every piece a per-turn effect is about to move, then returns so the
@@ -645,9 +640,10 @@ class MatchController extends GetxController with WidgetsBindingObserver {
     final player receiver = owner == possession.mine
         ? playersTurn
         : (playersTurn == player.white ? player.black : player.white);
-    final ctx = Get.context;
     final GlobalKey? fromKey = _tileKeys['$i,$j'];
     final GlobalKey? toKey = _graveKeys[receiver];
+    // Use the source tile's own context so the flight can find the app overlay.
+    final ctx = fromKey?.currentContext ?? Get.context;
     if (ctx == null || fromKey == null || toKey == null) {
       onArrive();
       return;
@@ -659,16 +655,21 @@ class MatchController extends GetxController with WidgetsBindingObserver {
     // again for an online guest — so a piece flips iff exactly one applies.
     final bool flip = (receiver == player.black) ^
         (gamemode == gameMode.online && !isHost.value);
-    await flyToGraveyard(
-      ctx,
-      fromKey: fromKey,
-      toKey: toKey,
-      piece: getCharAsset(buried, receiver, false),
-      rotate: flip,
-      onArrive: onArrive,
-      duration:
-          Duration(milliseconds: gamemode == gameMode.training ? 100 : 800),
-    );
+    // Never let a flight failure block the turn (it's awaited inside play()).
+    try {
+      await flyToGraveyard(
+        ctx,
+        fromKey: fromKey,
+        toKey: toKey,
+        piece: getCharAsset(buried, receiver, false),
+        rotate: flip,
+        onArrive: onArrive,
+        duration:
+            Duration(milliseconds: gamemode == gameMode.training ? 100 : 800),
+      );
+    } catch (_) {
+      onArrive();
+    }
   }
 
   void _clearHiddenTiles() {

@@ -32,11 +32,17 @@ Future<void> flyToGraveyard(
   Color? curtainColor,
   Duration duration = const Duration(milliseconds: 800),
 }) async {
-  final overlay = Overlay.of(context, rootOverlay: true);
+  // Resolve the overlay from a context that's guaranteed to sit *below* the app
+  // overlay — the source widget's own context — falling back to the passed one.
+  // [Overlay.maybeOf] never throws, so a missing overlay degrades to a no-anim
+  // commit instead of blocking the caller.
+  final ctx = fromKey.currentContext ?? context;
+  final overlay = Overlay.maybeOf(ctx);
   final fromBox = fromKey.currentContext?.findRenderObject() as RenderBox?;
   final toBox = toKey.currentContext?.findRenderObject() as RenderBox?;
-  final overlayBox = overlay.context.findRenderObject() as RenderBox?;
-  if (fromBox == null ||
+  final overlayBox = overlay?.context.findRenderObject() as RenderBox?;
+  if (overlay == null ||
+      fromBox == null ||
       toBox == null ||
       overlayBox == null ||
       !fromBox.hasSize ||
@@ -45,40 +51,48 @@ Future<void> flyToGraveyard(
     return;
   }
 
-  // Everything in the overlay's local space (works even if it doesn't start at
-  // the screen origin).
-  final start = overlayBox
-      .globalToLocal(fromBox.localToGlobal(fromBox.size.center(Offset.zero)));
-  final end = overlayBox
-      .globalToLocal(toBox.localToGlobal(toBox.size.center(Offset.zero)));
-  final curtainRect =
-      overlayBox.globalToLocal(toBox.localToGlobal(Offset.zero)) & toBox.size;
-  final startSize = fromBox.size.shortestSide;
-  final endSize = toBox.size.shortestSide;
-
   final completer = Completer<void>();
-  late OverlayEntry entry;
-  entry = OverlayEntry(
-    builder: (_) => _FlightOverlay(
-      start: start,
-      end: end,
-      startSize: startSize,
-      endSize: endSize,
-      rotate: rotate,
-      curtainRect: curtainRect,
-      curtainColor: curtainColor ?? brackgroundColorSolid,
-      flightDuration: duration,
-      onArrive: onArrive,
-      onDone: () {
-        if (completer.isCompleted) return; // idempotent: never remove twice
-        completer.complete();
-        entry.remove();
-      },
-      child: piece,
-    ),
-  );
+  try {
+    // Everything in the overlay's local space (works even if it doesn't start at
+    // the screen origin).
+    final start = overlayBox
+        .globalToLocal(fromBox.localToGlobal(fromBox.size.center(Offset.zero)));
+    final end = overlayBox
+        .globalToLocal(toBox.localToGlobal(toBox.size.center(Offset.zero)));
+    final curtainRect =
+        overlayBox.globalToLocal(toBox.localToGlobal(Offset.zero)) & toBox.size;
+    final startSize = fromBox.size.shortestSide;
+    final endSize = toBox.size.shortestSide;
 
-  overlay.insert(entry);
+    late OverlayEntry entry;
+    void done() {
+      try {
+        entry.remove();
+      } catch (_) {}
+      if (!completer.isCompleted) completer.complete();
+    }
+
+    entry = OverlayEntry(
+      builder: (_) => _FlightOverlay(
+        start: start,
+        end: end,
+        startSize: startSize,
+        endSize: endSize,
+        rotate: rotate,
+        curtainRect: curtainRect,
+        curtainColor: curtainColor ?? brackgroundColorSolid,
+        flightDuration: duration,
+        onArrive: onArrive,
+        onDone: done,
+        child: piece,
+      ),
+    );
+    overlay.insert(entry);
+  } catch (_) {
+    // Never leave the caller awaiting forever: fall back to an instant commit.
+    onArrive();
+    if (!completer.isCompleted) completer.complete();
+  }
   return completer.future;
 }
 
@@ -139,19 +153,13 @@ class _FlightOverlayState extends State<_FlightOverlay>
 
   Future<void> _land() async {
     // Piece is now fully hidden by the curtain — commit it into the real
-    // graveyard, hold a beat, then reveal. onDone MUST fire no matter what
-    // (even if we get disposed mid-flight), or the caller's future hangs and
-    // the match freezes with isAnimating stuck true.
-    try {
-      if (mounted) setState(() => _landed = true);
-      widget.onArrive();
-      await Future.delayed(const Duration(milliseconds: 120));
-      if (mounted) await _retract.forward();
-    } catch (_) {
-      // swallow — a disposed controller/ticker must not deadlock the caller
-    } finally {
-      widget.onDone();
-    }
+    // graveyard, hold a beat, then reveal.
+    if (mounted) setState(() => _landed = true);
+    widget.onArrive();
+    await Future.delayed(const Duration(milliseconds: 120));
+    if (mounted) await _retract.forward();
+    // Always signal done, even if unmounted, so the caller never hangs.
+    widget.onDone();
   }
 
   @override
