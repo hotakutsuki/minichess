@@ -13,6 +13,7 @@ abstract class Routes {
   static const HALL_OF_FAME = _Paths.HALL_OF_FAME;
   static const ERRORS = _Paths.ERRORS;
   static const SPLASH = _Paths.SPLASH;
+  static const GRAVEYARD_SANDBOX = _Paths.GRAVEYARD_SANDBOX;
 }
 
 abstract class _Paths {
@@ -27,4 +28,5 @@ abstract class _Paths {
   static const HALL_OF_FAME = '/hall-of-fame';
   static const ERRORS = '/errors';
   static const SPLASH = '/splash';
+  static const GRAVEYARD_SANDBOX = '/graveyard-sandbox';
 }

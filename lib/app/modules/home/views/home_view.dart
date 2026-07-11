@@ -463,6 +463,17 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
               child: const Icon(Icons.science, color: Colors.white),
             ),
           ),
+        if (kDebugMode)
+          Positioned(
+            left: 0,
+            bottom: 56,
+            child: FloatingActionButton.small(
+              heroTag: 'graveyard-flight-sandbox',
+              backgroundColor: brackgroundColor,
+              onPressed: () => Get.toNamed(Routes.GRAVEYARD_SANDBOX),
+              child: const Icon(Icons.flight_takeoff, color: Colors.white),
+            ),
+          ),
         Obx(
           () => AnimatedPositioned(
             right: controller.isLoading.value ||
