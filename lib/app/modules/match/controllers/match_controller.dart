@@ -584,11 +584,16 @@ class MatchController extends GetxController with WidgetsBindingObserver {
   // never just teleports.
   Future<void> _runTurnTick() async {
     if (gs.value!.modifiers.isEmpty) return;
-    final reveals = await _animateTickMoves(gs.value!.planTurnStart());
-    gs.value!.applyTurnStart(); // commit while any death curtain is up
-    gs.update((val) => val);
-    await Future.wait(reveals); // let the graveyard reveals finish
-    _clearHiddenTiles();
+    try {
+      final reveals = await _animateTickMoves(gs.value!.planTurnStart());
+      gs.value!.applyTurnStart(); // commit while any death curtain is up
+      gs.update((val) => val);
+      await Future.wait(reveals); // let the graveyard reveals finish
+    } finally {
+      // Never leave a piece hidden (its flight may have failed) — that would
+      // strand the sprite and, upstream, keep isAnimating stuck.
+      _clearHiddenTiles();
+    }
   }
 
   // Animates every piece a per-turn effect is about to move, then returns so the

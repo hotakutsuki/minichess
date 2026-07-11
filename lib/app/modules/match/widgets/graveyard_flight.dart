@@ -32,7 +32,7 @@ Future<void> flyToGraveyard(
   Color? curtainColor,
   Duration duration = const Duration(milliseconds: 800),
 }) async {
-  final overlay = Overlay.of(context);
+  final overlay = Overlay.of(context, rootOverlay: true);
   final fromBox = fromKey.currentContext?.findRenderObject() as RenderBox?;
   final toBox = toKey.currentContext?.findRenderObject() as RenderBox?;
   final overlayBox = overlay.context.findRenderObject() as RenderBox?;
@@ -70,8 +70,9 @@ Future<void> flyToGraveyard(
       flightDuration: duration,
       onArrive: onArrive,
       onDone: () {
+        if (completer.isCompleted) return; // idempotent: never remove twice
+        completer.complete();
         entry.remove();
-        if (!completer.isCompleted) completer.complete();
       },
       child: piece,
     ),
@@ -138,13 +139,19 @@ class _FlightOverlayState extends State<_FlightOverlay>
 
   Future<void> _land() async {
     // Piece is now fully hidden by the curtain — commit it into the real
-    // graveyard, hold a beat, then reveal.
-    setState(() => _landed = true);
-    widget.onArrive();
-    await Future.delayed(const Duration(milliseconds: 120));
-    if (!mounted) return;
-    await _retract.forward();
-    widget.onDone();
+    // graveyard, hold a beat, then reveal. onDone MUST fire no matter what
+    // (even if we get disposed mid-flight), or the caller's future hangs and
+    // the match freezes with isAnimating stuck true.
+    try {
+      if (mounted) setState(() => _landed = true);
+      widget.onArrive();
+      await Future.delayed(const Duration(milliseconds: 120));
+      if (mounted) await _retract.forward();
+    } catch (_) {
+      // swallow — a disposed controller/ticker must not deadlock the caller
+    } finally {
+      widget.onDone();
+    }
   }
 
   @override
