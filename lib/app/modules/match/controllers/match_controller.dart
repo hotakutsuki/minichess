@@ -21,6 +21,7 @@ import '../../../utils/juice.dart';
 import '../../../utils/utils.dart';
 import '../../home/controllers/home_controller.dart';
 import '../../language/controllers/language_controller.dart';
+import '../widgets/graveyard_flight.dart';
 import 'GraveyardController.dart';
 import 'ai_controller.dart';
 import 'clock_controller.dart';
@@ -42,6 +43,21 @@ class MatchController extends GetxController with WidgetsBindingObserver {
 
   Rx<int> wScore = 0.obs, bScore = 0.obs;
   final selectedTile = Rxn<Tile>();
+
+  // --- Graveyard-flight plumbing (measured, magic-number-free animations) ---
+  // A stable GlobalKey per board grid slot "i,j" and per graveyard [player], so
+  // [flyToGraveyard] can measure real on-screen rects. Board slots are reused
+  // across rotations (one tile per slot per frame), so identity stays unique.
+  final Map<String, GlobalKey> _tileKeys = {};
+  final Map<player, GlobalKey> _graveKeys = {};
+  // Board slots whose piece is mid-flight to a graveyard: rendered empty so the
+  // overlay copy isn't duplicated by the still-present board piece.
+  final Set<String> _hiddenTiles = {};
+
+  GlobalKey tileKey(int? i, int? j) =>
+      _tileKeys.putIfAbsent('$i,$j', () => GlobalKey());
+  GlobalKey graveKey(player p) => _graveKeys.putIfAbsent(p, () => GlobalKey());
+  bool isTileHidden(int? i, int? j) => _hiddenTiles.contains('$i,$j');
 
   late player playersTurn = player.white;
   player winner = player.none;
@@ -568,9 +584,11 @@ class MatchController extends GetxController with WidgetsBindingObserver {
   // never just teleports.
   Future<void> _runTurnTick() async {
     if (gs.value!.modifiers.isEmpty) return;
-    await _animateTickMoves(gs.value!.planTurnStart());
-    gs.value!.applyTurnStart();
+    final reveals = await _animateTickMoves(gs.value!.planTurnStart());
+    gs.value!.applyTurnStart(); // commit while any death curtain is up
     gs.update((val) => val);
+    await Future.wait(reveals); // let the graveyard reveals finish
+    _clearHiddenTiles();
   }
 
   // Animates every piece a per-turn effect is about to move, then returns so the
@@ -579,35 +597,79 @@ class MatchController extends GetxController with WidgetsBindingObserver {
   // owner's graveyard with the capture animation. Wind pieces are enemy-owned,
   // whose tile is drawn inside a 180° RotatedBox, so a slide is fed reversed
   // (destination→source) to cancel that rotation.
-  Future<void> _animateTickMoves(List<TickMove> moves) async {
-    if (moves.isEmpty) return;
-    // Let the just-rotated board finish building so each source tile's
-    // TileController is registered before we look it up.
+  Future<List<Future>> _animateTickMoves(List<TickMove> moves) async {
+    if (moves.isEmpty) return const [];
+    // Let the just-rotated board finish building so each source tile is mounted.
     await WidgetsBinding.instance.endOfFrame;
-    final futures = <Future>[];
-    // Deaths stack onto the graveyard's current end, in report order.
-    int mineGrave = gs.value!.myGraveyard.length;
-    int enemyGrave = gs.value!.enemyGraveyard.length;
+    final awaitNow = <Future>[]; // slides + death landings (before commit)
+    final reveals = <Future>[]; // death curtain retracts (after commit)
     for (final mv in moves) {
       final t = gs.value!.board[mv.fromJ][mv.fromI];
+      if (mv.toGrave) {
+        // Marchitar (and any future in-place death): fly to the graveyard.
+        final landed = Completer<void>();
+        reveals.add(_flyBoardPieceToGrave(mv.fromI, mv.fromJ, t.char, t.owner,
+            onArrive: () {
+          if (!landed.isCompleted) landed.complete();
+        }));
+        awaitNow.add(landed.future);
+        continue;
+      }
       final tag = t.toString();
       if (!Get.isRegistered<TileController>(tag: tag)) continue;
       final tc = Get.find<TileController>(tag: tag);
       final bool enemy = t.owner == possession.enemy;
-      if (mv.toGrave) {
-        // Marchitar (and any future in-place death): fly to the piece's own
-        // graveyard. `-1 - j` targets the near graveyard; the friendly-piece
-        // flag pre-negates for the missing tile rotation.
-        final int slot = enemy ? enemyGrave++ : mineGrave++;
-        futures.add(tc.animateTile(
-            mv.fromI, -1 - mv.fromJ, null, null, slot, !enemy));
-        continue;
-      }
-      futures.add(enemy
+      awaitNow.add(enemy
           ? tc.animateTile(mv.toI, mv.toJ, mv.fromI, mv.fromJ)
           : tc.animateTile(mv.fromI, mv.fromJ, mv.toI, mv.toJ));
     }
-    await Future.wait(futures);
+    await Future.wait(awaitNow);
+    return reveals;
+  }
+
+  // Flies a board piece at (i,j) to its owner's graveyard: hides the board copy
+  // (so the overlay isn't duplicated), launches the overlay flight, and returns
+  // the reveal future. [onArrive] fires when the piece is hidden behind the
+  // risen curtain — the moment to commit the state so the graveyard add stays
+  // covered until the reveal.
+  Future<void> _flyBoardPieceToGrave(
+      int i, int j, chrt char, possession owner,
+      {required VoidCallback onArrive}) async {
+    // A piece's own graveyard is the mover's (playersTurn) side; an enemy piece
+    // goes to the opponent's.
+    final player receiver = owner == possession.mine
+        ? playersTurn
+        : (playersTurn == player.white ? player.black : player.white);
+    final ctx = Get.context;
+    final GlobalKey? fromKey = _tileKeys['$i,$j'];
+    final GlobalKey? toKey = _graveKeys[receiver];
+    if (ctx == null || fromKey == null || toKey == null) {
+      onArrive();
+      return;
+    }
+    _hiddenTiles.add('$i,$j');
+    gs.update((val) => val);
+    final chrt buried = gs.value!.graveChar(char, owner);
+    // The graveyard strip flips black (top) pieces 180°; the whole zone flips
+    // again for an online guest — so a piece flips iff exactly one applies.
+    final bool flip = (receiver == player.black) ^
+        (gamemode == gameMode.online && !isHost.value);
+    await flyToGraveyard(
+      ctx,
+      fromKey: fromKey,
+      toKey: toKey,
+      piece: getCharAsset(buried, receiver, false),
+      rotate: flip,
+      onArrive: onArrive,
+      duration:
+          Duration(milliseconds: gamemode == gameMode.training ? 100 : 800),
+    );
+  }
+
+  void _clearHiddenTiles() {
+    if (_hiddenTiles.isEmpty) return;
+    _hiddenTiles.clear();
+    gs.update((val) => val);
   }
 
   void startTimer() {

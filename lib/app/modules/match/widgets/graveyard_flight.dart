@@ -123,9 +123,10 @@ class _FlightOverlayState extends State<_FlightOverlay>
   late final AnimationController _retract =
       AnimationController(vsync: this, duration: const Duration(milliseconds: 350));
 
-  // The curtain starts covering the last 45% of the flight, so it's fully up
-  // exactly as the piece arrives.
-  static const double _coverFrom = 0.55;
+  // The curtain is fully up by this fraction of the flight and stays up until
+  // the piece lands, so it covers the graveyard (and any state commit the caller
+  // makes on arrival) well before the reveal.
+  static const double _coverBy = 0.7;
 
   bool _landed = false;
 
@@ -155,8 +156,7 @@ class _FlightOverlayState extends State<_FlightOverlay>
 
   double get _curtainValue {
     if (_landed) return 1 - _retract.value; // retracting
-    final v = _flightT.value;
-    return ((v - _coverFrom) / (1 - _coverFrom)).clamp(0.0, 1.0);
+    return (_flightT.value / _coverBy).clamp(0.0, 1.0);
   }
 
   @override

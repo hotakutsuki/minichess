@@ -49,16 +49,21 @@ class ChessTile extends GetView {
   }
 
   // The character to draw — may differ from tile.char when a modifier transforms
-  // the piece's appearance (e.g. "todas se vuelven osos").
+  // the piece's appearance (e.g. "todas se vuelven osos"). Empty while the piece
+  // is mid-flight to a graveyard (drawn by the overlay instead, see
+  // MatchController.isTileHidden), so it isn't shown twice.
   chrt displayCharOf() {
+    if (matchController.isTileHidden(tile.i, tile.j)) return chrt.empty;
     final gs = matchController.gs.value;
     return gs == null ? tile.char : effectiveChar(tile, gs);
   }
 
   @override
   Widget build(BuildContext context) {
-    final bool draggable =
-        tile.char != chrt.empty && tile.owner == possession.mine;
+    final bool hidden = matchController.isTileHidden(tile.i, tile.j);
+    final bool draggable = !hidden &&
+        tile.char != chrt.empty &&
+        tile.owner == possession.mine;
 
     final Widget animatedPiece = AnimatedBuilder(
       animation: tileController.animationController,
@@ -69,7 +74,7 @@ class ChessTile extends GetView {
               width: 80,
               height: 80,
               child: getBase(
-                  tile.owner == possession.none
+                  hidden || tile.owner == possession.none
                       ? player.none
                       : getbool(tile.owner == possession.mine)
                           ? player.white
@@ -142,6 +147,7 @@ class ChessTile extends GetView {
       onWillAcceptWithDetails: (_) => true,
       onAcceptWithDetails: (d) => matchController.onDragDrop(d.data, tile),
       builder: (context, candidate, rejected) => SizedBox(
+        key: matchController.tileKey(tile.i, tile.j),
         width: 100,
         height: 100,
         child: Stack(
