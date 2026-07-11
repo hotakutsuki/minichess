@@ -5,6 +5,8 @@ import 'package:get/get.dart';
 import 'package:inti_the_inka_chess_game/app/modules/home/views/welcome_view.dart';
 import 'dart:math';
 import '../../../data/enums.dart';
+import '../../../engine/modifier_catalog.dart';
+import '../../../engine/rule_modifier.dart';
 import '../../../routes/app_pages.dart';
 import '../../../utils/gameObjects/BackgroundController.dart';
 import '../../../utils/utils.dart';
@@ -36,6 +38,66 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
             child: Obx(() {
               return Text(l.g(diff.name));
             })));
+  }
+
+  /// Debug-only launcher: pick a modifier from the catalog and start a sandbox
+  /// match with it active. Never shown in release builds.
+  void showSandboxPicker() {
+    Get.dialog(
+      SimpleDialog(
+        backgroundColor: brackgroundColorSolid,
+        title: const Text('Sandbox — probar modificador',
+            style: TextStyle(color: Colors.white)),
+        children: [
+          for (final info in modifierCatalog)
+            SimpleDialogOption(
+              onPressed: () {
+                Get.back();
+                _pickSandboxSide(info);
+              },
+              child: ListTile(
+                title: Text(info.name,
+                    style: const TextStyle(color: Colors.white)),
+                subtitle: Text(
+                    '${info.description}\n[${info.uses.map((u) => u.name).join(', ')}]'
+                    '${info.source == null ? '' : ' — ${info.source}'}',
+                    style: const TextStyle(color: Colors.white54)),
+                isThreeLine: true,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// Second step: choose which side the picked modifier applies to.
+  void _pickSandboxSide(ModifierInfo info) {
+    const options = {
+      'Tú (protagonista)': ModifierSide.protagonist,
+      'Enemigo (IA)': ModifierSide.antagonist,
+      'Ambos': ModifierSide.both,
+    };
+    Get.dialog(
+      SimpleDialog(
+        backgroundColor: brackgroundColorSolid,
+        title: Text('${info.name} — aplicar a',
+            style: const TextStyle(color: Colors.white)),
+        children: [
+          for (final entry in options.entries)
+            SimpleDialogOption(
+              onPressed: () {
+                Get.back();
+                controller.startSandbox(info.build(entry.value));
+              },
+              child: Text(
+                entry.key +
+                    (entry.value == info.defaultSide ? '  ★' : ''),
+                style: const TextStyle(color: Colors.white),
+              ),
+            ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -390,6 +452,28 @@ class HomeView extends GetView<HomeController> with WidgetsBindingObserver {
         ),
       ),
       floatingActionButton: Stack(children: [
+        if (kDebugMode)
+          Positioned(
+            left: 0,
+            bottom: 0,
+            child: FloatingActionButton.small(
+              heroTag: 'sandbox',
+              backgroundColor: brackgroundColor,
+              onPressed: showSandboxPicker,
+              child: const Icon(Icons.science, color: Colors.white),
+            ),
+          ),
+        if (kDebugMode)
+          Positioned(
+            left: 0,
+            bottom: 56,
+            child: FloatingActionButton.small(
+              heroTag: 'graveyard-flight-sandbox',
+              backgroundColor: brackgroundColor,
+              onPressed: () => Get.toNamed(Routes.GRAVEYARD_SANDBOX),
+              child: const Icon(Icons.flight_takeoff, color: Colors.white),
+            ),
+          ),
         Obx(
           () => AnimatedPositioned(
             right: controller.isLoading.value ||

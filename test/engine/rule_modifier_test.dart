@@ -70,6 +70,22 @@ void main() {
           _move(chrt.rock, possession.enemy, 1, 3, 1, 1), gs, true), isFalse);
     });
 
+    test('a piece in between blocks the two-step leap', () {
+      final b = _emptyBoard();
+      b[0][1] = Tile(chrt.rock, possession.mine, 1, 0); // mover at (1,0)
+      b[1][1] = Tile(chrt.pawn, possession.mine, 1, 1); // blocker at midpoint
+      final gs = _boardStateWith(b, const [DoubleStepModifier()]);
+      // the leap to (1,2) is vetoed because the midpoint (1,1) is occupied.
+      expect(checkIfValidMove(Move(b[0][1], b[2][1]), gs, true), isFalse);
+    });
+
+    test('the two-step leap is allowed when the path is clear', () {
+      final b = _emptyBoard();
+      b[0][1] = Tile(chrt.rock, possession.mine, 1, 0);
+      final gs = _boardStateWith(b, const [DoubleStepModifier()]);
+      expect(checkIfValidMove(Move(b[0][1], b[2][1]), gs, true), isTrue);
+    });
+
     test('stable targeting follows the protagonist across a rotation', () {
       final gs =
           _stateWith(const [DoubleStepModifier(side: ModifierSide.protagonist)]);
@@ -165,6 +181,40 @@ void main() {
       expect(b[1][1].char, chrt.bishop); // untouched: no capture happened
       expect(gs.myGraveyard, isEmpty);
     });
+
+    test('never removes a king (king-safe)', () {
+      final b = _emptyBoard();
+      b[0][0] = Tile(chrt.rock, possession.mine, 0, 0); // mover
+      b[1][0] = Tile(chrt.pawn, possession.enemy, 0, 1); // captured landing
+      b[1][1] = Tile(chrt.king, possession.enemy, 1, 1); // adjacent enemy KING
+      final gs = _boardStateWith(b, const [AreaCaptureModifier()]);
+      gs.changeGameState(Move(b[0][0], b[1][0]));
+      expect(b[1][1].char, chrt.king); // survives the embestida
+    });
+  });
+
+  group('TransformAll display', () {
+    test('a transformed piece shows the oso (knight) sprite', () {
+      final b = _emptyBoard();
+      b[1][1] = Tile(chrt.bishop, possession.mine, 1, 1);
+      b[0][1] = Tile(chrt.king, possession.mine, 1, 0);
+      final gs = _boardStateWith(
+          b, const [TransformAllPiecesModifier(side: ModifierSide.protagonist)]);
+      expect(effectiveChar(b[1][1], gs), chrt.knight); // bishop shown as oso
+      expect(effectiveChar(b[0][1], gs), chrt.king); // king unchanged
+    });
+
+    test('a transformed piece is buried *as* an oso (dies a knight)', () {
+      final b = _emptyBoard();
+      b[0][0] = Tile(chrt.rock, possession.mine, 0, 0); // captor
+      b[1][0] = Tile(chrt.bishop, possession.enemy, 0, 1); // enemy, shown as oso
+      final gs = _boardStateWith(
+          b, const [TransformAllPiecesModifier(side: ModifierSide.antagonist)]);
+      gs.changeGameState(Move(b[0][0], b[1][0]));
+      expect(gs.myGraveyard.length, 1);
+      // stored as a knight (oso), not the bishop it used to be.
+      expect(gs.myGraveyard.first.char, chrt.knight);
+    });
   });
 
   group('applyTurnStart with no modifiers', () {
@@ -184,7 +234,7 @@ void main() {
     test('sprouts a piece on the first empty tile each turn', () {
       final b = _emptyBoard();
       b[0][0] = Tile(chrt.rock, possession.mine, 0, 0); // occupies the very first tile
-      final gs = _boardStateWith(b, const [SpawnModifier(piece: chrt.pawn)]);
+      final gs = _boardStateWith(b, [SpawnModifier(piece: chrt.pawn)]);
       gs.applyTurnStart();
       // first empty scanning j=0,i=0.. is (i=1, j=0) == board[0][1]
       expect(b[0][1].char, chrt.pawn);
@@ -196,40 +246,103 @@ void main() {
           4,
           (j) => List.generate(
               3, (i) => Tile(chrt.pawn, possession.mine, i, j)));
-      final gs = _boardStateWith(b, const [SpawnModifier()]);
+      final gs = _boardStateWith(b, [SpawnModifier()]);
       gs.applyTurnStart(); // must not throw or overwrite
       expect(b.expand((r) => r).every((t) => t.char == chrt.pawn), isTrue);
     });
   });
 
   group('WindModifier (Viento)', () {
-    test('pushes pieces one step; those blown off go to the graveyard', () {
+    test('blows the opponent one row back; only the opponent, off-edge to grave',
+        () {
       final b = _emptyBoard();
-      b[1][1] = Tile(chrt.pawn, possession.mine, 1, 1); // -> (1,2)
-      b[3][0] = Tile(chrt.rock, possession.enemy, 0, 3); // top row -> off board
-      final gs = _boardStateWith(b, const [WindModifier(di: 0, dj: 1)]);
+      b[1][0] = Tile(chrt.pawn, possession.enemy, 0, 1); // -> (0,2)
+      b[3][2] = Tile(chrt.rock, possession.enemy, 2, 3); // frontier -> off board
+      b[1][2] = Tile(chrt.bishop, possession.mine, 2, 1); // caster's own: untouched
+      final gs = _boardStateWith(b, [WindModifier(everyTurns: 1)]);
       gs.applyTurnStart();
-      // pushed +j
-      expect(b[2][1].char, chrt.pawn);
-      expect(b[2][1].owner, possession.mine);
-      expect(b[1][1].char, chrt.empty); // origin cleared
-      // rock blown off the far edge -> enemy graveyard, origin cleared
-      expect(b[3][0].char, chrt.empty);
+      expect(b[2][0].char, chrt.pawn);
+      expect(b[2][0].owner, possession.enemy);
+      expect(b[1][0].char, chrt.empty); // origin cleared
+      // rock blown off the back edge -> enemy graveyard
+      expect(b[3][2].char, chrt.empty);
       expect(gs.enemyGraveyard.length, 1);
       expect(gs.enemyGraveyard.first.char, chrt.rock);
       expect(gs.enemyGraveyard.first.owner, possession.enemy);
+      // the caster's own piece never moves
+      expect(b[1][2].char, chrt.bishop);
+      expect(gs.myGraveyard, isEmpty);
     });
 
-    test('adjacent pieces shift without colliding', () {
+    test('a packed column cascades one step (frontier first)', () {
       final b = _emptyBoard();
-      b[1][1] = Tile(chrt.pawn, possession.mine, 1, 1); // -> (1,2)
-      b[2][1] = Tile(chrt.bishop, possession.mine, 1, 2); // -> (1,3), moves first
-      final gs = _boardStateWith(b, const [WindModifier(di: 0, dj: 1)]);
+      b[1][1] = Tile(chrt.pawn, possession.enemy, 1, 1); // -> (1,2)
+      b[2][1] = Tile(chrt.bishop, possession.enemy, 1, 2); // -> (1,3), moves first
+      final gs = _boardStateWith(b, [WindModifier(everyTurns: 1)]);
       gs.applyTurnStart();
       expect(b[3][1].char, chrt.bishop);
       expect(b[2][1].char, chrt.pawn);
       expect(b[1][1].char, chrt.empty);
-      expect(gs.myGraveyard, isEmpty); // nobody blown off
+      expect(gs.enemyGraveyard, isEmpty); // nobody blown off
+    });
+
+    test('a piece jammed behind an anchored king holds its square', () {
+      final b = _emptyBoard();
+      b[2][1] = Tile(chrt.pawn, possession.enemy, 1, 2); // wants (1,3)
+      b[3][1] = Tile(chrt.king, possession.enemy, 1, 3); // king dams it
+      final gs = _boardStateWith(b, [WindModifier(everyTurns: 1)]);
+      gs.applyTurnStart();
+      expect(b[3][1].char, chrt.king); // king didn't move
+      expect(b[2][1].char, chrt.pawn); // blocked -> stays
+      expect(gs.enemyGraveyard, isEmpty);
+    });
+
+    test('only gusts every `everyTurns` turns', () {
+      final b = _emptyBoard();
+      b[1][1] = Tile(chrt.pawn, possession.enemy, 1, 1);
+      final gs = _boardStateWith(b, [WindModifier(everyTurns: 3)]);
+      gs.applyTurnStart(); // 1
+      gs.applyTurnStart(); // 2 — no gust yet
+      expect(b[1][1].char, chrt.pawn);
+      gs.applyTurnStart(); // 3 — gust
+      expect(b[2][1].char, chrt.pawn);
+      expect(b[1][1].char, chrt.empty);
+    });
+
+    test('an enemy king on the frontier is anchored — never blown off', () {
+      final b = _emptyBoard();
+      b[3][0] = Tile(chrt.king, possession.enemy, 0, 3); // frontier: would blow off
+      final gs = _boardStateWith(b, [WindModifier(everyTurns: 1)]);
+      gs.applyTurnStart();
+      expect(b[3][0].char, chrt.king); // still there
+      expect(gs.enemyGraveyard, isEmpty);
+    });
+
+    test('a king NOT on the back edge is blown one row back like any piece', () {
+      final b = _emptyBoard();
+      b[1][0] = Tile(chrt.king, possession.enemy, 0, 1); // room ahead at (0,2)
+      final gs = _boardStateWith(b, [WindModifier(everyTurns: 1)]);
+      gs.applyTurnStart();
+      expect(b[2][0].char, chrt.king); // shifted back
+      expect(b[1][0].char, chrt.empty);
+      expect(gs.enemyGraveyard, isEmpty); // never falls off
+    });
+
+    test('the gust is reported by planTurnStart before it mutates', () {
+      final b = _emptyBoard();
+      b[1][1] = Tile(chrt.pawn, possession.enemy, 1, 1); // -> (1,2)
+      b[3][2] = Tile(chrt.rock, possession.enemy, 2, 3); // -> off the back edge
+      final gs = _boardStateWith(b, [WindModifier(everyTurns: 1)]);
+      final planned = gs.planTurnStart();
+      // Two shoves reported, board still untouched (pure).
+      expect(planned.length, 2);
+      expect(b[1][1].char, chrt.pawn);
+      expect(b[3][2].char, chrt.rock);
+      // the off-edge shove is a normal board slide carrying the piece past the
+      // last row (toJ == height), not a toGrave flight.
+      final offEdge = planned.firstWhere((m) => m.fromJ == 3);
+      expect(offEdge.toJ, gs.board.length);
+      expect(offEdge.toGrave, isFalse);
     });
   });
 
@@ -257,6 +370,21 @@ void main() {
       expect(gs.myGraveyard, isEmpty);
     });
 
+    test('planTurnStart reports the piece about to wither (as a toGrave move)',
+        () {
+      final b = _emptyBoard();
+      b[1][1] = Tile(chrt.bishop, possession.mine, 1, 1)..idleTurns = 1;
+      final gs = _boardStateWith(b, const [WitherModifier(turns: 2)]);
+      // idle is 1, turns is 2 -> next tick it dies; the plan announces it now,
+      // without touching the board.
+      final planned = gs.planTurnStart();
+      expect(planned.length, 1);
+      expect(planned.first.toGrave, isTrue);
+      expect(planned.first.fromI, 1);
+      expect(planned.first.fromJ, 1);
+      expect(b[1][1].char, chrt.bishop); // pure: not yet dead
+    });
+
     test('the king never withers', () {
       final b = _emptyBoard();
       b[1][1] = Tile(chrt.king, possession.mine, 1, 1);
@@ -267,30 +395,34 @@ void main() {
     });
   });
 
-  group('FelledTilesModifier (Tala el tablero)', () {
-    test('the protagonist cannot enter a felled tile; the antagonist can', () {
-      // (1,2) is felled. A rock at (1,1) wants to step onto it.
-      final felled = [
-        [1, 2]
-      ];
-      final gs = _boardStateWith(
-          _emptyBoard(), [FelledTilesModifier(felled)]); // side: protagonist
-      // protagonist == mine in a default state -> blocked.
+  group('FelledTilesModifier (Tala dinámica)', () {
+    test('seeds a felled square the protagonist cannot enter (antagonist can)',
+        () {
+      final gs = _boardStateWith(_emptyBoard(), const [FelledTilesModifier()]);
+      gs.applyTurnStart(); // seeds the centre: board[2][1] == (i=1, j=2)
+      expect(gs.board[2][1].felledTurns, greaterThan(0));
+      // protagonist (mine, default state) blocked; antagonist allowed.
       expect(checkIfValidMove(
           _move(chrt.rock, possession.mine, 1, 1, 1, 2), gs, true), isFalse);
-      // the antagonist (enemy) may still enter it.
       expect(checkIfValidMove(
           _move(chrt.rock, possession.enemy, 1, 1, 1, 2), gs, true), isTrue);
     });
 
-    test('a non-felled tile stays reachable', () {
-      final gs = _boardStateWith(_emptyBoard(), [
-        FelledTilesModifier(const [
-          [0, 0]
-        ])
-      ]);
-      expect(checkIfValidMove(
-          _move(chrt.rock, possession.mine, 1, 1, 1, 2), gs, true), isTrue);
+    test('a felled square counts down and expires', () {
+      final b = _emptyBoard();
+      b[0][0].felledTurns = 1; // a felled corner, far from the centre seed
+      final gs = _boardStateWith(b, const [FelledTilesModifier(duration: 2)]);
+      gs.applyTurnStart(); // decrements the corner 1 -> 0 (then seeds the centre)
+      expect(b[0][0].felledTurns, 0);
+    });
+
+    test('spreads to a neighbour on later turns', () {
+      final gs = _boardStateWith(_emptyBoard(), const [FelledTilesModifier()]);
+      gs.applyTurnStart(); // seed centre
+      gs.applyTurnStart(); // spread to a neighbour
+      final felled =
+          gs.board.expand((r) => r).where((t) => t.felledTurns > 0).length;
+      expect(felled, greaterThanOrEqualTo(2));
     });
   });
 }

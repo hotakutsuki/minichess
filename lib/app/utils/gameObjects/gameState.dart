@@ -63,6 +63,19 @@ class GameState {
     }
   }
 
+  // The piece movements the next [applyTurnStart] will perform, gathered before
+  // any mutation so the UI can animate them (see [RuleModifier.planTurnStart]).
+  // Pure: does not touch the board or advance any modifier's cadence.
+  List<TickMove> planTurnStart() {
+    final moves = <TickMove>[];
+    for (final m in modifiers) {
+      if (m.appliesTo(possession.mine, this)) {
+        moves.addAll(m.planTurnStart(this));
+      }
+    }
+    return moves;
+  }
+
   transformPawn(Move move) {
     if (move.finalTile.char == chrt.pawn &&
         move.finalTile.j == config.promotionRow) {
@@ -83,11 +96,24 @@ class GameState {
   void _sendToGrave(chrt char, possession owner) {
     final returnToOwner = modifiers.any(
         (m) => m.appliesTo(possession.mine, this) && m.returnsCapturedToOwner());
+    final buried = graveChar(char, owner);
     if (returnToOwner) {
-      enemyGraveyard.add(Tile(char, owner, null, null));
+      enemyGraveyard.add(Tile(buried, owner, null, null));
     } else {
-      myGraveyard.add(Tile(char, toggleOwner(owner), null, null));
+      myGraveyard.add(Tile(buried, toggleOwner(owner), null, null));
     }
+  }
+
+  /// The character a piece is buried as when it dies. Folds the modifiers'
+  /// display transforms so a piece turned into an oso ("todas se vuelven osos")
+  /// also *dies* as an oso — and redeploys from the graveyard as a real one —
+  /// rather than reverting to its original sprite. No-op without modifiers.
+  chrt graveChar(chrt char, possession owner) {
+    var c = char;
+    for (final m in modifiers) {
+      if (m.appliesTo(owner, this)) c = m.displayChar(c, owner);
+    }
+    return c;
   }
 
   // Side-effect captures (e.g. Oso "Embestida"), applied by [changeGameState]
@@ -103,7 +129,11 @@ class GameState {
           continue;
         }
         final t = board[j][i];
-        if (t.owner == possession.enemy && t.char != chrt.empty) {
+        // Never let a side-effect capture remove a king — that would end the
+        // game with no winner detected. Kings only fall to a direct capture.
+        if (t.owner == possession.enemy &&
+            t.char != chrt.empty &&
+            t.char != chrt.king) {
           _sendToGrave(t.char, t.owner);
           t.char = chrt.empty;
           t.owner = possession.none;
@@ -140,7 +170,8 @@ class GameState {
     for (var r in board){
       List<Tile> row = [];
       for(var t in r) {
-        row.add(Tile(t.char, t.owner, t.i, t.j, idleTurns: t.idleTurns));
+        row.add(Tile(t.char, t.owner, t.i, t.j,
+            idleTurns: t.idleTurns, felledTurns: t.felledTurns));
       }
       newBoard.add(row);
     }
@@ -178,7 +209,7 @@ class GameState {
       int j = 0;
       for (var v in row.reversed) {
         revRow.add(Tile(v.char, toggleOwner(v.owner), j, i,
-            idleTurns: v.idleTurns));
+            idleTurns: v.idleTurns, felledTurns: v.felledTurns));
         j++;
       }
       reversedBoard.add(revRow);

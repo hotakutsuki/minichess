@@ -19,7 +19,8 @@ class TileController extends GetxController
   double fScale = 1;
   double rotation = 0;
 
-  animateTile(int? ii, int? ij, [int? fi, int? fj, int? gyPosition]) async {
+  animateTile(int? ii, int? ij,
+      [int? fi, int? fj, int? gyPosition, bool mineToGrave = false]) async {
     if (ii == null && ij == null) {//from graveyard
       translation =
           Vector3(18 + (-gyPosition! * 47) + fi! * 100, -95 - fj! * 100, 0);
@@ -28,8 +29,13 @@ class TileController extends GetxController
     } else if (fi != null && fj != null) {//normal translation
       translation = Vector3((fi - ii!) * 100, (ij! - fj) * 100, 0);
     } else if (fi == null && fj == null) {//to graveyard
-      translation =
+      // A captured (enemy) piece is drawn inside a 180° RotatedBox, so its
+      // translation is negated on screen; the numbers below are tuned for that.
+      // A friendly piece dying in place (e.g. Marchitar) has NO such rotation,
+      // so we pre-negate the vector to land it in the same on-screen graveyard.
+      final base =
           Vector3(ii! * 100 + 12 + (gyPosition ?? 0) * -47, ij! * 100 + 5, 0);
+      translation = mineToGrave ? -base : base;
       iScale = 1;
       fScale = .4;
       rotation = pi;

@@ -6,6 +6,8 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:get/get.dart';
 import 'package:flutter/foundation.dart';
 import '../../../data/enums.dart';
+import '../../../data/sandbox_config.dart';
+import '../../../engine/rule_modifier.dart';
 import '../../../routes/app_pages.dart';
 import '../../../services/database.dart';
 import '../../auth/controllers/auth_controller.dart';
@@ -37,6 +39,14 @@ class HomeController extends GetxController
     await Future.delayed(const Duration(milliseconds: 500));
     Get.toNamed(Routes.MATCH, arguments: mode);
     // isLoading.value = false;
+  }
+
+  /// Debug tool: launch a solo match with a single rule modifier active, to try
+  /// a power/joker by hand. Gated behind `kDebugMode` in the UI.
+  void startSandbox(RuleModifier modifier) async {
+    isLoading.value = true;
+    await Future.delayed(const Duration(milliseconds: 500));
+    Get.toNamed(Routes.MATCH, arguments: SandboxConfig([modifier]));
   }
 
   Future<void> goToUrl(String url) async {

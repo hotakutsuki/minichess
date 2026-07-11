@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../data/enums.dart';
 import '../../../data/userDom.dart';
+import '../../../engine/rule_modifier.dart';
 import '../../../routes/app_pages.dart';
 import '../../../utils/gameObjects/BackgroundController.dart';
 import '../../../utils/utils.dart';
@@ -211,6 +212,7 @@ class MatchView extends GetView<MatchController> {
     return Center(
       child: Obx(() {
         return Stack(
+          alignment: Alignment.topCenter,
           children: [
             RotatedBox(
               quarterTurns:
@@ -228,9 +230,29 @@ class MatchView extends GetView<MatchController> {
                 ),
               ),
             ),
+            Positioned(top: 2, child: _windIndicator()),
           ],
         );
       }),
+    );
+  }
+
+  // Debug/campaign feedback: shows the countdown to the next "Viento" gust when
+  // a WindModifier is active. Empty otherwise.
+  Widget _windIndicator() {
+    final gs = controller.gs.value;
+    if (gs == null) return const SizedBox.shrink();
+    final winds = gs.modifiers.whereType<WindModifier>();
+    if (winds.isEmpty) return const SizedBox.shrink();
+    final n = winds.first.turnsUntilNext;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: brackgroundColorSolid.withOpacity(0.85),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text('🌬️ Ventisca en $n',
+          style: const TextStyle(color: Colors.white, fontSize: 12)),
     );
   }
 

@@ -3,6 +3,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:inti_the_inka_chess_game/app/modules/match/views/match_view.dart';
+import '../../../engine/rule_modifier.dart';
+import '../../../engine/rules.dart';
 import '../../../utils/gameObjects/tile.dart';
 import '../../../utils/utils.dart';
 import '../../../data/enums.dart';
@@ -46,10 +48,22 @@ class ChessTile extends GetView {
     return player.black;
   }
 
+  // The character to draw — may differ from tile.char when a modifier transforms
+  // the piece's appearance (e.g. "todas se vuelven osos"). Empty while the piece
+  // is mid-flight to a graveyard (drawn by the overlay instead, see
+  // MatchController.isTileHidden), so it isn't shown twice.
+  chrt displayCharOf() {
+    if (matchController.isTileHidden(tile.i, tile.j)) return chrt.empty;
+    final gs = matchController.gs.value;
+    return gs == null ? tile.char : effectiveChar(tile, gs);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final bool draggable =
-        tile.char != chrt.empty && tile.owner == possession.mine;
+    final bool hidden = matchController.isTileHidden(tile.i, tile.j);
+    final bool draggable = !hidden &&
+        tile.char != chrt.empty &&
+        tile.owner == possession.mine;
 
     final Widget animatedPiece = AnimatedBuilder(
       animation: tileController.animationController,
@@ -60,7 +74,7 @@ class ChessTile extends GetView {
               width: 80,
               height: 80,
               child: getBase(
-                  tile.owner == possession.none
+                  hidden || tile.owner == possession.none
                       ? player.none
                       : getbool(tile.owner == possession.mine)
                           ? player.white
@@ -75,7 +89,7 @@ class ChessTile extends GetView {
               child: _maybePulse(
                 tile.isSelected,
                 getCharAsset(
-                    tile.char,
+                    displayCharOf(),
                     getbool(tile.owner == possession.mine)
                         ? player.white
                         : player.black,
@@ -133,13 +147,17 @@ class ChessTile extends GetView {
       onWillAcceptWithDetails: (_) => true,
       onAcceptWithDetails: (d) => matchController.onDragDrop(d.data, tile),
       builder: (context, candidate, rejected) => SizedBox(
+        key: matchController.tileKey(tile.i, tile.j),
         width: 100,
         height: 100,
         child: Stack(
           alignment: Alignment.center,
           children: [
+            if (tile.felledTurns > 0) _felledOverlay(),
             interactive,
             if (tile.isOption) _optionHint(),
+            _spawnHint(),
+            _witherBadge(),
             _flashOverlay(),
           ],
         ),
@@ -153,7 +171,7 @@ class ChessTile extends GetView {
       width: 90,
       height: 90,
       child: getCharAsset(
-        tile.char,
+        displayCharOf(),
         getbool(tile.owner == possession.mine) ? player.white : player.black,
         true,
       ),
@@ -162,6 +180,110 @@ class ChessTile extends GetView {
 
   Widget _maybePulse(bool active, Widget child) =>
       active ? Pulse(child: child) : child;
+
+  // A "felled" (inaccessible) square: darkened with a no-step mark.
+  Widget _felledOverlay() => IgnorePointer(
+        child: Container(
+          width: 92,
+          height: 92,
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.45),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.brown.shade300, width: 2),
+          ),
+          alignment: Alignment.center,
+          child: const Icon(Icons.do_not_step_outlined,
+              color: Colors.white70, size: 26),
+        ),
+      );
+
+  // Small badge counting down the turns until this piece withers ("Marchitar").
+  // The whole board is rotated 180° on the opponent's turn, so the badge flips
+  // its anchor corner AND counter-rotates to stay screen-upright and in a
+  // consistent screen position instead of tumbling around each turn.
+  Widget _witherBadge() {
+    final gs = matchController.gs.value;
+    if (gs == null || tile.char == chrt.empty || tile.char == chrt.king) {
+      return const SizedBox.shrink();
+    }
+    for (final m in gs.modifiers) {
+      if (m is WitherModifier && m.appliesTo(tile.owner, gs)) {
+        final left = m.turns - tile.idleTurns;
+        if (left <= 0) continue;
+        final bool flip = playersTurn != player.white;
+        return Positioned(
+          top: flip ? null : 6,
+          bottom: flip ? 6 : null,
+          right: flip ? null : 6,
+          left: flip ? 6 : null,
+          child: IgnorePointer(
+            child: RotatedBox(
+              quarterTurns: flip ? 2 : 0,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.brown.withOpacity(0.9),
+                  shape: BoxShape.circle,
+                ),
+                child: Text('$left',
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ),
+        );
+      }
+    }
+    return const SizedBox.shrink();
+  }
+
+  // A hint on the empty tile where the next "Rebrote" will sprout, so the spawn
+  // isn't a surprise. Shown only in the caster's own frame (where the spawn's
+  // first-empty scan is exact), with a small countdown to the next sprout.
+  Widget _spawnHint() {
+    final gs = matchController.gs.value;
+    if (gs == null || tile.char != chrt.empty) return const SizedBox.shrink();
+    for (final m in gs.modifiers) {
+      if (m is! SpawnModifier) continue;
+      if (!m.appliesTo(possession.mine, gs)) continue;
+      // The modifier fills the first empty tile in board order; only mark THAT
+      // tile so the whole board doesn't light up.
+      Tile? firstEmpty;
+      outer:
+      for (final row in gs.board) {
+        for (final t in row) {
+          if (t.char == chrt.empty) {
+            firstEmpty = t;
+            break outer;
+          }
+        }
+      }
+      if (firstEmpty == null || firstEmpty.i != tile.i || firstEmpty.j != tile.j) {
+        continue;
+      }
+      final bool flip = playersTurn != player.white;
+      return IgnorePointer(
+        child: RotatedBox(
+          quarterTurns: flip ? 2 : 0,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.eco,
+                  color: Colors.lightGreen.withOpacity(0.85), size: 28),
+              Text('${m.turnsUntilNext}',
+                  style: TextStyle(
+                      color: Colors.lightGreen.withOpacity(0.95),
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold)),
+            ],
+          ),
+        ),
+      );
+    }
+    return const SizedBox.shrink();
+  }
 
   // A pulsing hint on a reachable tile: a hollow ring around a capturable
   // piece, or a small dot on an empty square.

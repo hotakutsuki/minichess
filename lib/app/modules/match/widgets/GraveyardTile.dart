@@ -25,6 +25,40 @@ class GraveyardTile extends GetView {
 
   @override
   Widget build(BuildContext context) {
+    // Only the player's own captured pieces can be redeployed (and dragged).
+    final bool draggable = tile.owner == possession.mine;
+
+    final Widget piece = AnimatedBuilder(
+      animation: tileController.animationController,
+      child: getCharAsset(tile.char, p, tile.isSelected),
+      builder: (context, child) {
+        return Center(
+          child: SizedBox(
+            width: 50,
+            height: 50,
+            child: Transform(
+              origin: const Offset(25, 25),
+              transform: Matrix4.compose(
+                tileController.translation * tileController.animationController
+                    .drive(CurveTween(curve: Curves.easeInOutQuint))
+                    .value,
+                math.Quaternion.euler(0, 0,
+                    tileController.rotation * tileController.animationController
+                        .drive(CurveTween(curve: Curves.easeInOutQuint))
+                        .value),
+                math.Vector3.all(tileController.iScale +
+                    (tileController.fScale - tileController.iScale) * tileController.animationController
+                        .drive(CurveTween(curve: Curves.easeInOutQuint))
+                        .value
+                ),
+              ),
+              child: child,
+            ),
+          ),
+        );
+      },
+    );
+
     return InkWell(
       onTap: () => matchController.onTapTile(tile),
       child: Container(
@@ -37,36 +71,24 @@ class GraveyardTile extends GetView {
                 : null,
           ),
           alignment: Alignment.center,
-          child: AnimatedBuilder(
-            animation: tileController.animationController,
-            child: getCharAsset(tile.char, p, tile.isSelected),
-            builder: (context, child) {
-              return Center(
-                child: SizedBox(
-                  width: 50,
-                  height: 50,
-                  child: Transform(
-                    origin: const Offset(25, 25),
-                    transform: Matrix4.compose(
-                      tileController.translation * tileController.animationController
-                          .drive(CurveTween(curve: Curves.easeInOutQuint))
-                          .value,
-                      math.Quaternion.euler(0, 0,
-                          tileController.rotation * tileController.animationController
-                              .drive(CurveTween(curve: Curves.easeInOutQuint))
-                              .value),
-                      math.Vector3.all(tileController.iScale +
-                          (tileController.fScale - tileController.iScale) * tileController.animationController
-                              .drive(CurveTween(curve: Curves.easeInOutQuint))
-                              .value
-                      ),
-                    ),
-                    child: child,
+          // Same gesture as a board piece: the board tiles are DragTargets that
+          // route back through matchController.onDragDrop, so a graveyard piece
+          // can be dropped straight onto an empty square.
+          child: draggable
+              ? Draggable<Tile>(
+                  data: tile,
+                  onDragStarted: () => matchController.selectForDrag(tile),
+                  onDraggableCanceled: (_, __) =>
+                      matchController.cancelSelection(),
+                  feedback: SizedBox(
+                    width: 60,
+                    height: 60,
+                    child: getCharAsset(tile.char, p, true),
                   ),
-                ),
-              );
-            },
-          )),
+                  childWhenDragging: Opacity(opacity: 0.25, child: piece),
+                  child: piece,
+                )
+              : piece),
     );
   }
 }

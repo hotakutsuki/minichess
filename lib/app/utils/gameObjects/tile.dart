@@ -1,7 +1,8 @@
 import '../../data/enums.dart';
 
 class Tile {
-  Tile(this.char, this.owner, this.i, this.j, {this.idleTurns = 0});
+  Tile(this.char, this.owner, this.i, this.j,
+      {this.idleTurns = 0, this.felledTurns = 0});
 
   Tile.fromTile(Tile otherTile) :
         char = otherTile.char,
@@ -31,6 +32,11 @@ class Tile {
   /// "Marchitar" rule modifier; carried across board copies/rotations, reset to
   /// 0 when the piece moves.
   int idleTurns = 0;
+
+  /// Turns this square stays "felled" (inaccessible to the blocked side). Used
+  /// by the dynamic "Tala el tablero" modifier; 0 == normal. Carried across
+  /// board copies/rotations so a felled square stays felled as the board turns.
+  int felledTurns = 0;
 
   @override
   String toString() {

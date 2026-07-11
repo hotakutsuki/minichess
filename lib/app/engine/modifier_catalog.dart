@@ -7,14 +7,15 @@ enum ModifierUse { bossPower, joker }
 /// Human-readable metadata for a [RuleModifier] — so every power/joker lives in
 /// ONE place. A future debug screen, the joker-pick UI and the boss config can
 /// all read from here instead of hardcoding names/descriptions. Pure data plus a
-/// [sample] factory that builds a representative instance.
+/// [build] factory that constructs the modifier for a chosen [ModifierSide].
 class ModifierInfo {
   ModifierInfo({
     required this.id,
     required this.name,
     required this.description,
     required this.uses,
-    required this.sample,
+    required this.build,
+    required this.defaultSide,
     this.source,
   });
 
@@ -34,8 +35,12 @@ class ModifierInfo {
   /// Null for pure jokers.
   final String? source;
 
-  /// Builds a representative instance (default tuning) of the modifier.
-  final RuleModifier Function() sample;
+  /// The side it naturally targets (a joker → protagonist, a boss power →
+  /// antagonist or the player it debuffs).
+  final ModifierSide defaultSide;
+
+  /// Builds the modifier targeting [side].
+  final RuleModifier Function(ModifierSide side) build;
 
   bool get isBossPower => uses.contains(ModifierUse.bossPower);
   bool get isJoker => uses.contains(ModifierUse.joker);
@@ -52,85 +57,90 @@ final List<ModifierInfo> modifierCatalog = [
     name: 'Doble paso',
     description:
         'Las fichas ganan la opción de avanzar 2 casillas, además de su paso '
-        'normal de 1. (El poder del Sol · vida 2 es una variante que reemplaza '
-        'el paso de 1 por 2.)',
+        'normal de 1.',
     uses: {ModifierUse.joker},
-    sample: () => const DoubleStepModifier(side: ModifierSide.protagonist),
+    defaultSide: ModifierSide.protagonist,
+    build: (side) => DoubleStepModifier(side: side),
   ),
   ModifierInfo(
     id: 'transform-all-osos',
     name: 'Todas se vuelven osos',
     description:
-        'Todas las fichas del bando afectado se mueven como el oso (caballo), '
+        'Todas las fichas del bando afectado se mueven (y se ven) como el oso, '
         'sin importar qué pieza sean. El rey no cambia.',
     uses: {ModifierUse.bossPower},
     source: 'Oso · vida 2',
-    sample: () => const TransformAllPiecesModifier(
-        target: chrt.knight, side: ModifierSide.antagonist),
+    defaultSide: ModifierSide.antagonist,
+    build: (side) =>
+        TransformAllPiecesModifier(target: chrt.knight, side: side),
   ),
   ModifierInfo(
     id: 'return-captured',
     name: 'Invertir posesión de captura',
     description:
         'Las fichas capturadas no pasan a quien las captura: regresan a su '
-        'dueño original (sin "drops" del enemigo).',
+        'dueño original (sin "drops").',
     uses: {ModifierUse.joker},
-    sample: () => const ReturnCapturedModifier(),
+    defaultSide: ModifierSide.protagonist,
+    build: (side) => ReturnCapturedModifier(side: side),
   ),
   ModifierInfo(
     id: 'area-capture',
     name: 'Embestida',
     description:
-        'Al capturar, también elimina las fichas enemigas ortogonalmente '
-        'adyacentes a donde cae la ficha.',
+        'Al capturar, elimina también las fichas enemigas ortogonalmente '
+        'adyacentes (nunca reyes).',
     uses: {ModifierUse.bossPower, ModifierUse.joker},
     source: 'Oso · alternativa',
-    sample: () => const AreaCaptureModifier(side: ModifierSide.antagonist),
+    defaultSide: ModifierSide.protagonist,
+    build: (side) => AreaCaptureModifier(side: side),
   ),
   ModifierInfo(
     id: 'spawn',
     name: 'Rebrote',
     description:
-        'Cada turno brota una ficha nueva del bando afectado en la primera '
-        'casilla vacía. Un tablero lleno no genera nada.',
+        'Cada 2 turnos brota una ficha nueva del bando afectado en su fila '
+        'trasera (primera casilla vacía). Un tablero lleno no genera nada.',
     uses: {ModifierUse.bossPower},
     source: 'Llama · vida 2',
-    sample: () =>
-        const SpawnModifier(piece: chrt.pawn, side: ModifierSide.antagonist),
+    defaultSide: ModifierSide.antagonist,
+    build: (side) => SpawnModifier(piece: chrt.pawn, everyTurns: 2, side: side),
   ),
   ModifierInfo(
     id: 'wind',
     name: 'Viento',
     description:
-        'Empuja todas las fichas un paso en una dirección. Las que salen del '
-        'tablero se van al cementerio de su dueño.',
+        'Cada 5 turnos una ventisca empuja las fichas del rival un paso hacia '
+        'atrás; las que salen del tablero van al cementerio. El sol también se '
+        'mueve, pero nunca cae: en la última fila se queda y frena a la ficha '
+        'que tiene detrás.',
     uses: {ModifierUse.bossPower},
     source: 'Cóndor · vida 2',
-    sample: () =>
-        const WindModifier(di: 0, dj: 1, side: ModifierSide.antagonist),
+    defaultSide: ModifierSide.antagonist,
+    build: (side) => WindModifier(everyTurns: 5, side: side),
   ),
   ModifierInfo(
     id: 'wither',
     name: 'Marchitar',
     description:
-        'Una ficha que su dueño deja sin mover durante N turnos se marchita y '
-        'muere (va al cementerio). El rey nunca se marchita.',
+        'Una ficha del bando afectado que no se mueve durante 3 turnos se '
+        'marchita y muere. El rey nunca se marchita.',
     uses: {ModifierUse.bossPower},
     source: 'Cóndor · vida 1',
-    sample: () =>
-        const WitherModifier(turns: 3, side: ModifierSide.antagonist),
+    defaultSide: ModifierSide.protagonist,
+    build: (side) => WitherModifier(turns: 3, side: side),
   ),
   ModifierInfo(
     id: 'felled-tiles',
     name: 'Tala el tablero',
     description:
-        'Marca casillas "taladas" que el bando afectado (por defecto el '
-        'protagonista) no puede pisar; el leñador sí puede.',
+        'Cada turno se tala una casilla nueva vecina a otra ya talada (dura 2 '
+        'turnos y vuelve a normal). El bando afectado no puede pisar casillas '
+        'taladas.',
     uses: {ModifierUse.bossPower},
     source: 'Leñador (Oso) · vida 1',
-    sample: () => FelledTilesModifier(const [
-      [1, 2]
-    ]),
+    defaultSide: ModifierSide.protagonist,
+    build: (side) => FelledTilesModifier(side: side),
   ),
 ];
 
