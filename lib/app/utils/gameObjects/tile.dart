@@ -33,9 +33,8 @@ class Tile {
   /// 0 when the piece moves.
   int idleTurns = 0;
 
-  /// Turns this square stays "felled" (inaccessible to the blocked side). Used
-  /// by the dynamic "Tala el tablero" modifier; 0 == normal. Carried across
-  /// board copies/rotations so a felled square stays felled as the board turns.
+  /// Trail age for "Tala el tablero"; 0 == normal, lower positive values are
+  /// older and are released first. Carried across board copies/rotations.
   int felledTurns = 0;
 
   @override

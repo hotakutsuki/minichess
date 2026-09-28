@@ -134,9 +134,9 @@ final List<ModifierInfo> modifierCatalog = [
     id: 'felled-tiles',
     name: 'Tala el tablero',
     description:
-        'Cada turno se tala una casilla nueva vecina a otra ya talada (dura 2 '
-        'turnos y vuelve a normal). El bando afectado no puede pisar casillas '
-        'taladas.',
+        'Cada ficha enemiga deja talada la casilla nueva donde cae. Solo hay 2 '
+        'a la vez: al talar una tercera, se recupera la más antigua. El bando '
+        'afectado no puede pisarlas, salvo con el sol.',
     uses: {ModifierUse.bossPower},
     source: 'Leñador (Oso) · vida 1',
     defaultSide: ModifierSide.protagonist,

@@ -100,6 +100,10 @@ abstract class RuleModifier {
   /// spawn reinforcements, wither idle pieces, blow a wind. Default: no-op.
   void onTurnStart(GameState gs) {}
 
+  /// Runs after a legal piece has been placed on its destination. Unlike a turn
+  /// tick, this can react to where a side chose to move (e.g. Tala's trail).
+  void onMoveResolved(Move move, GameState gs) {}
+
   /// The piece movements [onTurnStart] will perform this tick, reported *before*
   /// the mutation so the UI can animate them. Called on the un-mutated board and
   /// must NOT change state (nor advance any cadence counter) — it only predicts.
@@ -406,69 +410,48 @@ class WitherModifier extends RuleModifier {
   }
 }
 
-/// Leñador boss (life 1) "Tala el tablero": a spreading hazard. On each of the
-/// affected side's turns one new square — adjacent to an already-felled one, or
-/// the board centre if none are felled — is felled for [duration] turns, while
-/// existing felled squares count down back to normal. The affected side (default
-/// the protagonist) may not enter a felled square; felling never removes pieces.
+/// Leñador boss (life 1) "Tala el tablero": the antagonist leaves a moving trail
+/// behind. Each time it lands on an ordinary square, that square is felled. At
+/// most [maxTiles] are felled: a new one frees the oldest. Landing on an already
+/// felled square changes nothing. The affected side (default the protagonist)
+/// may not enter a felled square except with its king; felling never removes
+/// pieces.
 ///
-/// State lives on the tiles ([Tile.felledTurns]), so it travels with the board
-/// through rotation.
+/// State lives on the tiles ([Tile.felledTurns]): 1 is the oldest trail tile and
+/// [maxTiles] is the newest, so it travels with the board through rotation.
 class FelledTilesModifier extends RuleModifier {
   const FelledTilesModifier(
-      {this.side = ModifierSide.protagonist, this.duration = 2});
+      {this.side = ModifierSide.protagonist, this.maxTiles = 2});
 
-  final int duration;
+  final int maxTiles;
 
   @override
   final ModifierSide side;
 
   @override
-  void onTurnStart(GameState gs) {
+  void onMoveResolved(Move move, GameState gs) {
+    final landing = gs.board[move.finalTile.j!][move.finalTile.i!];
+    // The boss's moves create the trail; the affected player merely navigates it.
+    if (appliesTo(landing.owner, gs) || landing.felledTurns > 0) return;
     for (final row in gs.board) {
-      for (final t in row) {
-        if (t.felledTurns > 0) t.felledTurns--;
+      for (final tile in row) {
+        if (tile.felledTurns > 0) tile.felledTurns--;
       }
     }
-    final height = gs.board.length;
-    final width = gs.board.isEmpty ? 0 : gs.board[0].length;
-    final felled = <Tile>[
-      for (final row in gs.board)
-        for (final t in row)
-          if (t.felledTurns > 0) t
-    ];
-    if (felled.isEmpty) {
-      gs.board[height ~/ 2][width ~/ 2].felledTurns = duration; // seed
-      return;
-    }
-    const dirs = [
-      [1, 0],
-      [-1, 0],
-      [0, 1],
-      [0, -1]
-    ];
-    for (final t in felled) {
-      for (final d in dirs) {
-        final ni = t.i! + d[0];
-        final nj = t.j! + d[1];
-        if (nj < 0 || nj >= height || ni < 0 || ni >= width) continue;
-        final n = gs.board[nj][ni];
-        if (n.felledTurns == 0) {
-          n.felledTurns = duration; // spread to a fresh neighbour
-          return;
-        }
-      }
-    }
+    landing.felledTurns = maxTiles;
   }
 
   @override
   bool allowsMove(Move move, GameState gs) {
-    if (!appliesTo(move.initialTile.owner, gs)) return true;
     final fi = move.finalTile.i;
     final fj = move.finalTile.j;
     if (fi == null || fj == null) return true;
     // Read the actual board tile (the move's finalTile may be a lightweight
     // destination without the felled state).
-    return gs.board[fj][fi].felledTurns == 0;
+    if (gs.board[fj][fi].felledTurns == 0) return true;
+    // The king is the win target, so it may cross the trail instead of being
+    // trapped by it. The player still cannot use other pieces to enter it.
+    if (move.initialTile.char == chrt.king) return true;
+    return !appliesTo(move.initialTile.owner, gs);
   }
 }

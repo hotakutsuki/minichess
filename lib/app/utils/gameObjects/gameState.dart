@@ -48,6 +48,9 @@ class GameState {
     final wasCapture = move.finalTile.char != chrt.empty;
     sendPieceToGrave(move);
     rewritePosition(move);
+    for (final m in modifiers) {
+      m.onMoveResolved(move, this);
+    }
     if (wasCapture) applyExtraCaptures(move);
     return this;
   }

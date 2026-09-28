@@ -97,6 +97,9 @@ class ChessTile extends GetView {
               ),
             ),
           ),
+          // This belongs to the piece layer, not the board slot: when the
+          // piece slides, its Marchitar countdown must travel with it.
+          _witherBadge(),
         ],
       ),
       builder: (BuildContext context, Widget? child) {
@@ -157,7 +160,6 @@ class ChessTile extends GetView {
             interactive,
             if (tile.isOption) _optionHint(),
             _spawnHint(),
-            _witherBadge(),
             _flashOverlay(),
           ],
         ),
@@ -198,9 +200,8 @@ class ChessTile extends GetView {
       );
 
   // Small badge counting down the turns until this piece withers ("Marchitar").
-  // The whole board is rotated 180° on the opponent's turn, so the badge flips
-  // its anchor corner AND counter-rotates to stay screen-upright and in a
-  // consistent screen position instead of tumbling around each turn.
+  // It lives inside the animated piece layer, so it keeps the same orientation
+  // and relative position as that piece through moves and board rotations.
   Widget _witherBadge() {
     final gs = matchController.gs.value;
     if (gs == null || tile.char == chrt.empty || tile.char == chrt.king) {
@@ -210,27 +211,21 @@ class ChessTile extends GetView {
       if (m is WitherModifier && m.appliesTo(tile.owner, gs)) {
         final left = m.turns - tile.idleTurns;
         if (left <= 0) continue;
-        final bool flip = playersTurn != player.white;
         return Positioned(
-          top: flip ? null : 6,
-          bottom: flip ? 6 : null,
-          right: flip ? null : 6,
-          left: flip ? 6 : null,
+          top: 6,
+          right: 6,
           child: IgnorePointer(
-            child: RotatedBox(
-              quarterTurns: flip ? 2 : 0,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: Colors.brown.withOpacity(0.9),
-                  shape: BoxShape.circle,
-                ),
-                child: Text('$left',
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold)),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.brown.withOpacity(0.9),
+                shape: BoxShape.circle,
               ),
+              child: Text('$left',
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold)),
             ),
           ),
         );

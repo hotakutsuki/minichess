@@ -396,33 +396,32 @@ void main() {
   });
 
   group('FelledTilesModifier (Tala dinámica)', () {
-    test('seeds a felled square the protagonist cannot enter (antagonist can)',
+    test('the antagonist leaves a two-tile trail that frees the oldest tile', () {
+      final b = _emptyBoard();
+      b[0][0] = Tile(chrt.rock, possession.enemy, 0, 0);
+      final gs = _boardStateWith(b, const [FelledTilesModifier()]);
+      gs.changeGameState(Move(b[0][0], b[1][0]));
+      expect(b[1][0].felledTurns, 2);
+      gs.changeGameState(Move(b[1][0], b[2][0]));
+      expect(b[1][0].felledTurns, 1);
+      expect(b[2][0].felledTurns, 2);
+      gs.changeGameState(Move(b[2][0], b[3][0]));
+      expect(b[1][0].felledTurns, 0);
+      expect(b[2][0].felledTurns, 1);
+      expect(b[3][0].felledTurns, 2);
+    });
+
+    test('the protagonist is blocked, while either king may enter a felled tile',
         () {
-      final gs = _boardStateWith(_emptyBoard(), const [FelledTilesModifier()]);
-      gs.applyTurnStart(); // seeds the centre: board[2][1] == (i=1, j=2)
-      expect(gs.board[2][1].felledTurns, greaterThan(0));
-      // protagonist (mine, default state) blocked; antagonist allowed.
+      final b = _emptyBoard();
+      b[2][1].felledTurns = 2;
+      final gs = _boardStateWith(b, const [FelledTilesModifier()]);
       expect(checkIfValidMove(
           _move(chrt.rock, possession.mine, 1, 1, 1, 2), gs, true), isFalse);
       expect(checkIfValidMove(
-          _move(chrt.rock, possession.enemy, 1, 1, 1, 2), gs, true), isTrue);
-    });
-
-    test('a felled square counts down and expires', () {
-      final b = _emptyBoard();
-      b[0][0].felledTurns = 1; // a felled corner, far from the centre seed
-      final gs = _boardStateWith(b, const [FelledTilesModifier(duration: 2)]);
-      gs.applyTurnStart(); // decrements the corner 1 -> 0 (then seeds the centre)
-      expect(b[0][0].felledTurns, 0);
-    });
-
-    test('spreads to a neighbour on later turns', () {
-      final gs = _boardStateWith(_emptyBoard(), const [FelledTilesModifier()]);
-      gs.applyTurnStart(); // seed centre
-      gs.applyTurnStart(); // spread to a neighbour
-      final felled =
-          gs.board.expand((r) => r).where((t) => t.felledTurns > 0).length;
-      expect(felled, greaterThanOrEqualTo(2));
+          _move(chrt.king, possession.mine, 1, 1, 1, 2), gs, true), isTrue);
+      expect(checkIfValidMove(
+          _move(chrt.king, possession.enemy, 1, 1, 1, 2), gs, true), isTrue);
     });
   });
 }

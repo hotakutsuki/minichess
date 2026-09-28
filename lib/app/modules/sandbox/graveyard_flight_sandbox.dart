@@ -4,8 +4,9 @@ import '../../data/enums.dart';
 import '../../utils/utils.dart';
 import '../match/widgets/graveyard_flight.dart';
 
-/// Debug-only playground for the [flyToGraveyard] primitive, isolated from the
-/// match loop. A mock board (3×4) and two graveyard strips (top = "enemy",
+/// Historical test screen for the [flyToGraveyard] primitive; it is no longer
+/// linked from the app, but remains available if the animation needs debugging.
+/// A mock board (3×4) and two graveyard strips (top = "enemy",
 /// bottom = "own"); tap any cell to fly its piece to the chosen graveyard and
 /// watch the translation + optional 180° flip + curtain reveal, then land the
 /// piece in the strip. Nothing here touches game state.
