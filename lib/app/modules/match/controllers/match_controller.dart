@@ -8,8 +8,10 @@ import 'package:inti_the_inka_chess_game/app/modules/match/controllers/tile_cont
 
 import '../../../data/enums.dart';
 import '../../../data/matchDom.dart';
+import '../../../data/sandbox_config.dart';
 import '../../../data/usefullData.dart';
 import '../../../data/userDom.dart';
+import '../../../engine/rule_modifier.dart';
 import '../../../routes/app_pages.dart';
 import '../../../services/database.dart';
 import '../../../utils/gameObjects/gameState.dart';
@@ -19,6 +21,7 @@ import '../../../utils/juice.dart';
 import '../../../utils/utils.dart';
 import '../../home/controllers/home_controller.dart';
 import '../../language/controllers/language_controller.dart';
+import '../widgets/graveyard_flight.dart';
 import 'GraveyardController.dart';
 import 'ai_controller.dart';
 import 'clock_controller.dart';
@@ -29,10 +32,32 @@ class MatchController extends GetxController with WidgetsBindingObserver {
   LanguageController l = Get.find<LanguageController>();
 
   final homeController = Get.find<HomeController>();
-  final gameMode gamemode = Get.arguments ?? gameMode.vs;
+
+  // The match route argument is normally a [gameMode]. A [SandboxConfig] instead
+  // launches a solo match with rule modifiers active (debug tool).
+  late final gameMode gamemode =
+      Get.arguments is SandboxConfig ? gameMode.solo : (Get.arguments ?? gameMode.vs);
+  late final List<RuleModifier> _modifiers = Get.arguments is SandboxConfig
+      ? (Get.arguments as SandboxConfig).modifiers
+      : const [];
 
   Rx<int> wScore = 0.obs, bScore = 0.obs;
   final selectedTile = Rxn<Tile>();
+
+  // --- Graveyard-flight plumbing (measured, magic-number-free animations) ---
+  // A stable GlobalKey per board grid slot "i,j" and per graveyard [player], so
+  // [flyToGraveyard] can measure real on-screen rects. Board slots are reused
+  // across rotations (one tile per slot per frame), so identity stays unique.
+  final Map<String, GlobalKey> _tileKeys = {};
+  final Map<player, GlobalKey> _graveKeys = {};
+  // Board slots whose piece is mid-flight to a graveyard: rendered empty so the
+  // overlay copy isn't duplicated by the still-present board piece.
+  final Set<String> _hiddenTiles = {};
+
+  GlobalKey tileKey(int? i, int? j) =>
+      _tileKeys.putIfAbsent('$i,$j', () => GlobalKey());
+  GlobalKey graveKey(player p) => _graveKeys.putIfAbsent(p, () => GlobalKey());
+  bool isTileHidden(int? i, int? j) => _hiddenTiles.contains('$i,$j');
 
   late player playersTurn = player.white;
   player winner = player.none;
@@ -276,6 +301,7 @@ class MatchController extends GetxController with WidgetsBindingObserver {
         gs.update((val) => val!.changeGameState(move));
         gs.value!.rotate();
         togglePlayersTurn();
+        await _runTurnTick(); // animate + apply per-turn effects for the new mover
       }
       restarSelected(tile);
       highlightAvailableOptions();
@@ -294,15 +320,31 @@ class MatchController extends GetxController with WidgetsBindingObserver {
   animateTiles(Move move) async {
     if (gs.value!.board[move.finalTile.j!][move.finalTile.i!].char !=
         chrt.empty) {
+      // "Invertir posesión": the captured piece returns to its owner, so it
+      // lands in the OPPONENT's graveyard — animate that one's reveal, not the
+      // captor's, otherwise the wrong panel opens, and fly the piece to the far
+      // graveyard instead of the captor's.
+      final bool returnsToOwner = gs.value!.modifiers.any((m) =>
+          m.appliesTo(possession.mine, gs.value!) &&
+          m.returnsCapturedToOwner());
+      final player receiver = returnsToOwner
+          ? (playersTurn == player.white ? player.black : player.white)
+          : playersTurn;
       GraveyardController gyController =
-          Get.find<GraveyardController>(tag: playersTurn.name);
-      int length = gyController.getGraveyard(playersTurn).length;
-      TileController takenTileController =
-          Get.find<TileController>(tag: move.finalTile.toString());
-      takenTileController.flash();
+          Get.find<GraveyardController>(tag: receiver.name);
+      int slot = gyController.getGraveyard(receiver).length;
       Juice.capture();
-      takenTileController.animateTile(
-          move.finalTile.i!, -1 - move.finalTile.j!, null, null, length);
+      // The piece the mover landed on.
+      _flyCapturedToGrave(move.finalTile.toString(), move.finalTile.i!,
+          move.finalTile.j!, slot, far: returnsToOwner);
+      // "Embestida": the extra pieces the strike clears fly to the same
+      // graveyard, stacking on the following slots (matching the order the
+      // engine buries them in [GameState.applyExtraCaptures]).
+      for (final c in _areaCaptureTiles(move)) {
+        slot++;
+        _flyCapturedToGrave(gs.value!.board[c[1]][c[0]].toString(), c[0], c[1],
+            slot, far: returnsToOwner);
+      }
       gyController.animateGraveyard();
     }
     if (isFromGraveyard(move.initialTile)) {
@@ -322,6 +364,48 @@ class MatchController extends GetxController with WidgetsBindingObserver {
       await tileController.animateTile(move.initialTile.i!, move.initialTile.j!,
           move.finalTile.i, move.finalTile.j);
     }
+  }
+
+  // The board tiles an "Embestida" (area capture) will also clear as `[i, j]`
+  // pairs, in the exact order the engine buries them
+  // ([GameState.applyExtraCaptures]): each active modifier's [extraCaptures],
+  // keeping only on-board enemy non-king tiles, de-duplicated (the engine skips
+  // an already-cleared square). Used to fly them to the graveyard.
+  List<List<int>> _areaCaptureTiles(Move move) {
+    final g = gs.value!;
+    final tiles = <List<int>>[];
+    final seen = <String>{};
+    for (final m in g.modifiers) {
+      if (!m.appliesTo(possession.mine, g)) continue;
+      for (final c in m.extraCaptures(move, g)) {
+        final i = c[0], j = c[1];
+        if (j < 0 || j >= g.board.length || i < 0 || i >= g.board[j].length) {
+          continue;
+        }
+        final t = g.board[j][i];
+        if (t.owner != possession.enemy ||
+            t.char == chrt.empty ||
+            t.char == chrt.king) {
+          continue;
+        }
+        if (seen.add('$i,$j')) tiles.add([i, j]);
+      }
+    }
+    return tiles;
+  }
+
+  // Flash a captured (enemy) tile gold and fly it to the graveyard with the same
+  // slide+shrink as a normal capture. [far] sends it to the OPPONENT's graveyard
+  // (used by "invertir posesión"): the captured piece is drawn 180°-rotated, so
+  // the near graveyard is reached with a downward `-1 - j`; the far one needs an
+  // upward target instead.
+  void _flyCapturedToGrave(String tag, int i, int j, int slot,
+      {required bool far}) {
+    if (!Get.isRegistered<TileController>(tag: tag)) return;
+    final tc = Get.find<TileController>(tag: tag);
+    tc.flash();
+    final int ij = far ? (gs.value!.board.length - j) : (-1 - j);
+    tc.animateTile(i, ij, null, null, slot);
   }
 
   onTapTile(Tile tile) async {
@@ -489,7 +573,109 @@ class MatchController extends GetxController with WidgetsBindingObserver {
       enemyGraveyard: <Tile>[],
       // enemyGraveyard: <Tile>[Tile(chrt.pawn, possession.enemy, null, null)],
       myGraveyard: <Tile>[],
+      modifiers: _modifiers,
     );
+  }
+
+  // Runs the active modifiers' per-turn effects (spawn/wither/wind) at the start
+  // of the side-to-move's turn, then repaints the board. No-op without modifiers,
+  // so vanilla matches are untouched. Any piece the effect moves (e.g. a Viento
+  // gust) is first slid with the normal move animation, then committed — so it
+  // never just teleports.
+  Future<void> _runTurnTick() async {
+    if (gs.value!.modifiers.isEmpty) return;
+    final reveals = await _animateTickMoves(gs.value!.planTurnStart());
+    gs.value!.applyTurnStart(); // commit while any death curtain is up
+    gs.update((val) => val);
+    await Future.wait(reveals); // let the graveyard reveals finish
+    _clearHiddenTiles();
+  }
+
+  // Animates every piece a per-turn effect is about to move, then returns so the
+  // state change can be committed — so nothing ever teleports. A board slide
+  // reuses the ordinary-move translate; a [TickMove.toGrave] death flies to the
+  // owner's graveyard with the capture animation. Wind pieces are enemy-owned,
+  // whose tile is drawn inside a 180° RotatedBox, so a slide is fed reversed
+  // (destination→source) to cancel that rotation.
+  Future<List<Future>> _animateTickMoves(List<TickMove> moves) async {
+    if (moves.isEmpty) return const [];
+    // Let the just-rotated board finish building so each source tile is mounted.
+    await WidgetsBinding.instance.endOfFrame;
+    final awaitNow = <Future>[]; // slides + death landings (before commit)
+    final reveals = <Future>[]; // death curtain retracts (after commit)
+    for (final mv in moves) {
+      final t = gs.value!.board[mv.fromJ][mv.fromI];
+      if (mv.toGrave) {
+        // Marchitar (and any future in-place death): fly to the graveyard.
+        final landed = Completer<void>();
+        reveals.add(_flyBoardPieceToGrave(mv.fromI, mv.fromJ, t.char, t.owner,
+            onArrive: () {
+          if (!landed.isCompleted) landed.complete();
+        }));
+        awaitNow.add(landed.future);
+        continue;
+      }
+      final tag = t.toString();
+      if (!Get.isRegistered<TileController>(tag: tag)) continue;
+      final tc = Get.find<TileController>(tag: tag);
+      final bool enemy = t.owner == possession.enemy;
+      awaitNow.add(enemy
+          ? tc.animateTile(mv.toI, mv.toJ, mv.fromI, mv.fromJ)
+          : tc.animateTile(mv.fromI, mv.fromJ, mv.toI, mv.toJ));
+    }
+    await Future.wait(awaitNow);
+    return reveals;
+  }
+
+  // Flies a board piece at (i,j) to its owner's graveyard: hides the board copy
+  // (so the overlay isn't duplicated), launches the overlay flight, and returns
+  // the reveal future. [onArrive] fires when the piece is hidden behind the
+  // risen curtain — the moment to commit the state so the graveyard add stays
+  // covered until the reveal.
+  Future<void> _flyBoardPieceToGrave(
+      int i, int j, chrt char, possession owner,
+      {required VoidCallback onArrive}) async {
+    // A piece's own graveyard is the mover's (playersTurn) side; an enemy piece
+    // goes to the opponent's.
+    final player receiver = owner == possession.mine
+        ? playersTurn
+        : (playersTurn == player.white ? player.black : player.white);
+    final GlobalKey? fromKey = _tileKeys['$i,$j'];
+    final GlobalKey? toKey = _graveKeys[receiver];
+    // Use the source tile's own context so the flight can find the app overlay.
+    final ctx = fromKey?.currentContext ?? Get.context;
+    if (ctx == null || fromKey == null || toKey == null) {
+      onArrive();
+      return;
+    }
+    _hiddenTiles.add('$i,$j');
+    gs.update((val) => val);
+    final chrt buried = gs.value!.graveChar(char, owner);
+    // The graveyard strip flips black (top) pieces 180°; the whole zone flips
+    // again for an online guest — so a piece flips iff exactly one applies.
+    final bool flip = (receiver == player.black) ^
+        (gamemode == gameMode.online && !isHost.value);
+    // Never let a flight failure block the turn (it's awaited inside play()).
+    try {
+      await flyToGraveyard(
+        ctx,
+        fromKey: fromKey,
+        toKey: toKey,
+        piece: getCharAsset(buried, receiver, false),
+        rotate: flip,
+        onArrive: onArrive,
+        duration:
+            Duration(milliseconds: gamemode == gameMode.training ? 100 : 800),
+      );
+    } catch (_) {
+      onArrive();
+    }
+  }
+
+  void _clearHiddenTiles() {
+    if (_hiddenTiles.isEmpty) return;
+    _hiddenTiles.clear();
+    gs.update((val) => val);
   }
 
   void startTimer() {

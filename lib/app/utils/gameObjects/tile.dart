@@ -1,7 +1,8 @@
 import '../../data/enums.dart';
 
 class Tile {
-  Tile(this.char, this.owner, this.i, this.j, {this.idleTurns = 0});
+  Tile(this.char, this.owner, this.i, this.j,
+      {this.idleTurns = 0, this.felledTurns = 0});
 
   Tile.fromTile(Tile otherTile) :
         char = otherTile.char,
@@ -31,6 +32,10 @@ class Tile {
   /// "Marchitar" rule modifier; carried across board copies/rotations, reset to
   /// 0 when the piece moves.
   int idleTurns = 0;
+
+  /// Trail age for "Tala el tablero"; 0 == normal, lower positive values are
+  /// older and are released first. Carried across board copies/rotations.
+  int felledTurns = 0;
 
   @override
   String toString() {

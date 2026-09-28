@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import '../../../utils/utils.dart';
 import '../../../data/enums.dart';
+import '../../../engine/modifier_catalog.dart';
+import '../../../engine/rule_modifier.dart';
 import '../../language/controllers/language_controller.dart';
 import '../../language/views/select_languaje_widget.dart';
+import '../../home/controllers/home_controller.dart';
 import '../controllers/auth_controller.dart';
 import 'edit_email_dialog_view.dart';
 import 'new_password_dialog_view.dart';
@@ -45,6 +49,65 @@ class ProfileView extends GetView<AuthController> {
     );
   }
 
+  // Kept in Account rather than Home so this playtest-only tool does not crowd
+  // the player-facing menu. It is compiled out of release builds.
+  void _showSandboxPicker() {
+    Get.dialog(
+      SimpleDialog(
+        backgroundColor: brackgroundColorSolid,
+        title: const Text('Sandbox — probar modificador',
+            style: TextStyle(color: Colors.white)),
+        children: [
+          for (final info in modifierCatalog)
+            SimpleDialogOption(
+              onPressed: () {
+                Get.back();
+                _pickSandboxSide(info);
+              },
+              child: ListTile(
+                title: Text(info.name,
+                    style: const TextStyle(color: Colors.white)),
+                subtitle: Text(
+                    '${info.description}\n[${info.uses.map((u) => u.name).join(', ')}]'
+                    '${info.source == null ? '' : ' — ${info.source}'}',
+                    style: const TextStyle(color: Colors.white54)),
+                isThreeLine: true,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  void _pickSandboxSide(ModifierInfo info) {
+    const options = {
+      'Tú (protagonista)': ModifierSide.protagonist,
+      'Enemigo (IA)': ModifierSide.antagonist,
+      'Ambos': ModifierSide.both,
+    };
+    Get.dialog(
+      SimpleDialog(
+        backgroundColor: brackgroundColorSolid,
+        title: Text('${info.name} — aplicar a',
+            style: const TextStyle(color: Colors.white)),
+        children: [
+          for (final entry in options.entries)
+            SimpleDialogOption(
+              onPressed: () {
+                Get.back();
+                Get.find<HomeController>().startSandbox(info.build(entry.value));
+              },
+              child: Text(
+                entry.key +
+                    (entry.value == info.defaultSide ? '  ★' : ''),
+                style: const TextStyle(color: Colors.white),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Obx(() {
@@ -61,9 +124,14 @@ class ProfileView extends GetView<AuthController> {
                   ),
                 ],
               )),
-              IconButton(
-                  onPressed: () => Get.back(closeOverlays: true),
-                  icon: const Icon(Icons.close))
+                  if (kDebugMode)
+                    IconButton(
+                        tooltip: 'Sandbox de modificadores',
+                        onPressed: _showSandboxPicker,
+                        icon: const Icon(Icons.science_outlined, size: 18)),
+                  IconButton(
+                   onPressed: () => Get.back(closeOverlays: true),
+                   icon: const Icon(Icons.close))
             ],
           ),
           const Divider(

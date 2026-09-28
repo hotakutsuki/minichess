@@ -18,7 +18,9 @@ void main() {
 
     test('every entry builds a RuleModifier and has a use + description', () {
       for (final m in modifierCatalog) {
-        expect(m.sample(), isA<RuleModifier>(), reason: m.id);
+        expect(m.build(m.defaultSide), isA<RuleModifier>(), reason: m.id);
+        expect(m.build(ModifierSide.antagonist), isA<RuleModifier>(),
+            reason: m.id);
         expect(m.uses, isNotEmpty, reason: m.id);
         expect(m.name.trim(), isNotEmpty, reason: m.id);
         expect(m.description.trim(), isNotEmpty, reason: m.id);

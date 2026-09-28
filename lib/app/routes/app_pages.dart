@@ -13,6 +13,7 @@ import '../modules/language/bindings/language_binding.dart';
 import '../modules/language/views/language_view.dart';
 import '../modules/match/bindings/match_binding.dart';
 import '../modules/match/views/match_view.dart';
+import '../modules/sandbox/graveyard_flight_sandbox.dart';
 import '../modules/splash/bindings/splash_binding.dart';
 import '../modules/splash/views/splash_view.dart';
 import '../modules/tutorial/bindings/tutorial_binding.dart';
@@ -70,6 +71,10 @@ class AppPages {
       name: _Paths.LANGUAGE,
       page: () => LanguageView(),
       binding: LanguageBinding(),
+    ),
+    GetPage(
+      name: _Paths.GRAVEYARD_SANDBOX,
+      page: () => const GraveyardFlightSandbox(),
     ),
   ];
 }
