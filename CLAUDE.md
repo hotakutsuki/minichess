@@ -3,6 +3,9 @@
 Minichess game built in **Flutter**, published and **in production** at https://inkachess.com/.
 Repo: `github.com/hotakutsuki/minichess` · package name: `inti_the_inka_chess_game`.
 
+> **Workflow + feature roadmap (bosses, modifiers, story mode, …):** see
+> [`docs/PROJECT.md`](docs/PROJECT.md). This file is the technical/architecture reference.
+
 ## Stack
 - Flutter (Android, iOS, web, desktop targets present)
 - Firebase (Firestore, Functions in `firebasefunctions/`, Hosting)
@@ -20,8 +23,11 @@ before scoping — do NOT start building features until the scope is agreed.
 - Board is a fixed **3×4 minichess**; pawn promotes to knight at `j==3` (`gameState.dart`).
 - AI in `ai_controller.dart` (minimax-ish eval). Note: `getPlay` returns early at the
   `return makeLocalDecision()` — the remote-play block below it is **dead/unreachable**.
-- Known bug: knight movement compares `possession` to `player` (always false) → `else`
-  branch always runs. NOT fixed yet (production); flagged for user decision.
+- Movement is now **data-driven** via `engine/rules.dart` `pieceOffsets()` (Stage 3).
+  This also fixed the old knight bug (it compared `possession` to `player`, so the enemy
+  knight's diagonals were mirrored wrong — only affected the AI's king-safety heuristic,
+  since this game has no check). The knight (an invented promoted-pawn piece) now mirrors
+  by owner like the pawn.
 
 ## Build / run
 - Emulator alias in user's zsh: **`celular`** → launches AVD `@Small_Phone`. Mobile-first,
@@ -54,9 +60,15 @@ before scoping — do NOT start building features until the scope is agreed.
 - ⚠️ **iOS/macOS**: config updated for the upgrade but **UNVERIFIED** — needs a Mac with
   Xcode + `pod install` to confirm. Cannot be built on this Linux machine.
 
-## Workflow for changes (per user)
-- One `feature/*` branch per feature. Verify each step with `flutter analyze` + unit
-  tests; do a full emulator build at milestones so the user can try it.
+## Workflow for changes (per user) — gitflow
+- Branching: `feature/*` → **`dev`** (integration) → **`main`** (production).
+  One `feature/*` branch per feature, branched off `dev`.
+- **Open a PR for every change; the user merges** (do NOT push straight to `main`/`dev`;
+  `main` has branch protection requiring PRs).
+- `main` is production: merging into it triggers the live Firebase Hosting deploy
+  (`inkachess.com`). Only release to `main` once everything is tested in `dev`.
+- Verify each step with `flutter analyze` + unit tests; full emulator/web build at
+  milestones so the user can try it.
 
 ## Notes
 - This is a live production app — be careful with anything touching Firestore rules,

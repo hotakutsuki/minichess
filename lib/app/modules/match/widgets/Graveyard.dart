@@ -18,6 +18,7 @@ class Graveyard extends GetView {
   @override
   Widget build(BuildContext context) {
     return Stack(
+      key: matchController.graveKey(p),
       children: [
         ClipRect(
           child: BackdropFilter(

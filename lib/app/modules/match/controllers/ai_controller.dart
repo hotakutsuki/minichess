@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:math';
 
 import 'package:get/get.dart';
@@ -15,8 +14,6 @@ class AiController extends GetxController {
   static const String DOC_URL =
       '/forms/d/e/1FAIpQLSf99qDW5LEo3xsWQeQo20MIw0XBAuLf4taufSMkMyUWoWCpJg';
   static const String POST_URL = '/formResponse';
-  static const String QUERY_URL =
-      '/spreadsheets/d/1oaRkah35SbiQ6kNWfQLNQEOLCHFIDHxVxdcxaaMWpz4/gviz/tq';
   static const String usp = 'usp';
   static const String ppurl = 'pp_url';
   static const String boardEntry = 'entry.1551786230';
@@ -169,98 +166,7 @@ class AiController extends GetxController {
       }
     }
 
-    if (!(await isConnected())) {
-      print('Playing without internet...');
-      return makeLocalDecision(gameState);
-    }
-
-    String stateKey = gameState.toString();
-
     return makeLocalDecision(gameState);
-    List<String> remotePlaysResponse = await fetchRemotePlays(stateKey);
-    if (isNewState(remotePlaysResponse)) {
-      print('Playing locally...');
-      Move move = makeLocalDecision(gameState);
-      // print(move);
-      return move;
-    }
-    if (gamemode == gameMode.training && getRandomInt(5) == 0) {
-      print('Forcing locally by luck');
-      return makeLocalDecision(gameState);
-      // print(move);
-    } else {
-      print('Playing remotely...');
-      return getRemotePlay(remotePlaysResponse, gameState);
-      // print(move);
-    }
-  }
-
-  isNewState(List<String> remotePlays) {
-    return remotePlays.isEmpty;
-  }
-
-  Future<List<String>> fetchRemotePlays(String stateKey) async {
-    List<String> remotePlays = [];
-    var uri = Uri.https(docsDomain, QUERY_URL, {
-      'tq': 'select C where B = \'$stateKey\' and D = 1',
-    });
-    // print('\nuri');
-    // print(uri);
-    http.Response response;
-    try {
-      response = await http.get(uri).timeout(const Duration(seconds: 1));
-      print('time limit reached');
-    } catch (e) {
-      print('Network error. playing random');
-      return remotePlays;
-    }
-    if (response.statusCode != 200) {
-      print('Response Status code error: ${response.statusCode}');
-      return remotePlays;
-    }
-    RegExp exp = RegExp(
-      r"(^\/\*O_o\*\/([\s\S]*[\n\r]*)google\.visualization\.Query\.setResponse\(|\);$)",
-    );
-    String ans = response.body.replaceAll(exp, '');
-    if (ans.isEmpty) {
-      return remotePlays;
-    }
-
-    Map<String, dynamic> map = jsonDecode(response.body.replaceAll(exp, ''));
-    if (map['table']?['rows']?.length <= 0) {
-      return remotePlays;
-    }
-    map['table']['rows'].forEach((c) {
-      remotePlays.add(c['c'][0]['v'].toString());
-    });
-    return remotePlays;
-  }
-
-  Move getRemotePlay(List<String> remotePlaysReponse, GameState gs) {
-    List<Move> remoteMoves = remotePlaysReponse.map((resp) {
-      var spliced = resp.split('|');
-      if (isInt(spliced[0])) {
-        return Move(gs.board[int.parse(spliced[1])][int.parse(spliced[0])],
-            gs.board[int.parse(spliced[3])][int.parse(spliced[2])]);
-      }
-      chrt char = getCharFromInitials(spliced[0]);
-      Tile initialTile = gs.myGraveyard.firstWhere((t) => t.char == char);
-      Tile finalTile = gs.board[int.parse(spliced[3])][int.parse(spliced[2])];
-      return Move(initialTile, finalTile);
-    }).toList();
-    // print(remoteMoves);
-    return getRandomObject(remoteMoves);
-  }
-
-  chrt getCharFromInitials(String initials) {
-    return chrt.values.firstWhere((element) => element.name == initials);
-  }
-
-  bool isInt(String? s) {
-    if (s == null) {
-      return false;
-    }
-    return int.tryParse(s) != null;
   }
 
   Move makeLocalDecision(GameState gameState, [bool hard = false]) {

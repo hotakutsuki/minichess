@@ -16,23 +16,13 @@ class LanguageView extends GetView<LanguageController> {
 
   @override
   Widget build(BuildContext context) {
+    // Precache the intro-story images now, while the player picks language and
+    // sound — so by the time they tap Start they're already cached and the home
+    // loading splash is skipped (falls back to it only if they're not ready yet).
+    controller.homeController.prepareHome(context);
     return Scaffold(
       body: Stack(
         children: [
-          //to force cache tale page 1:
-          SizedBox(
-            height: 1,
-            width: 1,
-            child: Column(
-              children: [
-                Image.asset('assets/images/tale/SC1/bg4.png'),
-                Image.asset('assets/images/tale/SC1/bg3.png'),
-                Image.asset('assets/images/tale/SC1/bg2.png'),
-                Image.asset('assets/images/tale/SC1/bg1.png'),
-                Image.asset('assets/images/tale/SC1/ch.png'),
-              ],
-            ),
-          ),
           backgroundController.backGround(context),
           Center(
               child: AlertDialog(
